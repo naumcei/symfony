@@ -440,6 +440,26 @@ YAML;
         $this->assertSameData($data, $this->parser->parse($yaml, Yaml::PARSE_CUSTOM_TAGS));
     }
 
+    public function testDumpingTaggedValueTopLevelAssoc()
+    {
+        $data = new TaggedValue('user', ['name' => 'jane']);
+
+        $expected = <<<'YAML'
+!user
+name: jane
+
+YAML;
+        $yaml = $this->dumper->dump($data, 2);
+        $this->assertSame($expected, $yaml);
+    }
+
+    public function testDumpingTaggedValueTopLevelMultiLine()
+    {
+        $data = new TaggedValue('text', "a\nb\n");
+
+        $this->assertSame("!text |\n    a\n    b\n    ", $this->dumper->dump($data, 2, 0, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK));
+    }
+
     public function testDumpingTaggedValueSpecialCharsInTag()
     {
         // @todo Validate the tag name in the TaggedValue constructor.
@@ -473,8 +493,6 @@ YAML;
 
 YAML;
         $this->assertSame($expected, $yaml);
-        // @todo Fix the parser, preserve numbers.
-        $data[2] = new TaggedValue('number', '5');
         $this->assertSameData($data, $this->parser->parse($expected, Yaml::PARSE_CUSTOM_TAGS));
     }
 
@@ -503,8 +521,6 @@ count: !number 5
 
 YAML;
         $this->assertSame($expected, $yaml);
-        // @todo Fix the parser, preserve numbers.
-        $data['count'] = new TaggedValue('number', '5');
         $this->assertSameData($data, $this->parser->parse($expected, Yaml::PARSE_CUSTOM_TAGS));
     }
 
@@ -558,9 +574,6 @@ foo: !bar null
 YAML;
 
         $this->assertSame($expected, $this->dumper->dump($data, 2));
-
-        // @todo Fix the parser, don't stringify null.
-        $data['foo'] = new TaggedValue('bar', 'null');
         $this->assertSameData($data, $this->parser->parse($expected, Yaml::PARSE_CUSTOM_TAGS | Yaml::PARSE_CONSTANT));
     }
 

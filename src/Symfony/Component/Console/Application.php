@@ -298,6 +298,8 @@ class Application implements ResetInterface
 
                         return isset($event) ? $event->getExitCode() : 1;
                     }
+
+                    throw $e;
                 } catch (NamespaceNotFoundException) {
                     throw $e;
                 }
@@ -992,10 +994,6 @@ class Application implements ResetInterface
                         });
                     }
                 }
-
-                foreach ($commandSignals as $signal) {
-                    $this->signalRegistry->register($signal, [$command, 'handleSignal']);
-                }
             }
 
             if (null !== $this->dispatcher) {
@@ -1013,6 +1011,10 @@ class Application implements ResetInterface
                         }
                     });
                 }
+            }
+
+            foreach ($commandSignals as $signal) {
+                $this->signalRegistry->register($signal, [$command, 'handleSignal']);
             }
         }
 

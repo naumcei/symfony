@@ -161,9 +161,9 @@ class Configuration implements ConfigurationInterface
         $this->addRequestSection($rootNode);
         $this->addAssetsSection($rootNode, $enableIfStandalone);
         $this->addTranslatorSection($rootNode, $enableIfStandalone);
-        $this->addValidationSection($rootNode, $enableIfStandalone, $willBeAvailable);
+        $this->addValidationSection($rootNode, $enableIfStandalone);
         $this->addAnnotationsSection($rootNode, $willBeAvailable);
-        $this->addSerializerSection($rootNode, $enableIfStandalone, $willBeAvailable);
+        $this->addSerializerSection($rootNode, $enableIfStandalone);
         $this->addPropertyAccessSection($rootNode, $willBeAvailable);
         $this->addPropertyInfoSection($rootNode, $enableIfStandalone);
         $this->addCacheSection($rootNode, $willBeAvailable);
@@ -872,7 +872,7 @@ class Configuration implements ConfigurationInterface
         ;
     }
 
-    private function addValidationSection(ArrayNodeDefinition $rootNode, callable $enableIfStandalone, callable $willBeAvailable)
+    private function addValidationSection(ArrayNodeDefinition $rootNode, callable $enableIfStandalone)
     {
         $rootNode
             ->children()
@@ -982,7 +982,7 @@ class Configuration implements ConfigurationInterface
         ;
     }
 
-    private function addSerializerSection(ArrayNodeDefinition $rootNode, callable $enableIfStandalone, callable $willBeAvailable)
+    private function addSerializerSection(ArrayNodeDefinition $rootNode, callable $enableIfStandalone)
     {
         $rootNode
             ->children()
@@ -1116,7 +1116,7 @@ class Configuration implements ConfigurationInterface
                                     ->booleanNode('public')->defaultFalse()->end()
                                     ->scalarNode('default_lifetime')
                                         ->info('Default lifetime of the pool')
-                                        ->example('"600" for 5 minutes expressed in seconds, "PT5M" for five minutes expressed as ISO 8601 time interval, or "5 minutes" as a date expression')
+                                        ->example('"300" for 5 minutes expressed in seconds, "PT5M" for five minutes expressed as ISO 8601 time interval, or "5 minutes" as a date expression')
                                     ->end()
                                     ->scalarNode('provider')
                                         ->info('Overwrite the setting from the default provider for this adapter.')
@@ -1189,35 +1189,31 @@ class Configuration implements ConfigurationInterface
         $logLevels = (new \ReflectionClass(LogLevel::class))->getConstants();
 
         $rootNode
+            ->fixXmlConfig('exception')
             ->children()
                 ->arrayNode('exceptions')
                     ->info('Exception handling configuration')
+                    ->useAttributeAsKey('class')
                     ->beforeNormalization()
+                        // Handle legacy XML configuration
                         ->ifArray()
                         ->then(function (array $v): array {
                             if (!\array_key_exists('exception', $v)) {
                                 return $v;
                             }
 
-                            // Fix XML normalization
-                            $data = isset($v['exception'][0]) ? $v['exception'] : [$v['exception']];
-                            $exceptions = [];
-                            foreach ($data as $exception) {
-                                $config = [];
-                                if (\array_key_exists('log-level', $exception)) {
-                                    $config['log_level'] = $exception['log-level'];
-                                }
-                                if (\array_key_exists('status-code', $exception)) {
-                                    $config['status_code'] = $exception['status-code'];
-                                }
-                                $exceptions[$exception['name']] = $config;
+                            $v = $v['exception'];
+                            unset($v['exception']);
+
+                            foreach ($v as &$exception) {
+                                $exception['class'] = $exception['name'];
+                                unset($exception['name']);
                             }
 
-                            return $exceptions;
+                            return $v;
                         })
                     ->end()
                     ->prototype('array')
-                        ->fixXmlConfig('exception')
                         ->children()
                             ->scalarNode('log_level')
                                 ->info('The level of log message. Null to let Symfony decide.')

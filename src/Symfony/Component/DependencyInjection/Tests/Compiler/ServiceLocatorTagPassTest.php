@@ -184,19 +184,19 @@ class ServiceLocatorTagPassTest extends TestCase
 
         $container->setDefinition(Service::class, $service);
 
-        $decorated = new Definition(Decorated::class);
+        $decorated = new Definition(DecoratedService::class);
         $decorated->setPublic(true);
         $decorated->setDecoratedService(Service::class);
 
-        $container->setDefinition(Decorated::class, $decorated);
+        $container->setDefinition(DecoratedService::class, $decorated);
 
         $container->compile();
 
         /** @var ServiceLocator $locator */
         $locator = $container->get(Locator::class)->locator;
         static::assertTrue($locator->has(Service::class));
-        static::assertFalse($locator->has(Decorated::class));
-        static::assertInstanceOf(Decorated::class, $locator->get(Service::class));
+        static::assertFalse($locator->has(DecoratedService::class));
+        static::assertInstanceOf(DecoratedService::class, $locator->get(Service::class));
     }
 
     public function testDefinitionOrderIsTheSame()
@@ -213,6 +213,18 @@ class ServiceLocatorTagPassTest extends TestCase
         $factories = $locator->getArguments()[0];
 
         static::assertSame(['service-2', 'service-1'], array_keys($factories));
+    }
+
+    public function testBindingsAreProcessed()
+    {
+        $container = new ContainerBuilder();
+
+        $definition = $container->register('foo')
+            ->setBindings(['foo' => new ServiceLocatorArgument()]);
+
+        (new ServiceLocatorTagPass())->process($container);
+
+        $this->assertInstanceOf(Reference::class, $definition->getBindings()['foo']->getValues()[0]);
     }
 }
 

@@ -153,6 +153,7 @@ return static function (ContainerConfigurator $container) {
             ->tag('translation.dumper', ['alias' => 'res'])
 
         ->set('translation.extractor.php', PhpExtractor::class)
+            ->deprecate('symfony/framework-bundle', '6.2', 'The "%service_id%" service is deprecated, use "translation.extractor.php_ast" instead.')
             ->tag('translation.extractor', ['alias' => 'php'])
 
         ->set('translation.extractor.php_ast', PhpAstExtractor::class)
@@ -185,10 +186,11 @@ return static function (ContainerConfigurator $container) {
         ->set('translation.locale_switcher', LocaleSwitcher::class)
             ->args([
                 param('kernel.default_locale'),
-                tagged_iterator('kernel.locale_aware'),
+                tagged_iterator('kernel.locale_aware', exclude: 'translation.locale_switcher'),
                 service('router.request_context')->ignoreOnInvalid(),
             ])
             ->tag('kernel.reset', ['method' => 'reset'])
+            ->tag('kernel.locale_aware')
         ->alias(LocaleAwareInterface::class, 'translation.locale_switcher')
         ->alias(LocaleSwitcher::class, 'translation.locale_switcher')
     ;

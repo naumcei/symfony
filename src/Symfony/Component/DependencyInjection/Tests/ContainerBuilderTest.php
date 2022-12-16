@@ -51,6 +51,7 @@ use Symfony\Component\DependencyInjection\Tests\Fixtures\CustomDefinition;
 use Symfony\Component\DependencyInjection\Tests\Fixtures\FooWithAbstractArgument;
 use Symfony\Component\DependencyInjection\Tests\Fixtures\ScalarFactory;
 use Symfony\Component\DependencyInjection\Tests\Fixtures\SimilarArgumentsDummy;
+use Symfony\Component\DependencyInjection\Tests\Fixtures\StringBackedEnum;
 use Symfony\Component\DependencyInjection\Tests\Fixtures\WitherStaticReturnType;
 use Symfony\Component\DependencyInjection\TypedReference;
 use Symfony\Component\ExpressionLanguage\Expression;
@@ -543,6 +544,23 @@ class ContainerBuilderTest extends TestCase
         $_ENV['BAR_FOO'] = 'Foo value';
 
         $this->assertEquals('Foo value', $container->get('bar')->foo);
+    }
+
+    public function testGetEnvCountersWithEnum()
+    {
+        $bag = new EnvPlaceholderParameterBag();
+        $config = new ContainerBuilder($bag);
+        $config->resolveEnvPlaceholders([
+            $bag->get('env(enum:'.StringBackedEnum::class.':foo)'),
+            $bag->get('env(Bar)'),
+        ]);
+
+        $expected = [
+            'enum:Symfony\Component\DependencyInjection\Tests\Fixtures\StringBackedEnum:foo' => 1,
+            'Bar' => 1,
+        ];
+
+        $this->assertSame($expected, $config->getEnvCounters());
     }
 
     public function testCreateServiceWithAbstractArgument()
@@ -1109,10 +1127,19 @@ class ContainerBuilderTest extends TestCase
         $container->addDefinitions([
             'bar' => $fooDefinition,
             'bar_user' => $fooUserDefinition->setPublic(true),
+            'bar_user2' => $fooUserDefinition->setPublic(true),
         ]);
 
         $container->compile();
+        $this->assertNull($container->get('bar', $container::NULL_ON_INVALID_REFERENCE));
         $this->assertInstanceOf(\BarClass::class, $container->get('bar_user')->bar);
+
+        // Ensure that accessing a public service with a shared private service
+        // does not make the private service available.
+        $this->assertNull($container->get('bar', $container::NULL_ON_INVALID_REFERENCE));
+
+        // Ensure the private service is still shared.
+        $this->assertSame($container->get('bar_user')->bar, $container->get('bar_user2')->bar);
     }
 
     public function testThrowsExceptionWhenSetServiceOnACompiledContainer()

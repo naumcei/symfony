@@ -56,7 +56,7 @@ class Symfony_DI_PhpDumper_Service_Wither_Lazy extends Container
     protected function getWitherService($lazyLoad = true)
     {
         if (true === $lazyLoad) {
-            return $this->services['wither'] = $this->createProxy('Wither_94fa281', fn () => \Wither_94fa281::createLazyProxy(fn () => $this->getWitherService(false)));
+            return $this->services['wither'] = $this->createProxy('WitherProxy94fa281', fn () => \WitherProxy94fa281::createLazyProxy(fn () => $this->getWitherService(false)));
         }
 
         $instance = new \Symfony\Component\DependencyInjection\Tests\Compiler\Wither();
@@ -71,12 +71,9 @@ class Symfony_DI_PhpDumper_Service_Wither_Lazy extends Container
     }
 }
 
-class Wither_94fa281 extends \Symfony\Component\DependencyInjection\Tests\Compiler\Wither implements \Symfony\Component\VarExporter\LazyObjectInterface
+class WitherProxy94fa281 extends \Symfony\Component\DependencyInjection\Tests\Compiler\Wither implements \Symfony\Component\VarExporter\LazyObjectInterface
 {
     use \Symfony\Component\VarExporter\LazyProxyTrait;
-
-    private int $lazyObjectId;
-    private parent $lazyObjectReal;
 
     private const LAZY_OBJECT_PROPERTY_SCOPES = [
         'lazyObjectReal' => [self::class, 'lazyObjectReal', null],

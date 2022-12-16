@@ -68,18 +68,16 @@ class ProjectServiceContainer extends Container
         $this->factories['service_container']['foo'] ??= $this->getFooService(...);
 
         if (true === $lazyLoad) {
-            return $this->createProxy('stdClass_5a8a5eb', fn () => \stdClass_5a8a5eb::createLazyGhost($this->getFooService(...)));
+            return $this->createProxy('stdClassGhost5a8a5eb', fn () => \stdClassGhost5a8a5eb::createLazyGhost($this->getFooService(...)));
         }
 
         return $lazyLoad;
     }
 }
 
-class stdClass_5a8a5eb extends \stdClass implements \Symfony\Component\VarExporter\LazyObjectInterface
+class stdClassGhost5a8a5eb extends \stdClass implements \Symfony\Component\VarExporter\LazyObjectInterface
 {
     use \Symfony\Component\VarExporter\LazyGhostTrait;
-
-    private int $lazyObjectId;
 
     private const LAZY_OBJECT_PROPERTY_SCOPES = [];
 }
