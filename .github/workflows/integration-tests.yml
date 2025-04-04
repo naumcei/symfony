@@ -121,7 +121,7 @@ jobs:
           - 8093:8093
           - 8094:8094
           - 11210:11210
-      sqs:
+      aws:
         image: localstack/localstack:3.0.2
         ports:
           - 4566:4566
@@ -254,6 +254,7 @@ jobs:
         run: ./phpunit --group integration -v
         env:
           INTEGRATION_FTP_URL: 'ftp://test:test@localhost'
+          LOCK_DYNAMODB_DSN: "dynamodb://localhost:4566/lock_keys?sslmode=disable"
           REDIS_HOST: 'localhost:16379'
           REDIS_AUTHENTICATED_HOST: 'localhost:16380'
           REDIS_CLUSTER_HOSTS: 'localhost:7000 localhost:7001 localhost:7002 localhost:7003 localhost:7004 localhost:7005'
