@@ -11,9 +11,10 @@
 
 namespace Symfony\Component\Routing\Tests\Generator;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use Symfony\Bridge\PhpUnit\ExpectUserDeprecationMessageTrait;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Exception\MissingMandatoryParametersException;
 use Symfony\Component\Routing\Exception\RouteCircularReferenceException;
@@ -26,8 +27,6 @@ use Symfony\Component\Routing\RouteCollection;
 
 class UrlGeneratorTest extends TestCase
 {
-    use ExpectUserDeprecationMessageTrait;
-
     public function testAbsoluteUrlWithPort80()
     {
         $routes = $this->getRoutes('test', new Route('/testing'));
@@ -806,9 +805,8 @@ class UrlGeneratorTest extends TestCase
         $this->getGenerator($routes)->generate('d');
     }
 
-    /**
-     * @group legacy
-     */
+    #[IgnoreDeprecations]
+    #[Group('legacy')]
     public function testDeprecatedAlias()
     {
         $this->expectUserDeprecationMessage('Since foo/bar 1.0.0: The "b" route alias is deprecated. You should stop using it, as it will be removed in the future.');
@@ -821,9 +819,8 @@ class UrlGeneratorTest extends TestCase
         $this->getGenerator($routes)->generate('b');
     }
 
-    /**
-     * @group legacy
-     */
+    #[IgnoreDeprecations]
+    #[Group('legacy')]
     public function testDeprecatedAliasWithCustomMessage()
     {
         $this->expectUserDeprecationMessage('Since foo/bar 1.0.0: foo b.');
@@ -836,9 +833,8 @@ class UrlGeneratorTest extends TestCase
         $this->getGenerator($routes)->generate('b');
     }
 
-    /**
-     * @group legacy
-     */
+    #[IgnoreDeprecations]
+    #[Group('legacy')]
     public function testTargettingADeprecatedAliasShouldTriggerDeprecation()
     {
         $this->expectUserDeprecationMessage('Since foo/bar 1.0.0: foo b.');
