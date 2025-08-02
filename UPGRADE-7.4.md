@@ -35,6 +35,7 @@ DependencyInjection
  * Add argument `$throwOnAbstract` to `ContainerBuilder::findTaggedResourceIds()`
  * Deprecate registering a service without a class when its id is a non-existing FQCN
  * Deprecate using `$this` or its internal scope from PHP config files; use the `$loader` variable instead
+ * Deprecate XML configuration format, use YAML or PHP instead
 
 DoctrineBridge
 --------------
@@ -94,6 +95,7 @@ Routing
  * Deprecate class aliases in the `Annotation` namespace, use attributes instead
  * Deprecate getters and setters in attribute classes in favor of public properties
  * Deprecate accessing the internal scope of the loader in PHP config files, use only its public API instead
+ * Deprecate XML configuration format, use YAML, PHP or attributes instead
 
 Security
 --------
