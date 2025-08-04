@@ -76,6 +76,10 @@ jobs:
           echo PHPUNIT="$(pwd)/phpunit --exclude-group tty --exclude-group benchmark --exclude-group intl-data --exclude-group integration --exclude-group transient" >> $GITHUB_ENV
           echo COMPOSER_UP='composer update --no-progress --ansi'$([[ "${{ matrix.mode }}" != low-deps ]] && echo ' --ignore-platform-req=php+') >> $GITHUB_ENV
 
+          if [[ "${{ matrix.mode }}" = *-deps ]]; then
+            echo SYMFONY_PHPUNIT_VERSION="11.5" >> $GITHUB_ENV
+          fi
+
           SYMFONY_VERSIONS=$(git ls-remote -q --heads | cut -f2 | grep -o '/[1-9][0-9]*\.[0-9].*' | sort -V)
           SYMFONY_VERSION=$(grep ' VERSION = ' src/Symfony/Component/HttpKernel/Kernel.php | cut -d "'" -f2 | cut -d '.' -f 1-2)
           SYMFONY_FEATURE_BRANCH=$(curl -s https://raw.githubusercontent.com/symfony/recipes/flex/main/index.json | jq -r '.versions."dev-name"')
