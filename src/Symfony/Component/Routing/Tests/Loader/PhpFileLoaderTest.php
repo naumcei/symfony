@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Routing\Tests\Loader;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\LoaderResolver;
@@ -337,9 +338,7 @@ class PhpFileLoaderTest extends TestCase
         $this->assertEquals($expectedRoutes('php'), $routes);
     }
 
-    /**
-     * @dataProvider providePsr4ConfigFiles
-     */
+    #[DataProvider('providePsr4ConfigFiles')]
     public function testImportAttributesWithPsr4Prefix(string $configFile)
     {
         $locator = new FileLocator(\dirname(__DIR__).'/Fixtures');

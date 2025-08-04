@@ -11,15 +11,14 @@
 
 namespace Symfony\Component\Routing\Tests\Attribute;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Tests\Fixtures\AttributeFixtures\FooController;
 
 class RouteTest extends TestCase
 {
-    /**
-     * @dataProvider getValidParameters
-     */
+    #[DataProvider('getValidParameters')]
     public function testLoadFromAttribute(string $methodName, string $getter, mixed $expectedReturn)
     {
         $route = (new \ReflectionMethod(FooController::class, $methodName))->getAttributes(Route::class)[0]->newInstance();

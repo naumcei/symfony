@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Routing\Tests\Generator;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\TestCase;
@@ -109,9 +110,7 @@ class UrlGeneratorTest extends TestCase
         $this->assertSame('/app.php/', $this->getGenerator($routes)->generate('test'));
     }
 
-    /**
-     * @dataProvider valuesProvider
-     */
+    #[DataProvider('valuesProvider')]
     public function testRelativeUrlWithExtraParameters(string $expectedQueryString, string $parameter, $value)
     {
         $routes = $this->getRoutes('test', new Route('/testing'));
@@ -120,9 +119,7 @@ class UrlGeneratorTest extends TestCase
         $this->assertSame('/app.php/testing'.$expectedQueryString, $url);
     }
 
-    /**
-     * @dataProvider valuesProvider
-     */
+    #[DataProvider('valuesProvider')]
     public function testAbsoluteUrlWithExtraParameters(string $expectedQueryString, string $parameter, $value)
     {
         $routes = $this->getRoutes('test', new Route('/testing'));
@@ -886,9 +883,7 @@ class UrlGeneratorTest extends TestCase
         $this->getGenerator($routes)->generate('a');
     }
 
-    /**
-     * @dataProvider provideRelativePaths
-     */
+    #[DataProvider('provideRelativePaths')]
     public function testGetRelativePath($sourcePath, $targetPath, $expectedPath)
     {
         $this->assertSame($expectedPath, UrlGenerator::getRelativePath($sourcePath, $targetPath));
@@ -1027,9 +1022,7 @@ class UrlGeneratorTest extends TestCase
         $this->assertEquals('/app.php/testing#fragment', $url);
     }
 
-    /**
-     * @dataProvider provideLookAroundRequirementsInPath
-     */
+    #[DataProvider('provideLookAroundRequirementsInPath')]
     public function testLookRoundRequirementsInPath($expected, $path, $requirement)
     {
         $routes = $this->getRoutes('test', new Route($path, [], ['foo' => $requirement, 'baz' => '.+?']));

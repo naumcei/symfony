@@ -47,6 +47,7 @@ return (new PhpCsFixer\Config())
                 '/s',
             ]),
         ],
+        'php_unit_attributes' => true,
     ])
     ->setRiskyAllowed(true)
     ->setFinder(

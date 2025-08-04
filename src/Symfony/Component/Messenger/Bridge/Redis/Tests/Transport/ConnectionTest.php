@@ -11,14 +11,14 @@
 
 namespace Symfony\Component\Messenger\Bridge\Redis\Tests\Transport;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Bridge\Redis\Transport\Connection;
 use Symfony\Component\Messenger\Exception\TransportException;
 
-/**
- * @requires extension redis
- */
+#[RequiresPhpExtension('redis')]
 class ConnectionTest extends TestCase
 {
     public function testFromInvalidDsn()
@@ -131,9 +131,7 @@ class ConnectionTest extends TestCase
         $this->assertNotNull($connection->get());
     }
 
-    /**
-     * @dataProvider provideAuthDsn
-     */
+    #[DataProvider('provideAuthDsn')]
     public function testAuth(string|array $expected, string $dsn)
     {
         $redis = $this->createRedisMock();
@@ -384,9 +382,7 @@ class ConnectionTest extends TestCase
         $this->assertSame('xack error', $e->getMessage());
     }
 
-    /**
-     * @dataProvider provideIdPatterns
-     */
+    #[DataProvider('provideIdPatterns')]
     public function testAddReturnId(string $expected, int $delay, string $method, string $return)
     {
         $redis = $this->createRedisMock();

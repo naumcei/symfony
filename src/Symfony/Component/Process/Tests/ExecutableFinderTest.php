@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Process\Tests;
 
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\ExecutableFinder;
 
@@ -110,9 +111,7 @@ class ExecutableFinderTest extends TestCase
         $this->assertSamePath($fixturesDir.\DIRECTORY_SEPARATOR.$name.$suffix, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testFindWithOpenBaseDir()
     {
         if ('\\' === \DIRECTORY_SEPARATOR) {
@@ -136,9 +135,7 @@ class ExecutableFinderTest extends TestCase
         }
     }
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testFindBatchExecutableOnWindows()
     {
         if (\ini_get('open_basedir')) {
@@ -169,9 +166,7 @@ class ExecutableFinderTest extends TestCase
         $this->assertSamePath($target.'.BAT', $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testEmptyDirInPath()
     {
         putenv(\sprintf('PATH=%s%s', \dirname(\PHP_BINARY), \PATH_SEPARATOR));

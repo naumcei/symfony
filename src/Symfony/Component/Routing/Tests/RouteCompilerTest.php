@@ -11,15 +11,14 @@
 
 namespace Symfony\Component\Routing\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCompiler;
 
 class RouteCompilerTest extends TestCase
 {
-    /**
-     * @dataProvider provideCompileData
-     */
+    #[DataProvider('provideCompileData')]
     public function testCompile($name, $arguments, $prefix, $regex, $variables, $tokens)
     {
         $r = new \ReflectionClass(Route::class);
@@ -183,9 +182,7 @@ class RouteCompilerTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideCompileImplicitUtf8Data
-     */
+    #[DataProvider('provideCompileImplicitUtf8Data')]
     public function testCompileImplicitUtf8Data($name, $arguments, $prefix, $regex, $variables, $tokens)
     {
         $this->expectException(\LogicException::class);
@@ -277,9 +274,7 @@ class RouteCompilerTest extends TestCase
         $route->compile();
     }
 
-    /**
-     * @dataProvider getVariableNamesStartingWithADigit
-     */
+    #[DataProvider('getVariableNamesStartingWithADigit')]
     public function testRouteWithVariableNameStartingWithADigit(string $name)
     {
         $this->expectException(\DomainException::class);
@@ -296,9 +291,7 @@ class RouteCompilerTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideCompileWithHostData
-     */
+    #[DataProvider('provideCompileWithHostData')]
     public function testCompileWithHost(string $name, array $arguments, string $prefix, string $regex, array $variables, array $pathVariables, array $tokens, string $hostRegex, array $hostVariables, array $hostTokens)
     {
         $r = new \ReflectionClass(Route::class);
@@ -376,9 +369,7 @@ class RouteCompilerTest extends TestCase
         $route->compile();
     }
 
-    /**
-     * @dataProvider provideRemoveCapturingGroup
-     */
+    #[DataProvider('provideRemoveCapturingGroup')]
     public function testRemoveCapturingGroup(string $regex, string $requirement)
     {
         $route = new Route('/{foo}', [], ['foo' => $requirement]);

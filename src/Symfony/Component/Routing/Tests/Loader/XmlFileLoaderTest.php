@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Routing\Tests\Loader;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\LoaderResolver;
@@ -214,9 +215,7 @@ class XmlFileLoaderTest extends TestCase
         $this->assertSame('en', $routeCollection->get('imported.en')->getRequirement('_locale'));
     }
 
-    /**
-     * @dataProvider getPathsToInvalidFiles
-     */
+    #[DataProvider('getPathsToInvalidFiles')]
     public function testLoadThrowsExceptionWithInvalidFile($filePath)
     {
         $loader = new XmlFileLoader(new FileLocator([__DIR__.'/../Fixtures']));
@@ -226,9 +225,7 @@ class XmlFileLoaderTest extends TestCase
         $loader->load($filePath);
     }
 
-    /**
-     * @dataProvider getPathsToInvalidFiles
-     */
+    #[DataProvider('getPathsToInvalidFiles')]
     public function testLoadThrowsExceptionWithInvalidFileEvenWithoutSchemaValidation(string $filePath)
     {
         $loader = new CustomXmlFileLoader(new FileLocator([__DIR__.'/../Fixtures']));
@@ -472,9 +469,7 @@ class XmlFileLoaderTest extends TestCase
         $loader->load('override_defaults.xml');
     }
 
-    /**
-     * @dataProvider provideFilesImportingRoutesWithControllers
-     */
+    #[DataProvider('provideFilesImportingRoutesWithControllers')]
     public function testImportRouteWithController(string $file)
     {
         $loader = new XmlFileLoader(new FileLocator([__DIR__.'/../Fixtures/controller']));
@@ -617,9 +612,7 @@ class XmlFileLoaderTest extends TestCase
         $this->assertEquals($expectedRoutes('xml'), $routes);
     }
 
-    /**
-     * @dataProvider providePsr4ConfigFiles
-     */
+    #[DataProvider('providePsr4ConfigFiles')]
     public function testImportAttributesWithPsr4Prefix(string $configFile)
     {
         $locator = new FileLocator(\dirname(__DIR__).'/Fixtures');

@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Routing\Tests;
 
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RequestContext;
@@ -85,18 +86,16 @@ class RequestContextTest extends TestCase
         $this->assertSame('/', $requestContext->getPathInfo());
     }
 
-    /**
-     * @testWith ["http://foo.com\\bar"]
-     *           ["\\\\foo.com/bar"]
-     *           ["a\rb"]
-     *           ["a\nb"]
-     *           ["a\tb"]
-     *           ["\u0000foo"]
-     *           ["foo\u0000"]
-     *           [" foo"]
-     *           ["foo "]
-     *           [":"]
-     */
+    #[TestWith(['http://foo.com\\bar'])]
+    #[TestWith(['\\\\foo.com/bar'])]
+    #[TestWith(["a\rb"])]
+    #[TestWith(["a\nb"])]
+    #[TestWith(["a\tb"])]
+    #[TestWith(["\u0000foo"])]
+    #[TestWith(["foo\u0000"])]
+    #[TestWith([' foo'])]
+    #[TestWith(['foo '])]
+    #[TestWith([':'])]
     public function testFromBadUri(string $uri)
     {
         $context = RequestContext::fromUri($uri);

@@ -11,15 +11,14 @@
 
 namespace Symfony\Component\Routing\Tests\Matcher\Dumper;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Routing\Matcher\Dumper\StaticPrefixCollection;
 use Symfony\Component\Routing\Route;
 
 class StaticPrefixCollectionTest extends TestCase
 {
-    /**
-     * @dataProvider routeProvider
-     */
+    #[DataProvider('routeProvider')]
     public function testGrouping(array $routes, $expected)
     {
         $collection = new StaticPrefixCollection('/');

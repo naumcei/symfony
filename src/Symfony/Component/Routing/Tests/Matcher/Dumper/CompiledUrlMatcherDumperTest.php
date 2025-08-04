@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Routing\Tests\Matcher\Dumper;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
@@ -47,9 +48,7 @@ class CompiledUrlMatcherDumperTest extends TestCase
         $matcher->match('/foo%3Abar');
     }
 
-    /**
-     * @dataProvider getRouteCollections
-     */
+    #[DataProvider('getRouteCollections')]
     public function testDump(RouteCollection $collection, $fixture)
     {
         $basePath = __DIR__.'/../../Fixtures/dumper/';

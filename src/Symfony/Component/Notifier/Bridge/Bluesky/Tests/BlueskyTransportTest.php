@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Notifier\Bridge\Bluesky\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Log\NullLogger;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -274,9 +275,7 @@ final class BlueskyTransportTest extends TransportTestCase
         $this->assertEquals($expected, $this->parseFacets($input));
     }
 
-    /**
-     * @dataProvider sendMessageWithEmbedDataProvider
-     */
+    #[DataProvider('sendMessageWithEmbedDataProvider')]
     public function testWithEmbed(BlueskyOptions $blueskyOptions, string $expectedJsonResponse)
     {
         // realistic sample values taken from https://docs.bsky.app/docs/advanced-guides/posts#post-record-structure

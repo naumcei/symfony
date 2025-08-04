@@ -11,15 +11,16 @@
 
 namespace Symfony\Component\Messenger\Bridge\Redis\Tests\Transport;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Bridge\Redis\Transport\Connection;
 use Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransport;
 use Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransportFactory;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 
-/**
- * @requires extension redis
- */
+#[RequiresPhpExtension('redis')]
 class RedisTransportFactoryTest extends TestCase
 {
     public function testSupportsOnlyRedisTransports()
@@ -35,11 +36,8 @@ class RedisTransportFactoryTest extends TestCase
         $this->assertFalse($factory->supports('invalid-dsn', []));
     }
 
-    /**
-     * @group integration
-     *
-     * @dataProvider createTransportProvider
-     */
+    #[DataProvider('createTransportProvider')]
+    #[Group('integration')]
     public function testCreateTransport(string $dsn, array $options = [])
     {
         $this->skipIfRedisUnavailable();

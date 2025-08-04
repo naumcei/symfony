@@ -53,9 +53,6 @@ class TranslatorTest extends TestCase
         };
     }
 
-    /**
-     * @dataProvider getTransTests
-     */
     #[DataProvider('getTransTests')]
     public function testTrans($expected, $id, $parameters)
     {
@@ -64,9 +61,6 @@ class TranslatorTest extends TestCase
         $this->assertEquals($expected, $translator->trans($id, $parameters));
     }
 
-    /**
-     * @dataProvider getTransChoiceTests
-     */
     #[DataProvider('getTransChoiceTests')]
     public function testTransChoiceWithExplicitLocale($expected, $id, $number)
     {
@@ -75,11 +69,6 @@ class TranslatorTest extends TestCase
         $this->assertEquals($expected, $translator->trans($id, ['%count%' => $number]));
     }
 
-    /**
-     * @requires extension intl
-     *
-     * @dataProvider getTransChoiceTests
-     */
     #[DataProvider('getTransChoiceTests')]
     #[RequiresPhpExtension('intl')]
     public function testTransChoiceWithDefaultLocale($expected, $id, $number)
@@ -89,9 +78,6 @@ class TranslatorTest extends TestCase
         $this->assertEquals($expected, $translator->trans($id, ['%count%' => $number]));
     }
 
-    /**
-     * @dataProvider getTransChoiceTests
-     */
     #[DataProvider('getTransChoiceTests')]
     public function testTransChoiceWithEnUsPosix($expected, $id, $number)
     {
@@ -108,9 +94,6 @@ class TranslatorTest extends TestCase
         $this->assertEquals('en', $translator->getLocale());
     }
 
-    /**
-     * @requires extension intl
-     */
     #[RequiresPhpExtension('intl')]
     public function testGetLocaleReturnsDefaultLocaleIfNotSet()
     {
@@ -147,9 +130,6 @@ class TranslatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider getInterval
-     */
     #[DataProvider('getInterval')]
     public function testInterval($expected, $number, $interval)
     {
@@ -173,9 +153,6 @@ class TranslatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider getChooseTests
-     */
     #[DataProvider('getChooseTests')]
     public function testChoose($expected, $id, $number, $locale = null)
     {
@@ -191,9 +168,6 @@ class TranslatorTest extends TestCase
         $this->assertEquals('There are two apples', $translator->trans('There are two apples', ['%count%' => 2]));
     }
 
-    /**
-     * @dataProvider getNonMatchingMessages
-     */
     #[DataProvider('getNonMatchingMessages')]
     public function testThrowExceptionIfMatchingMessageCannotBeFound($id, $number)
     {
@@ -307,9 +281,6 @@ class TranslatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider failingLangcodes
-     */
     #[DataProvider('failingLangcodes')]
     public function testFailedLangcodes($nplural, $langCodes)
     {
@@ -317,9 +288,6 @@ class TranslatorTest extends TestCase
         $this->validateMatrix($nplural, $matrix, false);
     }
 
-    /**
-     * @dataProvider successLangcodes
-     */
     #[DataProvider('successLangcodes')]
     public function testLangcodes($nplural, $langCodes)
     {
