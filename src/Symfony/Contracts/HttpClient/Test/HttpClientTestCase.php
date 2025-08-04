@@ -343,6 +343,10 @@ abstract class HttpClientTestCase extends TestCase
         $this->assertSame('', $response->getContent(false));
     }
 
+    /**
+     * @testWith [[]]
+     *           [["Content-Length: 7"]]
+     */
     #[TestWithJson('[[]]')]
     #[TestWithJson('[["Content-Length: 7"]]')]
     public function testRedirects(array $headers = [])
@@ -1022,6 +1026,9 @@ abstract class HttpClientTestCase extends TestCase
         }
     }
 
+    /**
+     * @requires extension zlib
+     */
     #[RequiresPhpExtension('zlib')]
     public function testAutoEncodingRequest()
     {
@@ -1093,6 +1100,9 @@ abstract class HttpClientTestCase extends TestCase
         $this->assertContains('Link: </style.css>; rel=preload; as=style', $response->getInfo('response_headers'));
     }
 
+    /**
+     * @requires extension zlib
+     */
     #[RequiresPhpExtension('zlib')]
     public function testUserlandEncodingRequest()
     {
@@ -1113,6 +1123,9 @@ abstract class HttpClientTestCase extends TestCase
         $this->assertSame('gzip', $body['HTTP_ACCEPT_ENCODING']);
     }
 
+    /**
+     * @requires extension zlib
+     */
     #[RequiresPhpExtension('zlib')]
     public function testGzipBroken()
     {
