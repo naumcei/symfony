@@ -205,6 +205,7 @@ Ldap
 
  * Remove the `sizeLimit` option of `AbstractQuery`
  * Remove `LdapUser::eraseCredentials()` in favor of `__serialize()`
+ * Add methods for `saslBind()` and `whoami()` to `ConnectionInterface` and `LdapInterface`
 
 Mailer
 ------
@@ -215,6 +216,7 @@ Messenger
 ---------
 
  * Remove `text` format when using the `messenger:stats` command
+ * Add method `getRetryDelay()` to `RecoverableExceptionInterface`
 
 Notifier
 --------
@@ -489,6 +491,7 @@ Uid
 Validator
 ---------
 
+ * Add method `getGroupProvider()` to `ClassMetadataInterface`
  * Remove the `getRequiredOptions()` and `getDefaultOption()` methods from the `All`, `AtLeastOneOf`, `CardScheme`, `Collection`,
    `CssColor`, `Expression`, `Regex`, `Sequentially`, `Type`, and `When` constraints
  * Remove support for evaluating options in the base `Constraint` class. Initialize properties in the constructor of the concrete constraint
@@ -622,6 +625,7 @@ WebProfilerBundle
 Workflow
 --------
 
+ * Add method `getEnabledTransition()` to `WorkflowInterface`
  * Add `$nbToken` argument to `Marking::mark()` and `Marking::unmark()`
  * Remove `Event::getWorkflow()` method
 
