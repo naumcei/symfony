@@ -66,7 +66,6 @@ jobs:
 
           $env:SYMFONY_VERSION=(Select-String -CaseSensitive -Pattern " VERSION =" -SimpleMatch -Path src/Symfony/Component/HttpKernel/Kernel.php | Select Line | Select-String -Pattern "([0-9][0-9]*\.[0-9])").Matches.Value
           $env:COMPOSER_ROOT_VERSION=$env:SYMFONY_VERSION + ".x-dev"
-          $env:COMPOSER_ROOT_VERSION="7.4.x-dev" # to be removed once all deps allow ^8.0
 
           php .github/build-packages.php HEAD^ $env:SYMFONY_VERSION src\Symfony\Bridge\PhpUnit
           php composer.phar update --no-progress --ansi
@@ -163,7 +162,6 @@ jobs:
 
           $env:SYMFONY_VERSION=(Select-String -CaseSensitive -Pattern " VERSION =" -SimpleMatch -Path src/Symfony/Component/HttpKernel/Kernel.php | Select Line | Select-String -Pattern "([0-9][0-9]*\.[0-9])").Matches.Value
           $env:COMPOSER_ROOT_VERSION=$env:SYMFONY_VERSION + ".x-dev"
-          $env:COMPOSER_ROOT_VERSION="7.4.x-dev" # to be removed once all deps allow ^8.0
 
           php .github/build-packages.php HEAD^ $env:SYMFONY_VERSION src\Symfony\Bridge\PhpUnit
           php composer.phar update --no-progress --ansi

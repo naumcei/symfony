@@ -21,10 +21,6 @@ array_shift($dirs);
 $mergeBase = trim(shell_exec(sprintf('git merge-base "%s" HEAD', array_shift($dirs))));
 $version = array_shift($dirs);
 
-if ('8.0' === $version) {
-    $version = '7.4'; // to be removed once deps allow ^8.0
-}
-
 $packages = [];
 $flags = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
 $preferredInstall = json_decode(file_get_contents(__DIR__.'/composer-config.json'), true)['config']['preferred-install'];
