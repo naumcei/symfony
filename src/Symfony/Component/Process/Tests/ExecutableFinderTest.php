@@ -14,6 +14,7 @@ namespace Symfony\Component\Process\Tests;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\ExecutableFinder;
+use Symfony\Component\Process\Process;
 
 /**
  * @author Chris Smith <chris@cs278.org>
@@ -122,17 +123,11 @@ class ExecutableFinderTest extends TestCase
             $this->markTestSkipped('Cannot test when open_basedir is set');
         }
 
-        putenv('PATH='.\dirname(\PHP_BINARY));
-        $initialOpenBaseDir = ini_set('open_basedir', \dirname(\PHP_BINARY).\PATH_SEPARATOR.'/');
+        $process = new Process([\PHP_BINARY, '-d', 'open_basedir='.\dirname(\PHP_BINARY).\PATH_SEPARATOR.'/', __DIR__.'/Fixtures/open_basedir.php']);
+        $process->run();
+        $result = $process->getOutput();
 
-        try {
-            $finder = new ExecutableFinder();
-            $result = $finder->find($this->getPhpBinaryName());
-
-            $this->assertSamePath(\PHP_BINARY, $result);
-        } finally {
-            ini_set('open_basedir', $initialOpenBaseDir);
-        }
+        $this->assertSamePath(\PHP_BINARY, $result);
     }
 
     #[RunInSeparateProcess]
