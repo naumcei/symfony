@@ -16,7 +16,7 @@ Cache
 Console
 -------
 
- * Deprecate `Symfony\Component\Console\Application::add()` in favor of `Symfony\Component\Console\Application::addCommand()`
+ * Deprecate `Symfony\Component\Console\Application::add()` in favor of `addCommand()`
 
 DependencyInjection
 -------------------
@@ -32,7 +32,15 @@ DoctrineBridge
 FrameworkBundle
 ---------------
 
- * Deprecate `Symfony\Bundle\FrameworkBundle\Console\Application::add()` in favor of `Symfony\Bundle\FrameworkBundle\Console\Application::addCommand()`
+ * Deprecate `Symfony\Bundle\FrameworkBundle\Console\Application::add()` in favor of `addCommand()`
+
+HtmlSanitizer
+-------------
+
+ * Use the native HTML5 parser when using PHP 8.4+
+ * Deprecate `MastermindsParser`; use `NativeParser` instead
+ * [BC BREAK] `ParserInterface::parse()` can now return `\Dom\Node|\DOMNode|null` instead of just `\DOMNode|null`
+ * Add argument `$context` to `ParserInterface::parse()`
 
 HttpClient
 ----------
