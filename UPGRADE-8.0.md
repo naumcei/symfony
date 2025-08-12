@@ -171,6 +171,12 @@ FrameworkBundle
  * Remove the `validation.cache` option
  * Remove `TranslationUpdateCommand` in favor of `TranslationExtractCommand`
 
+HtmlSanitizer
+-------------
+
+ * Remove `MastermindsParser`; use `NativeParser` instead
+ * Add argument `$context` to `ParserInterface::parse()`
+
 HttpFoundation
 --------------
 
