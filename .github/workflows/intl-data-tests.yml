@@ -101,7 +101,7 @@ jobs:
           ./phpunit src/Symfony/Component/Intl
 
       - name: Run Emoji tests
-        run: ./phpunit src/Symfony/Component/Emoji -v
+        run: ./phpunit src/Symfony/Component/Emoji
 
       - name: Test Emoji with compressed data
         run: |

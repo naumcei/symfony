@@ -202,39 +202,47 @@ class RouteCompilerTest extends TestCase
             [
                 'Static UTF-8 route',
                 ['/foé'],
-                '/foé', '{^/foé$}sDu', [], [
+                '/foé',
+                '{^/foé$}sDu',
+                [],
+                [
                     ['text', '/foé'],
                 ],
-                'patterns',
             ],
 
             [
                 'Route with an implicit UTF-8 requirement',
                 ['/{bar}', ['bar' => null], ['bar' => 'é']],
-                '', '{^/(?P<bar>é)?$}sDu', ['bar'], [
+                '',
+                '{^/(?P<bar>é)?$}sDu',
+                ['bar'],
+                [
                     ['variable', '/', 'é', 'bar', true],
                 ],
-                'requirements',
             ],
 
             [
                 'Route with a UTF-8 class requirement',
                 ['/{bar}', ['bar' => null], ['bar' => '\pM']],
-                '', '{^/(?P<bar>\pM)?$}sDu', ['bar'], [
+                '',
+                '{^/(?P<bar>\pM)?$}sDu',
+                ['bar'],
+                [
                     ['variable', '/', '\pM', 'bar', true],
                 ],
-                'requirements',
             ],
 
             [
                 'Route with a UTF-8 separator',
                 ['/foo/{bar}§{_format}', [], [], ['compiler_class' => Utf8RouteCompiler::class]],
-                '/foo', '{^/foo/(?P<bar>[^/§]++)§(?P<_format>[^/]++)$}sDu', ['bar', '_format'], [
+                '/foo',
+                '{^/foo/(?P<bar>[^/§]++)§(?P<_format>[^/]++)$}sDu',
+                ['bar', '_format'],
+                [
                     ['variable', '§', '[^/]++', '_format', true],
                     ['variable', '/', '[^/§]++', 'bar', true],
                     ['text', '/foo'],
                 ],
-                'patterns',
             ],
         ];
     }
