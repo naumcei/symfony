@@ -63,7 +63,7 @@ final class MatrixTransport extends AbstractTransport
 
         $options = $opts ? $opts->toArray() : [];
 
-        $options['msgtype'] = $options['msgtype'] ?? 'm.text';
+        $options['msgtype'] ??= 'm.text';
 
         if (!\in_array($options['msgtype'], self::SUPPORTED_MSG_TYPES_BY_API, true)) {
             throw new LogicException(\sprintf('Unsupported message type: "%s". Only "%s" are supported by Matrix Client-Server API v3.', $options['msgtype'], implode(', ', self::SUPPORTED_MSG_TYPES_BY_API)));

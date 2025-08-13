@@ -18,11 +18,14 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Bridge\Redis\Transport\Connection;
 use Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransport;
 use Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransportFactory;
-use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
+use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
+use Symfony\Component\VarDumper\Test\VarDumperTestTrait;
 
 #[RequiresPhpExtension('redis')]
 class RedisTransportFactoryTest extends TestCase
 {
+    use VarDumperTestTrait;
+
     public function testSupportsOnlyRedisTransports()
     {
         $factory = new RedisTransportFactory();
@@ -43,9 +46,9 @@ class RedisTransportFactoryTest extends TestCase
         $this->skipIfRedisUnavailable();
 
         $factory = new RedisTransportFactory();
-        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer = new PhpSerializer();
 
-        $this->assertEquals(
+        $this->assertDumpEquals(
             new RedisTransport(Connection::fromDsn($dsn, $options), $serializer),
             $factory->createTransport($dsn, $options, $serializer)
         );
