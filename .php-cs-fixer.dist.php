@@ -47,6 +47,9 @@ return (new PhpCsFixer\Config())
             ]),
         ],
         'php_unit_attributes' => true,
+        'method_argument_space' => ['after_heredoc' => true, 'on_multiline' => 'ignore'],
+        'no_trailing_whitespace_in_string' => false,
+        'no_whitespace_before_comma_in_array' => ['after_heredoc' => true],
     ])
     ->setRiskyAllowed(true)
     ->setFinder(
