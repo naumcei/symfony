@@ -34,7 +34,6 @@ return (new PhpCsFixer\Config())
         '@PHPUnit91Migration:risky' => true, // take version from src/Symfony/Bridge/PhpUnit/phpunit.xml.dist#L4
         '@Symfony' => true,
         '@Symfony:risky' => true,
-        'phpdoc_var_annotation_correct_order' => true,
         'protected_to_private' => false,
         'header_comment' => [
             'header' => implode('', $fileHeaderParts),
@@ -47,9 +46,6 @@ return (new PhpCsFixer\Config())
             ]),
         ],
         'php_unit_attributes' => true,
-        'method_argument_space' => ['after_heredoc' => true, 'on_multiline' => 'ignore'],
-        'no_trailing_whitespace_in_string' => false,
-        'no_whitespace_before_comma_in_array' => ['after_heredoc' => true],
     ])
     ->setRiskyAllowed(true)
     ->setFinder(

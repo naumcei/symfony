@@ -52,12 +52,34 @@ HttpFoundation
 
  * Deprecate using `Request::sendHeaders()` after headers have already been sent; use a `StreamedResponse` instead
 
+HttpKernel
+----------
+
+ * Deprecate implementing `__sleep/wakeup()` on kernels; use `__(un)serialize()` instead
+ * Deprecate implementing `__sleep/wakeup()` on data collectors; use `__(un)serialize()` instead
+ * Make `Profile` final and `Profiler::__sleep()` internal
+
+Mime
+----
+
+ * Deprecate implementing `__sleep/wakeup()` on `AbstractPart` implementations; use `__(un)serialize()` instead
+
 Security
 --------
 
  * Deprecate callable firewall listeners, extend `AbstractListener` or implement `FirewallListenerInterface` instead
  * Deprecate `AbstractListener::__invoke`
  * Deprecate `LazyFirewallContext::__invoke()`
+
+Serializer
+----------
+
+ * Make `AttributeMetadata` and `ClassMetadata` final
+
+String
+------
+
+ * Deprecate implementing `__sleep/wakeup()` on string implementations
 
 Translation
 -----------
@@ -67,6 +89,7 @@ Translation
 Validator
 ---------
 
+ * Deprecate implementing `__sleep/wakeup()` on `GenericMetadata` implementations; use `__(un)serialize()` instead
  * Deprecate passing a list of choices to the first argument of the `Choice` constraint. Use the `choices` option instead
  * Deprecate `getRequiredOptions()` and `getDefaultOption()` methods of the `All`, `AtLeastOneOf`, `CardScheme`, `Collection`,
    `CssColor`, `Expression`, `Regex`, `Sequentially`, `Type`, and `When` constraints
