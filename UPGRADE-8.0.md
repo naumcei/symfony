@@ -200,6 +200,7 @@ HttpKernel
  * Remove `Kernel::getAnnotatedClassesToCompile()` and `Kernel::setAnnotatedClassCache()`
  * Make `ServicesResetter` class `final`
  * Add argument `$logChannel` to `ErrorListener::logException()`
+ * Replace `__sleep/wakeup()` by `__(un)serialize()` on kernels and data collectors
 
 Intl
 ----
@@ -223,6 +224,11 @@ Messenger
 
  * Remove `text` format when using the `messenger:stats` command
  * Add method `getRetryDelay()` to `RecoverableExceptionInterface`
+
+Mime
+----
+
+ * Replace `__sleep/wakeup()` by `__(un)serialize()` on `AbstractPart` implementations
 
 Notifier
 --------
@@ -464,6 +470,11 @@ Translation
  * Make `DataCollectorTranslator` class `final`
  * Remove `ProviderFactoryTestCase`, extend `AbstractProviderFactoryTestCase` instead
 
+String
+------
+
+ * Replace `__sleep/wakeup()` by `__(un)serialize()` on string implementations
+
 TwigBridge
 ----------
 
@@ -498,6 +509,7 @@ Validator
 ---------
 
  * Add method `getGroupProvider()` to `ClassMetadataInterface`
+ * Replace `__sleep/wakeup()` by `__(un)serialize()`  on `GenericMetadata` implementations
  * Remove the `getRequiredOptions()` and `getDefaultOption()` methods from the `All`, `AtLeastOneOf`, `CardScheme`, `Collection`,
    `CssColor`, `Expression`, `Regex`, `Sequentially`, `Type`, and `When` constraints
  * Remove support for evaluating options in the base `Constraint` class. Initialize properties in the constructor of the concrete constraint
