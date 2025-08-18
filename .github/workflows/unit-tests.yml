@@ -133,7 +133,6 @@ jobs:
 
           echo SYMFONY_VERSION=$SYMFONY_VERSION >> $GITHUB_ENV
           echo COMPOSER_ROOT_VERSION=$SYMFONY_VERSION.x-dev >> $GITHUB_ENV
-          echo COMPOSER_ROOT_VERSION=7.4.x-dev >> $GITHUB_ENV # to be removed once all deps allow ^8.0
           echo SYMFONY_REQUIRE=">=$([ '${{ matrix.mode }}' = low-deps ] && echo 6.4 || echo $SYMFONY_VERSION)" >> $GITHUB_ENV
           [[ "${{ matrix.mode }}" = *-deps ]] && mv composer.json.phpunit composer.json || true
 
@@ -203,7 +202,6 @@ jobs:
               SYMFONY_VERSION=$(echo $SYMFONY_VERSION | awk '{print $1 - 1}')
               echo -e "\\n\\e[33;1mChecking out Symfony $SYMFONY_VERSION and running tests with patched components as deps\\e[0m"
               export COMPOSER_ROOT_VERSION=$SYMFONY_VERSION.x-dev
-              export COMPOSER_ROOT_VERSION=7.4.x-dev # to be removed once deps allow ^8.0
               export SYMFONY_REQUIRE=">=$SYMFONY_VERSION"
               git fetch --depth=2 origin $SYMFONY_VERSION
               git checkout -m FETCH_HEAD
