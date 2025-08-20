@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\Routing\Attribute;
 
+use Symfony\Component\Routing\Exception\LogicException;
+
 /**
  * @author Fabien Potencier <fabien@symfony.com>
  * @author Alexander M. Turek <me@derrabus.de>
@@ -21,6 +23,8 @@ class Route
     private ?string $path = null;
     private array $localizedPaths = [];
     private array $methods;
+    /** @var string[] */
+    private array $env;
     private array $schemes;
     /**
      * @var (string|DeprecatedAlias)[]
@@ -42,7 +46,7 @@ class Route
      * @param string|null                                       $format       The format returned by the route (i.e. "json", "xml")
      * @param bool|null                                         $utf8         Whether the route accepts UTF-8 in its parameters
      * @param bool|null                                         $stateless    Whether the route is defined as stateless or stateful, @see https://symfony.com/doc/current/routing.html#stateless-routes
-     * @param string|null                                       $env          The env in which the route is defined (i.e. "dev", "test", "prod")
+     * @param string|string[]|null                              $env          The env(s) in which the route is defined (i.e. "dev", "test", "prod", ["dev", "test"])
      * @param string|DeprecatedAlias|(string|DeprecatedAlias)[] $alias        The list of aliases for this route
      */
     public function __construct(
@@ -60,7 +64,7 @@ class Route
         ?string $format = null,
         ?bool $utf8 = null,
         ?bool $stateless = null,
-        private ?string $env = null,
+        string|array|null $env = null,
         string|DeprecatedAlias|array $alias = [],
     ) {
         if (\is_array($path)) {
@@ -71,6 +75,7 @@ class Route
         $this->setMethods($methods);
         $this->setSchemes($schemes);
         $this->setAliases($alias);
+        $this->setEnvs((array) $env);
 
         if (null !== $locale) {
             $this->defaults['_locale'] = $locale;
@@ -199,12 +204,37 @@ class Route
         return $this->priority;
     }
 
+    /**
+     * @deprecated since Symfony 7.4, use the {@see setEnvs()} method instead
+     */
     public function setEnv(?string $env): void
     {
-        $this->env = $env;
+        trigger_deprecation('symfony/routing', '7.4', 'The "%s()" method is deprecated, use "setEnvs()" instead.', __METHOD__);
+        $this->env = (array) $env;
     }
 
+    /**
+     * @deprecated since Symfony 7.4, use {@see getEnvs()} method instead
+     */
     public function getEnv(): ?string
+    {
+        trigger_deprecation('symfony/routing', '7.4', 'The "%s()" method is deprecated, use "getEnvs()" instead.', __METHOD__);
+        if (!$this->env) {
+            return null;
+        }
+        if (\count($this->env) > 1) {
+            throw new LogicException(\sprintf('The "env" property has %d environments. Use "getEnvs()" to get all of them.', \count($this->env)));
+        }
+
+        return $this->env[0];
+    }
+
+    public function setEnvs(array|string $env): void
+    {
+        $this->env = (array) $env;
+    }
+
+    public function getEnvs(): array
     {
         return $this->env;
     }

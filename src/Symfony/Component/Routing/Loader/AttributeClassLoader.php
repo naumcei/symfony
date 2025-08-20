@@ -88,7 +88,7 @@ abstract class AttributeClassLoader implements LoaderInterface
         $globals = $this->getGlobals($class);
         $collection = new RouteCollection();
         $collection->addResource(new FileResource($class->getFileName()));
-        if ($globals['env'] && $this->env !== $globals['env']) {
+        if ($globals['env'] && !\in_array($this->env, $globals['env'], true)) {
             return $collection;
         }
         $fqcnAlias = false;
@@ -144,7 +144,7 @@ abstract class AttributeClassLoader implements LoaderInterface
      */
     protected function addRoute(RouteCollection $collection, object $attr, array $globals, \ReflectionClass $class, \ReflectionMethod $method): void
     {
-        if ($attr->getEnv() && $attr->getEnv() !== $this->env) {
+        if ($attr->getEnvs() && !\in_array($this->env, $attr->getEnvs(), true)) {
             return;
         }
 
@@ -318,7 +318,7 @@ abstract class AttributeClassLoader implements LoaderInterface
             }
 
             $globals['priority'] = $attr->getPriority() ?? 0;
-            $globals['env'] = $attr->getEnv();
+            $globals['env'] = $attr->getEnvs();
 
             foreach ($globals['requirements'] as $placeholder => $requirement) {
                 if (\is_int($placeholder)) {

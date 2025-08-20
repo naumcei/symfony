@@ -64,6 +64,11 @@ Mime
 
  * Deprecate implementing `__sleep/wakeup()` on `AbstractPart` implementations; use `__(un)serialize()` instead
 
+Routing
+-------
+
+ * Deprecate `getEnv()` and `setEnv()` methods of the `Symfony\Component\Routing\Attribute\Route` class in favor of the plurialized `getEnvs()` and `setEnvs()` methods
+
 Security
 --------
 
