@@ -343,6 +343,7 @@ Routing
 
  * Providing a non-array `_query` parameter to `UrlGenerator` causes an `InvalidParameterException`
  * Remove the protected `AttributeClassLoader::$routeAnnotationClass` property and the `setRouteAnnotationClass()` method, use `AttributeClassLoader::setRouteAttributeClass()` instead
+ * Remove `getEnv()` and `setEnv()` methods of the `Route` attribute; use the plurialized `getEnvs()` and `setEnvs()` methods instead
 
 Security
 --------

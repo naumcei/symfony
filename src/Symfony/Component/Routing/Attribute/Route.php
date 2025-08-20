@@ -11,8 +11,6 @@
 
 namespace Symfony\Component\Routing\Attribute;
 
-use Symfony\Component\Routing\Exception\LogicException;
-
 /**
  * @author Fabien Potencier <fabien@symfony.com>
  * @author Alexander M. Turek <me@derrabus.de>
@@ -202,31 +200,6 @@ class Route
     public function getPriority(): ?int
     {
         return $this->priority;
-    }
-
-    /**
-     * @deprecated since Symfony 7.4, use the {@see setEnvs()} method instead
-     */
-    public function setEnv(?string $env): void
-    {
-        trigger_deprecation('symfony/routing', '7.4', 'The "%s()" method is deprecated, use "setEnvs()" instead.', __METHOD__);
-        $this->env = (array) $env;
-    }
-
-    /**
-     * @deprecated since Symfony 7.4, use {@see getEnvs()} method instead
-     */
-    public function getEnv(): ?string
-    {
-        trigger_deprecation('symfony/routing', '7.4', 'The "%s()" method is deprecated, use "getEnvs()" instead.', __METHOD__);
-        if (!$this->env) {
-            return null;
-        }
-        if (\count($this->env) > 1) {
-            throw new LogicException(\sprintf('The "env" property has %d environments. Use "getEnvs()" to get all of them.', \count($this->env)));
-        }
-
-        return $this->env[0];
     }
 
     public function setEnvs(array|string $env): void
