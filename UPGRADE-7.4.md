@@ -77,7 +77,8 @@ Mime
 Routing
 -------
 
- * Deprecate `getEnv()` and `setEnv()` methods of the `Symfony\Component\Routing\Attribute\Route` class in favor of the plurialized `getEnvs()` and `setEnvs()` methods
+ * Deprecate class aliases in the `Annotation` namespace, use attributes instead
+ * Deprecate getters and setters in attribute classes in favor of public properties
 
 Security
 --------
@@ -90,6 +91,8 @@ Serializer
 ----------
 
  * Make `AttributeMetadata` and `ClassMetadata` final
+ * Deprecate class aliases in the `Annotation` namespace, use attributes instead
+ * Deprecate getters in attribute classes in favor of public properties
 
 String
 ------

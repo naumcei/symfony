@@ -95,7 +95,7 @@ abstract class AttributeClassLoader implements LoaderInterface
 
         if (!$class->hasMethod('__invoke')) {
             foreach ($this->getAttributes($class) as $attr) {
-                if ($attr->getAliases()) {
+                if ($attr->aliases) {
                     throw new InvalidArgumentException(\sprintf('Route aliases cannot be used on non-invokable class "%s".', $class->getName()));
                 }
             }
@@ -144,14 +144,14 @@ abstract class AttributeClassLoader implements LoaderInterface
      */
     protected function addRoute(RouteCollection $collection, object $attr, array $globals, \ReflectionClass $class, \ReflectionMethod $method): void
     {
-        if ($attr->getEnvs() && !\in_array($this->env, $attr->getEnvs(), true)) {
+        if ($attr->envs && !\in_array($this->env, $attr->envs, true)) {
             return;
         }
 
-        $name = $attr->getName() ?? $this->getDefaultRouteName($class, $method);
+        $name = $attr->name ?? $this->getDefaultRouteName($class, $method);
         $name = $globals['name'].$name;
 
-        $requirements = $attr->getRequirements();
+        $requirements = $attr->requirements;
 
         foreach ($requirements as $placeholder => $requirement) {
             if (\is_int($placeholder)) {
@@ -159,17 +159,17 @@ abstract class AttributeClassLoader implements LoaderInterface
             }
         }
 
-        $defaults = array_replace($globals['defaults'], $attr->getDefaults());
+        $defaults = array_replace($globals['defaults'], $attr->defaults);
         $requirements = array_replace($globals['requirements'], $requirements);
-        $options = array_replace($globals['options'], $attr->getOptions());
-        $schemes = array_unique(array_merge($globals['schemes'], $attr->getSchemes()));
-        $methods = array_unique(array_merge($globals['methods'], $attr->getMethods()));
+        $options = array_replace($globals['options'], $attr->options);
+        $schemes = array_unique(array_merge($globals['schemes'], $attr->schemes));
+        $methods = array_unique(array_merge($globals['methods'], $attr->methods));
 
-        $host = $attr->getHost() ?? $globals['host'];
-        $condition = $attr->getCondition() ?? $globals['condition'];
-        $priority = $attr->getPriority() ?? $globals['priority'];
+        $host = $attr->host ?? $globals['host'];
+        $condition = $attr->condition ?? $globals['condition'];
+        $priority = $attr->priority ?? $globals['priority'];
 
-        $path = $attr->getLocalizedPaths() ?: $attr->getPath();
+        $path = $attr->path;
         $prefix = $globals['localized_paths'] ?: $globals['path'];
         $paths = [];
 
@@ -224,13 +224,13 @@ abstract class AttributeClassLoader implements LoaderInterface
             } else {
                 $collection->add($name, $route, $priority);
             }
-            foreach ($attr->getAliases() as $aliasAttribute) {
+            foreach ($attr->aliases as $aliasAttribute) {
                 if ($aliasAttribute instanceof DeprecatedAlias) {
-                    $alias = $collection->addAlias($aliasAttribute->getAliasName(), $name);
+                    $alias = $collection->addAlias($aliasAttribute->aliasName, $name);
                     $alias->setDeprecated(
-                        $aliasAttribute->getPackage(),
-                        $aliasAttribute->getVersion(),
-                        $aliasAttribute->getMessage()
+                        $aliasAttribute->package,
+                        $aliasAttribute->version,
+                        $aliasAttribute->message
                     );
                     continue;
                 }
@@ -279,46 +279,47 @@ abstract class AttributeClassLoader implements LoaderInterface
         if ($attribute = $class->getAttributes($this->routeAttributeClass, \ReflectionAttribute::IS_INSTANCEOF)[0] ?? null) {
             $attr = $attribute->newInstance();
 
-            if (null !== $attr->getName()) {
-                $globals['name'] = $attr->getName();
+            if (null !== $attr->name) {
+                $globals['name'] = $attr->name;
             }
 
-            if (null !== $attr->getPath()) {
-                $globals['path'] = $attr->getPath();
+            if (\is_string($attr->path)) {
+                $globals['path'] = $attr->path;
+                $globals['localized_paths'] = [];
+            } else {
+                $globals['localized_paths'] = $attr->path ?? [];
             }
 
-            $globals['localized_paths'] = $attr->getLocalizedPaths();
-
-            if (null !== $attr->getRequirements()) {
-                $globals['requirements'] = $attr->getRequirements();
+            if (null !== $attr->requirements) {
+                $globals['requirements'] = $attr->requirements;
             }
 
-            if (null !== $attr->getOptions()) {
-                $globals['options'] = $attr->getOptions();
+            if (null !== $attr->options) {
+                $globals['options'] = $attr->options;
             }
 
-            if (null !== $attr->getDefaults()) {
-                $globals['defaults'] = $attr->getDefaults();
+            if (null !== $attr->defaults) {
+                $globals['defaults'] = $attr->defaults;
             }
 
-            if (null !== $attr->getSchemes()) {
-                $globals['schemes'] = $attr->getSchemes();
+            if (null !== $attr->schemes) {
+                $globals['schemes'] = $attr->schemes;
             }
 
-            if (null !== $attr->getMethods()) {
-                $globals['methods'] = $attr->getMethods();
+            if (null !== $attr->methods) {
+                $globals['methods'] = $attr->methods;
             }
 
-            if (null !== $attr->getHost()) {
-                $globals['host'] = $attr->getHost();
+            if (null !== $attr->host) {
+                $globals['host'] = $attr->host;
             }
 
-            if (null !== $attr->getCondition()) {
-                $globals['condition'] = $attr->getCondition();
+            if (null !== $attr->condition) {
+                $globals['condition'] = $attr->condition;
             }
 
-            $globals['priority'] = $attr->getPriority() ?? 0;
-            $globals['env'] = $attr->getEnvs();
+            $globals['priority'] = $attr->priority ?? 0;
+            $globals['env'] = $attr->envs;
 
             foreach ($globals['requirements'] as $placeholder => $requirement) {
                 if (\is_int($placeholder)) {

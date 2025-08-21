@@ -14,6 +14,8 @@ CHANGELOG
  * Allow query-specific parameters in `UrlGenerator` using `_query`
  * Add support of multiple env names in the  `Symfony\Component\Routing\Attribute\Route` attribute
  * Add argument `$parameters` to `RequestContext`'s constructor
+ * Deprecate class aliases in the `Annotation` namespace, use attributes instead
+ * Deprecate getters and setters in attribute classes in favor of public properties
 
 7.3
 ---
