@@ -374,6 +374,15 @@ class PhpFileLoaderTest extends TestCase
         $this->assertSame(['GET'], $routes->get('b')->getMethods());
     }
 
+    public function testLoadsObjectRoutes()
+    {
+        $loader = new PhpFileLoader(new FileLocator([__DIR__.'/../Fixtures']));
+        $routes = $loader->load('routes_object.php');
+        $this->assertSame('/a', $routes->get('a')->getPath());
+        $this->assertSame('/b', $routes->get('b')->getPath());
+        $this->assertSame(['GET'], $routes->get('b')->getMethods());
+    }
+
     public function testWhenEnvWithArray()
     {
         $locator = new FileLocator([__DIR__.'/../Fixtures']);

@@ -13,12 +13,14 @@ namespace Symfony\Component\Routing\Loader;
 
 use Symfony\Component\Config\Loader\FileLoader;
 use Symfony\Component\Config\Resource\FileResource;
+use Symfony\Component\Routing\Exception\InvalidArgumentException;
 use Symfony\Component\Routing\Loader\Configurator\AliasConfigurator;
 use Symfony\Component\Routing\Loader\Configurator\CollectionConfigurator;
 use Symfony\Component\Routing\Loader\Configurator\ImportConfigurator;
 use Symfony\Component\Routing\Loader\Configurator\RouteConfigurator;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Symfony\Component\Routing\RouteCollection;
+use Symfony\Config\RoutesConfig;
 
 /**
  * PhpFileLoader loads routes from a PHP file.
@@ -105,38 +107,45 @@ class PhpFileLoader extends FileLoader
             return;
         }
 
-        if (!is_iterable($routes)) {
-            throw new \InvalidArgumentException(\sprintf('The return value in config file "%s" is invalid: "%s" given.', $path, get_debug_type($routes)));
+        if ($routes instanceof RoutesConfig) {
+            $routes = [$routes];
+        } elseif (!is_iterable($routes)) {
+            throw new InvalidArgumentException(\sprintf('The return value in config file "%s" is invalid: "%s" given.', $path, get_debug_type($routes)));
         }
 
         $loader = new YamlFileLoader($this->locator, $this->env);
 
         \Closure::bind(function () use ($collection, $routes, $path, $file) {
             foreach ($routes as $name => $config) {
+                $when = $name;
                 if (str_starts_with($name, 'when@')) {
                     if (!$this->env || 'when@'.$this->env !== $name) {
                         continue;
                     }
-
-                    foreach ($config as $name => $config) {
-                        $this->validate($config, $name.'" when "@'.$this->env, $path);
-
-                        if (isset($config['resource'])) {
-                            $this->parseImport($collection, $config, $path, $file);
-                        } else {
-                            $this->parseRoute($collection, $name, $config, $path);
-                        }
-                    }
-
-                    continue;
+                    $when .= '" when "@'.$this->env;
+                } elseif (!$config instanceof RoutesConfig) {
+                    $config = [$name => $config];
+                } elseif (!\is_int($name)) {
+                    throw new InvalidArgumentException(\sprintf('Invalid key "%s" returned for the "%s" config builder; none or "when@%%env%%" expected in file "%s".', $name, get_debug_type($config), $path));
                 }
 
-                $this->validate($config, $name, $path);
+                if ($config instanceof RoutesConfig) {
+                    $config = $config->routes;
+                } elseif (!is_iterable($config)) {
+                    throw new InvalidArgumentException(\sprintf('The "%s" key should contain an array in "%s".', $name, $path));
+                }
 
-                if (isset($config['resource'])) {
-                    $this->parseImport($collection, $config, $path, $file);
-                } else {
-                    $this->parseRoute($collection, $name, $config, $path);
+                foreach ($config as $name => $config) {
+                    if (str_starts_with($name, 'when@')) {
+                        throw new InvalidArgumentException(\sprintf('A route name cannot start with "when@" in "%s".', $path));
+                    }
+                    $this->validate($config, $when, $path);
+
+                    if (isset($config['resource'])) {
+                        $this->parseImport($collection, $config, $path, $file);
+                    } else {
+                        $this->parseRoute($collection, $name, $config, $path);
+                    }
                 }
             }
         }, $loader, $loader::class)();
