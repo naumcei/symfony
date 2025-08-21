@@ -14,6 +14,11 @@ AssetMapper
 
  * Remove `ImportMapConfigReader::splitPackageNameAndFilePath()`, use `ImportMapEntry::splitPackageNameAndFilePath()` instead
 
+BrowserKit
+----------
+
+ * Remove `AbstractBrowser::useHtml5Parser()`; the native HTML5 parser is used unconditionally
+
 Cache
 -----
 
@@ -116,6 +121,11 @@ DoctrineBridge
    ```
  * Remove support for auto-mapping Doctrine entities to controller arguments; use explicit mapping instead
  * Make `ProxyCacheWarmer` class `final`
+
+DomCrawler
+----------
+
+ * Remove argument `$useHtml5Parser` of `Crawler`'s constructor; the native HTML5 parser is used unconditionally
 
 ExpressionLanguage
 ------------------
