@@ -353,7 +353,8 @@ Routing
 
  * Providing a non-array `_query` parameter to `UrlGenerator` causes an `InvalidParameterException`
  * Remove the protected `AttributeClassLoader::$routeAnnotationClass` property and the `setRouteAnnotationClass()` method, use `AttributeClassLoader::setRouteAttributeClass()` instead
- * Remove `getEnv()` and `setEnv()` methods of the `Route` attribute; use the plurialized `getEnvs()` and `setEnvs()` methods instead
+ * Remove class aliases in the `Annotation` namespace, use attributes instead
+ * Remove getters and setters in attribute classes in favor of public properties
 
 Security
 --------
@@ -462,6 +463,8 @@ Serializer
    ```
  * Remove `AdvancedNameConverterInterface`, use `NameConverterInterface` instead
  * Remove the `CompiledClassMetadataFactory` and `CompiledClassMetadataCacheWarmer` classes
+ * Remove class aliases in the `Annotation` namespace, use attributes instead
+ * Remove getters in attribute classes in favor of public properties
 
 Translation
 -----------
