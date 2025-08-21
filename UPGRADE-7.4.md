@@ -8,6 +8,11 @@ Read more about this in the [Symfony documentation](https://symfony.com/doc/7.4/
 
 If you're upgrading from a version below 7.3, follow the [7.3 upgrade guide](UPGRADE-7.3.md) first.
 
+BrowserKit
+----------
+
+ * Deprecate `AbstractBrowser::useHtml5Parser()`; Symfony 8 will unconditionally use the native HTML5 parser
+
 Cache
 -----
 
@@ -28,6 +33,11 @@ DoctrineBridge
 --------------
 
  * Deprecate `UniqueEntity::getRequiredOptions()` and `UniqueEntity::getDefaultOption()`
+
+DomCrawler
+----------
+
+ * Disabling HTML5 parsing is deprecated; Symfony 8 will unconditionally use the native HTML5 parser
 
 FrameworkBundle
 ---------------
