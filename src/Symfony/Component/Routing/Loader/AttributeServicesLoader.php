@@ -19,7 +19,7 @@ use Symfony\Component\Routing\RouteCollection;
  *
  * @author Nicolas Grekas <p@tchwork.com>
  */
-class AttributeServicesLoader extends Loader
+final class AttributeServicesLoader extends Loader
 {
     /**
      * @param class-string[] $taggedClasses

@@ -18,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 /**
  * @author Nicolas Grekas <p@tchwork.com>
  */
-class RoutingControllerPass implements CompilerPassInterface
+final class RoutingControllerPass implements CompilerPassInterface
 {
     use PriorityTaggedServiceTrait;
 
