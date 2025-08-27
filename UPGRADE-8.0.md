@@ -523,6 +523,7 @@ Uid
 Validator
 ---------
 
+ * Change the default value of the `$requireTld` option of the `Url` constraint to `true`
  * Add method `getGroupProvider()` to `ClassMetadataInterface`
  * Replace `__sleep/wakeup()` by `__(un)serialize()`  on `GenericMetadata` implementations
  * Remove the `getRequiredOptions()` and `getDefaultOption()` methods from the `All`, `AtLeastOneOf`, `CardScheme`, `Collection`,
