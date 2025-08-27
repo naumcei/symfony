@@ -94,6 +94,7 @@ Console
 DependencyInjection
 -------------------
 
+ * Registering a service without a class when its id is a non-existing FQCN throws an error
  * Replace `#[TaggedIterator]` and `#[TaggedLocator]` attributes with `#[AutowireLocator]` and `#[AutowireIterator]`
 
    ```diff
