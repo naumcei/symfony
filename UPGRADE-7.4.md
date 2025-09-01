@@ -61,6 +61,7 @@ HttpFoundation
 --------------
 
  * Deprecate using `Request::sendHeaders()` after headers have already been sent; use a `StreamedResponse` instead
+ * Add argument `$subtypeFallback` to `Request::getFormat()`
 
 HttpKernel
 ----------
