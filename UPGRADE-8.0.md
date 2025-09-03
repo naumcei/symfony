@@ -387,6 +387,7 @@ Security
  * Add argument `$vote` to `VoterInterface::vote()` and `Voter::voteOnAttribute()`
  * Add argument `$token` to `UserCheckerInterface::checkPostAuth()`
  * Add argument `$attributes` to `UserAuthenticatorInterface::authenticateUser()`
+ * Make `UserChainProvider` implement `AttributesBasedUserProviderInterface`
 
 SecurityBundle
 --------------
