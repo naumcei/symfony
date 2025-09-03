@@ -58,7 +58,7 @@ jobs:
         if: matrix.php == '8.4'
         run: |
           sudo apt-get update
-          sudo apt-get install zopfli
+          sudo apt-get install zopfli ffmpeg
 
       - name: Configure environment
         run: |

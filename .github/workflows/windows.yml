@@ -172,9 +172,9 @@ jobs:
 
           php phpunit install
 
-      - name: Install memurai-developer
+      - name: Install memurai-developer, ffmpeg
         run: |
-          choco install --no-progress memurai-developer
+          choco install --no-progress memurai-developer ffmpeg
 
       - name: Run tests
         run: |

@@ -27,6 +27,7 @@ DependencyInjection
 -------------------
 
  * Add argument `$target` to `ContainerBuilder::registerAliasForArgument()`
+ * Add argument `$throwOnAbstract` to `ContainerBuilder::findTaggedResourceIds()`
  * Deprecate registering a service without a class when its id is a non-existing FQCN
 
 DoctrineBridge
