@@ -160,6 +160,13 @@ jobs:
             local ok=0
             local title="$1$FLIP"
             local start=$(date -u +%s)
+
+            if [[ "${{ matrix.mode }}" = low-deps ]]; then
+              cd $1
+              composer config -q repositories.symfony '{"type": "path", "url": "$OLDPWD/.github/composer-lowest"}'
+              composer require -q --no-update symfony/composer-lowest
+            fi
+
             OUTPUT=$(bash -xc "$2" 2>&1) || ok=$?
             local end=$(date -u +%s)
 
@@ -185,7 +192,7 @@ jobs:
           fi
 
           if [[ "${{ matrix.mode }}" = low-deps ]]; then
-            echo "$COMPONENTS" | xargs -n1 | parallel -j +3 "_run_tests {} 'cd {} && $COMPOSER_UP --prefer-lowest --prefer-stable && $PHPUNIT --do-not-fail-on-deprecation'"
+            echo "$COMPONENTS" | xargs -n1 | parallel -j +3 "_run_tests {} '$COMPOSER_UP --prefer-lowest --prefer-stable && $PHPUNIT --do-not-fail-on-deprecation'"
 
             exit 0
           fi
