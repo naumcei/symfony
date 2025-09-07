@@ -408,16 +408,16 @@ class ConnectionTest extends TestCase
             $this->markTestSkipped('REDIS_SENTINEL_HOSTS env var is not defined.');
         }
 
+        if (!getenv('MESSENGER_REDIS_SENTINEL_MASTER')) {
+            self::markTestSkipped('Redis sentinel is not configured');
+        }
+
         $dsn = 'redis:?host['.str_replace(' ', ']&host[', $hosts).']';
 
         try {
-            Connection::fromDsn($dsn, ['delete_after_ack' => true]);
+            Connection::fromDsn($dsn, ['delete_after_ack' => true, 'sentinel' => getenv('MESSENGER_REDIS_SENTINEL_MASTER')]);
         } catch (\Exception $e) {
             self::markTestSkipped($e->getMessage());
-        }
-
-        if (!getenv('MESSENGER_REDIS_SENTINEL_MASTER')) {
-            self::markTestSkipped('Redis sentinel is not configured');
         }
 
         $uid = random_int(1, \PHP_INT_MAX);
