@@ -12,6 +12,7 @@
 namespace Symfony\Component\Messenger\Bridge\Redis\Tests\Transport;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -400,26 +401,31 @@ class ConnectionTest extends TestCase
         yield '100ms delay' => ['/^[A-Z\d\/+]+$/i', 100, 'rawCommand', '1'];
     }
 
+    #[Group('integration')]
     public function testInvalidSentinelMasterName()
     {
-        try {
-            Connection::fromDsn(getenv('MESSENGER_REDIS_DSN'), ['delete_after_ack' => true], null);
-        } catch (\Exception $e) {
-            self::markTestSkipped($e->getMessage());
+        if (!$hosts = getenv('REDIS_SENTINEL_HOSTS')) {
+            $this->markTestSkipped('REDIS_SENTINEL_HOSTS env var is not defined.');
         }
 
         if (!getenv('MESSENGER_REDIS_SENTINEL_MASTER')) {
             self::markTestSkipped('Redis sentinel is not configured');
         }
 
-        $master = getenv('MESSENGER_REDIS_DSN');
+        $dsn = 'redis:?host['.str_replace(' ', ']&host[', $hosts).']';
+
+        try {
+            Connection::fromDsn($dsn, ['delete_after_ack' => true, 'sentinel' => getenv('MESSENGER_REDIS_SENTINEL_MASTER')]);
+        } catch (\Exception $e) {
+            self::markTestSkipped($e->getMessage());
+        }
+
         $uid = random_int(1, \PHP_INT_MAX);
 
-        $exp = explode('://', $master, 2)[1];
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage(\sprintf('Failed to retrieve master information from master name "%s" and address "%s".', $uid, $exp));
+        $this->expectExceptionMessage(\sprintf('Failed to retrieve master information from sentinel "%s".', $uid));
 
-        Connection::fromDsn(\sprintf('%s/messenger-clearlasterror', $master), ['delete_after_ack' => true, 'sentinel' => $uid], null);
+        Connection::fromDsn(\sprintf('%s/messenger-clearlasterror', $dsn), ['delete_after_ack' => true, 'sentinel' => $uid]);
     }
 
     public function testFromDsnOnUnixSocketWithUserAndPassword()

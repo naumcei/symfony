@@ -250,6 +250,21 @@ class Connection
             }, $paramss, $dsns);
         }
 
+        if (isset($options['sentinel']) && isset($options['redis_sentinel']) && $options['sentinel'] !== $options['redis_sentinel']) {
+            throw new InvalidArgumentException('Cannot use both "sentinel" and "redis_sentinel" at the same time.');
+        }
+
+        if (isset($options['sentinel']) && isset($options['sentinel_master']) && $options['sentinel'] !== $options['sentinel_master']) {
+            throw new InvalidArgumentException('Cannot use both "sentinel" and "sentinel_master" at the same time.');
+        }
+
+        if (isset($options['redis_sentinel']) && isset($options['sentinel_master']) && $options['redis_sentinel'] !== $options['sentinel_master']) {
+            throw new InvalidArgumentException('Cannot use both "redis_sentinel" and "sentinel_master" at the same time.');
+        }
+
+        $options['sentinel'] ??= $options['redis_sentinel'] ?? $options['sentinel_master'] ?? null;
+        unset($options['redis_sentinel'], $options['sentinel_master']);
+
         if ($invalidOptions = array_diff(array_keys($options), array_keys(self::DEFAULT_OPTIONS), ['host', 'port'])) {
             throw new LogicException(\sprintf('Invalid option(s) "%s" passed to the Redis Messenger transport.', implode('", "', $invalidOptions)));
         }

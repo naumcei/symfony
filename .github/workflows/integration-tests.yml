@@ -261,6 +261,7 @@ jobs:
           REDIS_SENTINEL_SERVICE: redis_sentinel
           REDIS_REPLICATION_HOSTS: 'localhost:16382 localhost:16381'
           MESSENGER_REDIS_DSN: redis://127.0.0.1:7006/messages
+          MESSENGER_REDIS_SENTINEL_MASTER: redis_sentinel
           MESSENGER_AMQP_DSN: amqp://localhost/%2f/messages
           MESSENGER_SQS_DSN: "sqs://localhost:4566/messages?sslmode=disable&poll_timeout=0.01"
           MESSENGER_SQS_FIFO_QUEUE_DSN: "sqs://localhost:4566/messages.fifo?sslmode=disable&poll_timeout=0.01"

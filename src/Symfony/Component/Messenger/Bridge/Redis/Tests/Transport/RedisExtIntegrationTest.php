@@ -39,7 +39,7 @@ class RedisExtIntegrationTest extends TestCase
 
         try {
             $this->redis = $this->createRedisClient();
-            $this->connection = Connection::fromDsn(getenv('MESSENGER_REDIS_DSN'), ['sentinel' => getenv('MESSENGER_REDIS_SENTINEL_MASTER') ?: null], $this->redis);
+            $this->connection = Connection::fromDsn(getenv('MESSENGER_REDIS_DSN'), [], $this->redis);
             $this->connection->cleanup();
             $this->connection->setup();
         } catch (\Exception $e) {
@@ -147,7 +147,7 @@ class RedisExtIntegrationTest extends TestCase
     public function testConnectionBelowRedeliverTimeout()
     {
         // lower redeliver timeout and claim interval
-        $connection = Connection::fromDsn(getenv('MESSENGER_REDIS_DSN'), ['sentinel' => getenv('MESSENGER_REDIS_SENTINEL_MASTER') ?: null], $this->redis);
+        $connection = Connection::fromDsn(getenv('MESSENGER_REDIS_DSN'), [], $this->redis);
 
         $connection->cleanup();
         $connection->setup();
@@ -175,7 +175,7 @@ class RedisExtIntegrationTest extends TestCase
         // lower redeliver timeout and claim interval
         $connection = Connection::fromDsn(
             getenv('MESSENGER_REDIS_DSN'),
-            ['redeliver_timeout' => 0, 'claim_interval' => 500, 'sentinel' => getenv('MESSENGER_REDIS_SENTINEL_MASTER') ?: null],
+            ['redeliver_timeout' => 0, 'claim_interval' => 500],
 
             $this->redis
         );
@@ -259,7 +259,17 @@ class RedisExtIntegrationTest extends TestCase
 
     public function testLazySentinel()
     {
-        $connection = Connection::fromDsn(getenv('MESSENGER_REDIS_DSN'),
+        if (!$hosts = getenv('REDIS_SENTINEL_HOSTS')) {
+            $this->markTestSkipped('REDIS_SENTINEL_HOSTS env var is not defined.');
+        }
+
+        if (!getenv('MESSENGER_REDIS_SENTINEL_MASTER')) {
+            $this->markTestSkipped('MESSENGER_REDIS_SENTINEL_MASTER env var is not defined.');
+        }
+
+        $dsn = 'redis:?host['.str_replace(' ', ']&host[', $hosts).']';
+
+        $connection = Connection::fromDsn($dsn,
             ['lazy' => true,
                 'delete_after_ack' => true,
                 'sentinel' => getenv('MESSENGER_REDIS_SENTINEL_MASTER') ?: null,
@@ -334,7 +344,7 @@ class RedisExtIntegrationTest extends TestCase
         $dsn = array_map(fn ($host) => 'redis://'.$host, $hosts);
         $dsn = implode(',', $dsn);
 
-        $this->assertInstanceOf(Connection::class, Connection::fromDsn($dsn, ['sentinel' => getenv('MESSENGER_REDIS_SENTINEL_MASTER') ?: null]));
+        $this->assertInstanceOf(Connection::class, Connection::fromDsn($dsn, []));
     }
 
     public function testJsonError()
@@ -452,7 +462,7 @@ class RedisExtIntegrationTest extends TestCase
     private function skipIfRedisClusterUnavailable()
     {
         try {
-            new \RedisCluster(null, getenv('REDIS_CLUSTER_HOST') ? explode(' ', getenv('REDIS_CLUSTER_HOST')) : []);
+            new \RedisCluster(null, getenv('REDIS_CLUSTER_HOSTS') ? explode(' ', getenv('REDIS_CLUSTER_HOSTS')) : []);
         } catch (\Exception $e) {
             self::markTestSkipped($e->getMessage());
         }
