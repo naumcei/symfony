@@ -88,6 +88,7 @@ Security
  * Deprecate callable firewall listeners, extend `AbstractListener` or implement `FirewallListenerInterface` instead
  * Deprecate `AbstractListener::__invoke`
  * Deprecate `LazyFirewallContext::__invoke()`
+ * Deprecate `PersistentTokenInterface::getClass()` and `RememberMeDetails::getUserFqcn()`, the user FQCN will be removed from the remember-me cookie in 8.0
 
 Serializer
 ----------
