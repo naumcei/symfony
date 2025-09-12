@@ -31,38 +31,6 @@ class DynamoDbStoreTest extends TestCase
         new DynamoDbStore('dynamodb://default/lock_keys?extra_param=some_value');
     }
 
-    public function testConfigureWithCredentials()
-    {
-        $awsKey = 'some_aws_access_key_value';
-        $awsSecret = 'some_aws_secret_value';
-        $region = 'us-east-1';
-        $this->assertEquals(
-            new DynamoDbStore(new DynamoDbClient(['region' => $region, 'accessKeyId' => $awsKey, 'accessKeySecret' => $awsSecret]), ['table_name' => 'lock_keys']),
-            new DynamoDbStore('dynamodb://default/lock_keys', [
-                'access_key' => $awsKey,
-                'secret_key' => $awsSecret,
-                'region' => $region,
-            ])
-        );
-    }
-
-    public function testConfigureWithTemporaryCredentials()
-    {
-        $awsKey = 'some_aws_access_key_value';
-        $awsSecret = 'some_aws_secret_value';
-        $sessionToken = 'some_aws_sessionToken';
-        $region = 'us-east-1';
-        $this->assertEquals(
-            new DynamoDbStore(new DynamoDbClient(['region' => $region, 'accessKeyId' => $awsKey, 'accessKeySecret' => $awsSecret, 'sessionToken' => $sessionToken]), ['table_name' => 'table']),
-            new DynamoDbStore('dynamodb://default/table', [
-                'access_key' => $awsKey,
-                'secret_key' => $awsSecret,
-                'session_token' => $sessionToken,
-                'region' => $region,
-            ])
-        );
-    }
-
     public function testFromInvalidDsn()
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -91,7 +59,7 @@ class DynamoDbStoreTest extends TestCase
     {
         $this->assertEquals(
             new DynamoDbStore(new DynamoDbClient(['region' => 'us-east-2', 'accessKeyId' => 'key_dsn', 'accessKeySecret' => 'secret_dsn']), ['table_name' => 'table_dsn']),
-            new DynamoDbStore('dynamodb://key_dsn:secret_dsn@default/table_dsn?region=us-east-2', ['region' => 'eu-west-3', 'table_name' => 'table_options', 'access_key' => 'key_option', 'secret_key' => 'secret_option'])
+            new DynamoDbStore('dynamodb://key_dsn:secret_dsn@default/table_dsn?region=us-east-2', ['region' => 'eu-west-3', 'table_name' => 'table_options'])
         );
     }
 
@@ -159,7 +127,7 @@ class DynamoDbStoreTest extends TestCase
     public function testFromDsnWithInvalidQueryString()
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches('|Unknown option found in DSN: \[foo\]\. Allowed options are \[access_key, |');
+        $this->expectExceptionMessageMatches('|Unknown option found in DSN: \[foo\]\. Allowed options are \[session_token, |');
 
         new DynamoDbStore('dynamodb://default?foo=foo');
     }
@@ -167,7 +135,7 @@ class DynamoDbStoreTest extends TestCase
     public function testFromDsnWithInvalidOption()
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches('|Unknown option found: \[bar\]\. Allowed options are \[access_key, |');
+        $this->expectExceptionMessageMatches('|Unknown option found: \[bar\]\. Allowed options are \[session_token, |');
 
         new DynamoDbStore('dynamodb://default', ['bar' => 'bar']);
     }
@@ -175,7 +143,7 @@ class DynamoDbStoreTest extends TestCase
     public function testFromDsnWithInvalidQueryStringAndOption()
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches('|Unknown option found: \[bar\]\. Allowed options are \[access_key, |');
+        $this->expectExceptionMessageMatches('|Unknown option found: \[bar\]\. Allowed options are \[session_token, |');
 
         new DynamoDbStore('dynamodb://default?foo=foo', ['bar' => 'bar']);
     }
