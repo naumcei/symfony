@@ -36,8 +36,6 @@ class DynamoDbStore implements PersistingStoreInterface
     use ExpiringStoreTrait;
 
     private const DEFAULT_OPTIONS = [
-        'access_key' => null,
-        'secret_key' => null,
         'session_token' => null,
         'endpoint' => null,
         'region' => null,
@@ -60,7 +58,7 @@ class DynamoDbStore implements PersistingStoreInterface
     private int $writeCapacityUnits;
 
     public function __construct(
-        DynamoDbClient|string $clientOrDsn,
+        #[\SensitiveParameter] DynamoDbClient|string $clientOrDsn,
         array $options = [],
         private readonly int $initialTtl = 300,
     ) {
@@ -96,8 +94,8 @@ class DynamoDbStore implements PersistingStoreInterface
 
             $clientConfiguration = [
                 'region' => $options['region'],
-                'accessKeyId' => rawurldecode($params['user'] ?? '') ?: $options['access_key'] ?? self::DEFAULT_OPTIONS['access_key'],
-                'accessKeySecret' => rawurldecode($params['pass'] ?? '') ?: $options['secret_key'] ?? self::DEFAULT_OPTIONS['secret_key'],
+                'accessKeyId' => rawurldecode($params['user'] ?? '') ?: null,
+                'accessKeySecret' => rawurldecode($params['pass'] ?? '') ?: null,
             ];
             if (null !== $options['session_token']) {
                 $clientConfiguration['sessionToken'] = $options['session_token'];
@@ -141,7 +139,7 @@ class DynamoDbStore implements PersistingStoreInterface
             'Item' => [
                 $this->idAttr => new AttributeValue(['S' => $this->getHashedKey($key)]),
                 $this->tokenAttr => new AttributeValue(['S' => $this->getUniqueToken($key)]),
-                $this->expirationAttr => new AttributeValue(['N' => (string) (\microtime(true) + $this->initialTtl)]),
+                $this->expirationAttr => new AttributeValue(['N' => (string) (microtime(true) + $this->initialTtl)]),
             ],
             'ConditionExpression' => 'attribute_not_exists(#key) OR #expires_at < :now',
             'ExpressionAttributeNames' => [
@@ -149,7 +147,7 @@ class DynamoDbStore implements PersistingStoreInterface
                 '#expires_at' => $this->expirationAttr,
             ],
             'ExpressionAttributeValues' => [
-                ':now' => new AttributeValue(['N' => (string) \microtime(true)]),
+                ':now' => new AttributeValue(['N' => (string) microtime(true)]),
             ],
         ]);
 
@@ -196,7 +194,7 @@ class DynamoDbStore implements PersistingStoreInterface
         $item = $existingLock->getItem();
 
         // Item not found at all
-        if ($item === []) {
+        if (!$item) {
             return false;
         }
 
@@ -206,7 +204,7 @@ class DynamoDbStore implements PersistingStoreInterface
         }
 
         // If item is expired, consider it doesn't exist
-        return isset($item[$this->expirationAttr]) && ((float) $item[$this->expirationAttr]->getN()) > \microtime(true);
+        return isset($item[$this->expirationAttr]) && ((float) $item[$this->expirationAttr]->getN()) > microtime(true);
     }
 
     public function putOffExpiration(Key $key, float $ttl): void
@@ -225,7 +223,7 @@ class DynamoDbStore implements PersistingStoreInterface
                 'Item' => [
                     $this->idAttr => new AttributeValue(['S' => $this->getHashedKey($key)]),
                     $this->tokenAttr => new AttributeValue(['S' => $uniqueToken]),
-                    $this->expirationAttr => new AttributeValue(['N' => (string) (\microtime(true) + $ttl)]),
+                    $this->expirationAttr => new AttributeValue(['N' => (string) (microtime(true) + $ttl)]),
                 ],
                 'ConditionExpression' => 'attribute_exists(#key) AND (#token = :token OR #expires_at <= :now)',
                 'ExpressionAttributeNames' => [
@@ -234,7 +232,7 @@ class DynamoDbStore implements PersistingStoreInterface
                     '#token' => $this->tokenAttr,
                 ],
                 'ExpressionAttributeValues' => [
-                    ':now' => new AttributeValue(['N' => (string) \microtime(true)]),
+                    ':now' => new AttributeValue(['N' => (string) microtime(true)]),
                     ':token' => new AttributeValue(['S' => $uniqueToken]),
                 ],
             ]));
@@ -248,7 +246,7 @@ class DynamoDbStore implements PersistingStoreInterface
         $this->checkNotExpired($key);
     }
 
-    public function createTable(): void
+    private function createTable(): void
     {
         $this->client->createTable(new CreateTableInput([
             'TableName' => $this->tableName,
