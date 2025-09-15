@@ -246,7 +246,7 @@ class DynamoDbStore implements PersistingStoreInterface
         $this->checkNotExpired($key);
     }
 
-    private function createTable(): void
+    public function createTable(): void
     {
         $this->client->createTable(new CreateTableInput([
             'TableName' => $this->tableName,

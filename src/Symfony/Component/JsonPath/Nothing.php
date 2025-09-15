@@ -9,10 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Component\HttpKernel\Tests\Fixtures;
+namespace Symfony\Component\JsonPath;
 
-use Symfony\Component\HttpFoundation\UriSigner;
-
-class ExtendedSigner extends UriSigner
+enum Nothing
 {
+    case Nothing;
 }
