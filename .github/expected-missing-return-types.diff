@@ -20,69 +20,59 @@ diff --git a/src/Symfony/Bridge/Twig/Test/Traits/RuntimeLoaderProvider.php b/src
 diff --git a/src/Symfony/Component/BrowserKit/AbstractBrowser.php b/src/Symfony/Component/BrowserKit/AbstractBrowser.php
 --- a/src/Symfony/Component/BrowserKit/AbstractBrowser.php
 +++ b/src/Symfony/Component/BrowserKit/AbstractBrowser.php
-@@ -420,5 +420,5 @@ abstract class AbstractBrowser
+@@ -428,5 +428,5 @@ abstract class AbstractBrowser
       * @throws \RuntimeException When processing returns exit code
       */
 -    protected function doRequestInProcess(object $request)
 +    protected function doRequestInProcess(object $request): object
      {
          $deprecationsFile = tempnam(sys_get_temp_dir(), 'deprec');
-@@ -457,5 +457,5 @@ abstract class AbstractBrowser
+@@ -465,5 +465,5 @@ abstract class AbstractBrowser
       * @psalm-return TResponse
       */
 -    abstract protected function doRequest(object $request);
 +    abstract protected function doRequest(object $request): object;
  
      /**
-@@ -470,5 +470,5 @@ abstract class AbstractBrowser
+@@ -478,5 +478,5 @@ abstract class AbstractBrowser
       * @throws LogicException When this abstract class is not implemented
       */
 -    protected function getScript(object $request)
 +    protected function getScript(object $request): string
      {
          throw new LogicException('To insulate requests, you need to override the getScript() method.');
-@@ -482,5 +482,5 @@ abstract class AbstractBrowser
+@@ -490,5 +490,5 @@ abstract class AbstractBrowser
       * @psalm-return TRequest
       */
 -    protected function filterRequest(Request $request)
 +    protected function filterRequest(Request $request): object
      {
          return $request;
-@@ -494,5 +494,5 @@ abstract class AbstractBrowser
+@@ -502,5 +502,5 @@ abstract class AbstractBrowser
       * @return Response
       */
 -    protected function filterResponse(object $response)
 +    protected function filterResponse(object $response): Response
      {
          return $response;
-diff --git a/src/Symfony/Component/Config/Definition/Builder/NodeDefinition.php b/src/Symfony/Component/Config/Definition/Builder/NodeDefinition.php
---- a/src/Symfony/Component/Config/Definition/Builder/NodeDefinition.php
-+++ b/src/Symfony/Component/Config/Definition/Builder/NodeDefinition.php
-@@ -115,5 +115,5 @@ abstract class NodeDefinition implements NodeParentInterface
-      * @return NodeParentInterface|NodeBuilder|self|ArrayNodeDefinition|VariableNodeDefinition
-      */
--    public function end(): NodeParentInterface
-+    public function end(): NodeParentInterface|NodeBuilder|\Symfony\Component\Config\Definition\Builder\NodeDefinition|ArrayNodeDefinition|VariableNodeDefinition
-     {
-         return $this->parent;
 diff --git a/src/Symfony/Component/Console/Command/Command.php b/src/Symfony/Component/Console/Command/Command.php
 --- a/src/Symfony/Component/Console/Command/Command.php
 +++ b/src/Symfony/Component/Console/Command/Command.php
-@@ -201,5 +201,5 @@ class Command implements SignalableCommandInterface
+@@ -214,5 +214,5 @@ class Command implements SignalableCommandInterface
       * @return void
       */
 -    protected function configure()
 +    protected function configure(): void
      {
      }
-@@ -233,5 +233,5 @@ class Command implements SignalableCommandInterface
+@@ -246,5 +246,5 @@ class Command implements SignalableCommandInterface
       * @return void
       */
 -    protected function interact(InputInterface $input, OutputInterface $output)
 +    protected function interact(InputInterface $input, OutputInterface $output): void
      {
      }
-@@ -249,5 +249,5 @@ class Command implements SignalableCommandInterface
+@@ -262,5 +262,5 @@ class Command implements SignalableCommandInterface
       * @return void
       */
 -    protected function initialize(InputInterface $input, OutputInterface $output)
@@ -243,42 +233,42 @@ diff --git a/src/Symfony/Component/ExpressionLanguage/ExpressionLanguage.php b/s
 diff --git a/src/Symfony/Component/Form/AbstractType.php b/src/Symfony/Component/Form/AbstractType.php
 --- a/src/Symfony/Component/Form/AbstractType.php
 +++ b/src/Symfony/Component/Form/AbstractType.php
-@@ -24,5 +24,5 @@ abstract class AbstractType implements FormTypeInterface
+@@ -28,5 +28,5 @@ abstract class AbstractType implements FormTypeInterface
       * @return string|null
       */
 -    public function getParent()
 +    public function getParent(): ?string
      {
          return FormType::class;
-@@ -32,5 +32,5 @@ abstract class AbstractType implements FormTypeInterface
+@@ -36,5 +36,5 @@ abstract class AbstractType implements FormTypeInterface
       * @return void
       */
 -    public function configureOptions(OptionsResolver $resolver)
 +    public function configureOptions(OptionsResolver $resolver): void
      {
      }
-@@ -39,5 +39,5 @@ abstract class AbstractType implements FormTypeInterface
+@@ -45,5 +45,5 @@ abstract class AbstractType implements FormTypeInterface
       * @return void
       */
 -    public function buildForm(FormBuilderInterface $builder, array $options)
 +    public function buildForm(FormBuilderInterface $builder, array $options): void
      {
      }
-@@ -46,5 +46,5 @@ abstract class AbstractType implements FormTypeInterface
+@@ -55,5 +55,5 @@ abstract class AbstractType implements FormTypeInterface
       * @return void
       */
 -    public function buildView(FormView $view, FormInterface $form, array $options)
 +    public function buildView(FormView $view, FormInterface $form, array $options): void
      {
      }
-@@ -53,5 +53,5 @@ abstract class AbstractType implements FormTypeInterface
+@@ -65,5 +65,5 @@ abstract class AbstractType implements FormTypeInterface
       * @return void
       */
 -    public function finishView(FormView $view, FormInterface $form, array $options)
 +    public function finishView(FormView $view, FormInterface $form, array $options): void
      {
      }
-@@ -60,5 +60,5 @@ abstract class AbstractType implements FormTypeInterface
+@@ -72,5 +72,5 @@ abstract class AbstractType implements FormTypeInterface
       * @return string
       */
 -    public function getBlockPrefix()
@@ -288,42 +278,42 @@ diff --git a/src/Symfony/Component/Form/AbstractType.php b/src/Symfony/Component
 diff --git a/src/Symfony/Component/Form/FormTypeInterface.php b/src/Symfony/Component/Form/FormTypeInterface.php
 --- a/src/Symfony/Component/Form/FormTypeInterface.php
 +++ b/src/Symfony/Component/Form/FormTypeInterface.php
-@@ -27,5 +27,5 @@ interface FormTypeInterface
+@@ -29,5 +29,5 @@ interface FormTypeInterface
       * @return string|null
       */
 -    public function getParent();
 +    public function getParent(): ?string;
  
      /**
-@@ -34,5 +34,5 @@ interface FormTypeInterface
+@@ -36,5 +36,5 @@ interface FormTypeInterface
       * @return void
       */
 -    public function configureOptions(OptionsResolver $resolver);
 +    public function configureOptions(OptionsResolver $resolver): void;
  
      /**
-@@ -48,5 +48,5 @@ interface FormTypeInterface
+@@ -51,5 +51,5 @@ interface FormTypeInterface
       * @see FormTypeExtensionInterface::buildForm()
       */
 -    public function buildForm(FormBuilderInterface $builder, array $options);
 +    public function buildForm(FormBuilderInterface $builder, array $options): void;
  
      /**
-@@ -66,5 +66,5 @@ interface FormTypeInterface
+@@ -71,5 +71,5 @@ interface FormTypeInterface
       * @see FormTypeExtensionInterface::buildView()
       */
 -    public function buildView(FormView $view, FormInterface $form, array $options);
 +    public function buildView(FormView $view, FormInterface $form, array $options): void;
  
      /**
-@@ -85,5 +85,5 @@ interface FormTypeInterface
+@@ -92,5 +92,5 @@ interface FormTypeInterface
       * @see FormTypeExtensionInterface::finishView()
       */
 -    public function finishView(FormView $view, FormInterface $form, array $options);
 +    public function finishView(FormView $view, FormInterface $form, array $options): void;
  
      /**
-@@ -95,4 +95,4 @@ interface FormTypeInterface
+@@ -102,4 +102,4 @@ interface FormTypeInterface
       * @return string
       */
 -    public function getBlockPrefix();
@@ -442,7 +432,7 @@ diff --git a/src/Symfony/Component/HttpKernel/Bundle/BundleInterface.php b/src/S
 diff --git a/src/Symfony/Component/HttpKernel/DataCollector/DataCollector.php b/src/Symfony/Component/HttpKernel/DataCollector/DataCollector.php
 --- a/src/Symfony/Component/HttpKernel/DataCollector/DataCollector.php
 +++ b/src/Symfony/Component/HttpKernel/DataCollector/DataCollector.php
-@@ -111,5 +111,5 @@ abstract class DataCollector implements DataCollectorInterface
+@@ -157,5 +157,5 @@ abstract class DataCollector implements DataCollectorInterface
       * @return void
       */
 -    public function reset()
@@ -508,7 +498,7 @@ diff --git a/src/Symfony/Component/Routing/Loader/AttributeClassLoader.php b/src
 +    protected function getDefaultRouteName(\ReflectionClass $class, \ReflectionMethod $method): string
      {
          $name = str_replace('\\', '_', $class->name).'_'.$method->name;
-@@ -379,5 +379,5 @@ abstract class AttributeClassLoader implements LoaderInterface
+@@ -380,5 +380,5 @@ abstract class AttributeClassLoader implements LoaderInterface
       * @return void
       */
 -    abstract protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, object $attr);
@@ -548,28 +538,28 @@ diff --git a/src/Symfony/Component/Security/Core/Authentication/RememberMe/Token
 diff --git a/src/Symfony/Component/Security/Http/Firewall.php b/src/Symfony/Component/Security/Http/Firewall.php
 --- a/src/Symfony/Component/Security/Http/Firewall.php
 +++ b/src/Symfony/Component/Security/Http/Firewall.php
-@@ -48,5 +48,5 @@ class Firewall implements EventSubscriberInterface
+@@ -49,5 +49,5 @@ class Firewall implements EventSubscriberInterface
       * @return void
       */
 -    public function onKernelRequest(RequestEvent $event)
 +    public function onKernelRequest(RequestEvent $event): void
      {
          if (!$event->isMainRequest()) {
-@@ -96,5 +96,5 @@ class Firewall implements EventSubscriberInterface
+@@ -97,5 +97,5 @@ class Firewall implements EventSubscriberInterface
       * @return void
       */
 -    public function onKernelFinishRequest(FinishRequestEvent $event)
 +    public function onKernelFinishRequest(FinishRequestEvent $event): void
      {
          $request = $event->getRequest();
-@@ -109,5 +109,5 @@ class Firewall implements EventSubscriberInterface
+@@ -110,5 +110,5 @@ class Firewall implements EventSubscriberInterface
       * @return array
       */
 -    public static function getSubscribedEvents()
 +    public static function getSubscribedEvents(): array
      {
          return [
-@@ -120,5 +120,5 @@ class Firewall implements EventSubscriberInterface
+@@ -121,5 +121,5 @@ class Firewall implements EventSubscriberInterface
       * @return void
       */
 -    protected function callListeners(RequestEvent $event, iterable $listeners)
@@ -579,7 +569,7 @@ diff --git a/src/Symfony/Component/Security/Http/Firewall.php b/src/Symfony/Comp
 diff --git a/src/Symfony/Component/Serializer/Tests/Encoder/XmlEncoderTest.php b/src/Symfony/Component/Serializer/Tests/Encoder/XmlEncoderTest.php
 --- a/src/Symfony/Component/Serializer/Tests/Encoder/XmlEncoderTest.php
 +++ b/src/Symfony/Component/Serializer/Tests/Encoder/XmlEncoderTest.php
-@@ -820,5 +820,5 @@ XML;
+@@ -836,5 +836,5 @@ class XmlEncoderTest extends TestCase
       * @return Dummy
       */
 -    protected static function getObject(): object
@@ -640,14 +630,14 @@ diff --git a/src/Symfony/Component/VarDumper/Dumper/DataDumperInterface.php b/sr
 diff --git a/src/Symfony/Component/VarDumper/Test/VarDumperTestTrait.php b/src/Symfony/Component/VarDumper/Test/VarDumperTestTrait.php
 --- a/src/Symfony/Component/VarDumper/Test/VarDumperTestTrait.php
 +++ b/src/Symfony/Component/VarDumper/Test/VarDumperTestTrait.php
-@@ -49,5 +49,5 @@ trait VarDumperTestTrait
+@@ -51,5 +51,5 @@ trait VarDumperTestTrait
       * @return void
       */
 -    public function assertDumpEquals(mixed $expected, mixed $data, int $filter = 0, string $message = '')
 +    public function assertDumpEquals(mixed $expected, mixed $data, int $filter = 0, string $message = ''): void
      {
          $this->assertSame($this->prepareExpectation($expected, $filter), $this->getDump($data, null, $filter), $message);
-@@ -57,5 +57,5 @@ trait VarDumperTestTrait
+@@ -59,5 +59,5 @@ trait VarDumperTestTrait
       * @return void
       */
 -    public function assertDumpMatchesFormat(mixed $expected, mixed $data, int $filter = 0, string $message = '')
