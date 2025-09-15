@@ -265,4 +265,6 @@ jobs:
         env:
           SYMFONY_PHPUNIT_VERSION: '9.6'
         run: |
-          ./phpunit src/Symfony/Bridge/PhpUnit
+          cd src/Symfony/Bridge/PhpUnit
+          $COMPOSER_UP
+          $PHPUNIT -c phpunit-9.6.xml.dist
