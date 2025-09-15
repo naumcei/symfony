@@ -27,7 +27,7 @@ class DynamoDbStoreTest extends AbstractStoreTestCase
         }
 
         $store = new DynamoDbStore(getenv('LOCK_DYNAMODB_DSN'));
-        (new \ReflectionMethod(DynamoDbStore::class, 'createTable'))->invoke($store);
+        $store->createTable();
     }
 
     protected function getStore(): PersistingStoreInterface
