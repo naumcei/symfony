@@ -361,6 +361,8 @@ Routing
 Security
 --------
 
+ * Remove `PersistentTokenInterface::getClass()` and `RememberMeDetails::getUserFqcn()`
+ * Remove the user FQCN from the remember-me cookie
  * Remove `UserInterface::eraseCredentials()` and `TokenInterface::eraseCredentials()`;
    erase credentials e.g. using `__serialize()` instead:
 
