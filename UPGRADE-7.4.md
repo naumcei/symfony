@@ -108,6 +108,11 @@ Translation
 
  * Deprecate `TranslatableMessage::__toString`
 
+Uid
+---
+
+ * Default to `UuidV7` when using `UuidFactory`
+
 Validator
 ---------
 
