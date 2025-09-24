@@ -89,6 +89,7 @@ Security
  * Deprecate `AbstractListener::__invoke`
  * Deprecate `LazyFirewallContext::__invoke()`
  * Deprecate `PersistentTokenInterface::getClass()` and `RememberMeDetails::getUserFqcn()`, the user FQCN will be removed from the remember-me cookie in 8.0
+ * Add argument `$accessDecision` to `AccessDecisionStrategyInterface::decide()`;
 
 Serializer
 ----------
@@ -107,6 +108,11 @@ Translation
 -----------
 
  * Deprecate `TranslatableMessage::__toString`
+
+Uid
+---
+
+ * Default to `UuidV7` when using `UuidFactory`
 
 Validator
 ---------
