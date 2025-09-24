@@ -40,6 +40,11 @@ DomCrawler
 
  * Disabling HTML5 parsing is deprecated; Symfony 8 will unconditionally use the native HTML5 parser
 
+Form
+----
+
+ * [BC BREAK] The `CurrencyType` returns only the currencies that are active and recognized as [legal tender](https://en.wikipedia.org/wiki/Legal_tender) for the current date; set the `active_at`, and `legal_tender` options to `null` to list all currencies no matter their current state
+
 FrameworkBundle
 ---------------
 
