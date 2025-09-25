@@ -76,6 +76,11 @@ Mime
 
  * Deprecate implementing `__sleep/wakeup()` on `AbstractPart` implementations; use `__(un)serialize()` instead
 
+MonologBridge
+-------------
+
+ * Deprecate class `NotFoundActivationStrategy`, use `HttpCodeActivationStrategy` instead
+
 Routing
 -------
 
