@@ -561,6 +561,19 @@ Uid
 Validator
 ---------
 
+ * Remove support for passing associative arrays to `GroupSequence`
+
+   *Before*
+
+   ```php
+   $groupSequence = GroupSequence(['value' => ['group 1', 'group 2']]);
+   ```
+
+   *After*
+
+   ```php
+   $groupSequence = GroupSequence(['group 1', 'group 2']);
+   ```
  * Change the default value of the `$requireTld` option of the `Url` constraint to `true`
  * Add method `getGroupProvider()` to `ClassMetadataInterface`
  * Replace `__sleep/wakeup()` by `__(un)serialize()`  on `GenericMetadata` implementations
@@ -569,7 +582,7 @@ Validator
  * Remove support for evaluating options in the base `Constraint` class. Initialize properties in the constructor of the concrete constraint
    class instead.
 
-   Before:
+   *Before*
 
    ```php
    class CustomConstraint extends Constraint
@@ -584,7 +597,7 @@ Validator
    }
    ```
 
-   After:
+   *After*
 
    ```php
    class CustomConstraint extends Constraint
@@ -602,7 +615,7 @@ Validator
 
  * Remove the `getRequiredOptions()` method from the base `Constraint` class. Use mandatory constructor arguments instead.
 
-   Before:
+   *Before*
 
    ```php
    class CustomConstraint extends Constraint
@@ -622,7 +635,7 @@ Validator
    }
    ```
 
-   After:
+   *After*
 
    ```php
    class CustomConstraint extends Constraint
@@ -642,7 +655,7 @@ Validator
  * Remove support for passing an array of options to the `Composite` constraint class. Initialize the properties referenced with `getNestedConstraints()`
    in child classes before calling the constructor of `Composite`.
 
-   Before:
+   *Before*
 
    ```php
    class CustomCompositeConstraint extends Composite
@@ -661,7 +674,7 @@ Validator
    }
    ```
 
-   After:
+   *After*
 
    ```php
    class CustomCompositeConstraint extends Composite
