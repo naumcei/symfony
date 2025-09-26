@@ -76,6 +76,11 @@ Mime
 
  * Deprecate implementing `__sleep/wakeup()` on `AbstractPart` implementations; use `__(un)serialize()` instead
 
+MonologBridge
+-------------
+
+ * Deprecate class `NotFoundActivationStrategy`, use `HttpCodeActivationStrategy` instead
+
 Routing
 -------
 
@@ -85,6 +90,31 @@ Routing
 Security
 --------
 
+ * Deprecate extending the `RememberMeDetails` class with a constructor expecting the user FQCN
+
+   Before:
+
+   ```php
+   class CustomRememberMeDetails extends RememberMeDetails
+   {
+       public function __construct(string $userFqcn, string $userIdentifier, int $expires, string $value)
+       {
+           parent::__construct($userFqcn, $userIdentifier, $expires, $value);
+       }
+   }
+   ```
+
+   After:
+
+   ```php
+   class CustomRememberMeDetails extends RememberMeDetails
+   {
+       public function __construct(string $userIdentifier, int $expires, string $value)
+       {
+           parent::__construct($userIdentifier, $expires, $value);
+       }
+   }
+   ```
  * Deprecate callable firewall listeners, extend `AbstractListener` or implement `FirewallListenerInterface` instead
  * Deprecate `AbstractListener::__invoke`
  * Deprecate `LazyFirewallContext::__invoke()`
@@ -117,6 +147,65 @@ Uid
 Validator
 ---------
 
+ * Deprecate handling associative arrays in `GroupSequence`
+
+   *Before*
+
+   ```php
+   $groupSequence = GroupSequence(['value' => ['group 1', 'group 2']]);
+   ```
+
+   *After*
+
+   ```php
+   $groupSequence = GroupSequence(['group 1', 'group 2']);
+   ```
+ * Deprecate configuring constraint options implicitly with the XML format
+
+   *Before*
+
+   ```xml
+   <class name="Symfony\Component\Validator\Tests\Fixtures\NestedAttribute\Entity">
+     <constraint name="Callback">
+       <value>Symfony\Component\Validator\Tests\Fixtures\CallbackClass</value>
+       <value>callback</value>
+     </constraint>
+   </class>
+   ```
+
+   *After*
+
+   ```xml
+   <class name="Symfony\Component\Validator\Tests\Fixtures\NestedAttribute\Entity">
+     <constraint name="Callback">
+       <option name="callback">
+         <value>Symfony\Component\Validator\Tests\Fixtures\CallbackClass</value>
+         <value>callback</value>
+       </option>
+     </constraint>
+   </class>
+   ```
+ * Deprecate configuring constraint options implicitly with the YAML format
+
+   *Before*
+
+   ```yaml
+   Symfony\Component\Validator\Tests\Fixtures\NestedAttribute\Entity:
+     constraints:
+       - Callback: validateMeStatic
+       - Callback: [Symfony\Component\Validator\Tests\Fixtures\CallbackClass, callback]
+   ```
+
+   *After*
+
+   ```yaml
+   Symfony\Component\Validator\Tests\Fixtures\NestedAttribute\Entity:
+     constraints:
+       - Callback:
+           callback: validateMeStatic
+       - Callback:
+           callback: [Symfony\Component\Validator\Tests\Fixtures\CallbackClass, callback]
+   ```
  * Deprecate implementing `__sleep/wakeup()` on `GenericMetadata` implementations; use `__(un)serialize()` instead
  * Deprecate passing a list of choices to the first argument of the `Choice` constraint. Use the `choices` option instead
  * Deprecate `getRequiredOptions()` and `getDefaultOption()` methods of the `All`, `AtLeastOneOf`, `CardScheme`, `Collection`,
