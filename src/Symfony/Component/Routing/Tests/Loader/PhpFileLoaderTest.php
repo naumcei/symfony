@@ -12,6 +12,8 @@
 namespace Symfony\Component\Routing\Tests\Loader;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\LoaderResolver;
@@ -256,6 +258,20 @@ class PhpFileLoaderTest extends TestCase
 
         $route = $routeCollection->get('baz_route');
         $this->assertSame('AppBundle:Baz:view', $route->getDefault('_controller'));
+    }
+
+    #[IgnoreDeprecations]
+    #[Group('legacy')]
+    public function testTriggersDeprecationWhenAccessingLoaderInternalScope()
+    {
+        $locator = new FileLocator([__DIR__.'/../Fixtures']);
+        $loader = new PhpFileLoader($locator);
+
+        $this->expectUserDeprecationMessageMatches('{^Since symfony/routing 7.4: Accessing the internal scope of the loader in config files is deprecated, use only its public API instead in ".+" on line \d+\.$}');
+
+        $routes = $loader->load('legacy_internal_scope.php');
+
+        $this->assertInstanceOf(RouteCollection::class, $routes);
     }
 
     public function testRoutingI18nConfigurator()
