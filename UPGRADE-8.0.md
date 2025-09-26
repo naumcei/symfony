@@ -364,6 +364,31 @@ Routing
 Security
 --------
 
+ * When extending the `RememberMeDetails` class and overriding its constructor, the `$userFqcn` parameter has to be removed from its signature:
+
+   *Before*
+
+   ```php
+   class CustomRememberMeDetails extends RememberMeDetails
+   {
+       public function __construct(string $userFqcn, string $userIdentifier, int $expires, string $value)
+       {
+           parent::__construct($userFqcn, $userIdentifier, $expires, $value);
+       }
+   }
+   ```
+
+   *After*
+
+   ```php
+   class CustomRememberMeDetails extends RememberMeDetails
+   {
+       public function __construct(string $userIdentifier, int $expires, string $value)
+       {
+           parent::__construct($userIdentifier, $expires, $value);
+       }
+   }
+   ```
  * Add argument `$accessDecision` to `AccessDecisionStrategyInterface::decide()`
  * Remove `PersistentTokenInterface::getClass()` and `RememberMeDetails::getUserFqcn()`
  * Remove the user FQCN from the remember-me cookie
