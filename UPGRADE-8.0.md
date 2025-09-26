@@ -245,6 +245,11 @@ Mime
 
  * Replace `__sleep/wakeup()` by `__(un)serialize()` on `AbstractPart` implementations
 
+MonologBridge
+-------------
+
+ * Remove `NotFoundActivationStrategy`, use `HttpCodeActivationStrategy` instead
+
 Notifier
 --------
 
