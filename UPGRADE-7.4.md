@@ -147,6 +147,19 @@ Uid
 Validator
 ---------
 
+ * Deprecate handling associative arrays in `GroupSequence`
+
+   *Before*
+
+   ```php
+   $groupSequence = GroupSequence(['value' => ['group 1', 'group 2']]);
+   ```
+
+   *After*
+
+   ```php
+   $groupSequence = GroupSequence(['group 1', 'group 2']);
+   ```
  * Deprecate configuring constraint options implicitly with the XML format
 
    *Before*
