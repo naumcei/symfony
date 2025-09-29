@@ -16,6 +16,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\Config\Resource\FileResource;
+use Symfony\Component\Config\Resource\ResourceInterface;
 use Symfony\Component\Routing\Loader\AttributeClassLoader;
 use Symfony\Component\Routing\Loader\PhpFileLoader;
 use Symfony\Component\Routing\Loader\Psr4DirectoryLoader;
@@ -43,7 +44,7 @@ class PhpFileLoaderTest extends TestCase
         $routes = $routeCollection->all();
 
         $this->assertCount(1, $routes, 'One route is loaded');
-        $this->assertContainsOnly('Symfony\Component\Routing\Route', $routes);
+        $this->assertContainsOnlyInstancesOf(Route::class, $routes);
 
         foreach ($routes as $route) {
             $this->assertSame('/blog/{slug}', $route->getPath());
@@ -63,7 +64,7 @@ class PhpFileLoaderTest extends TestCase
         $routes = $routeCollection->all();
 
         $this->assertCount(1, $routes, 'One route is loaded');
-        $this->assertContainsOnly('Symfony\Component\Routing\Route', $routes);
+        $this->assertContainsOnlyInstancesOf(Route::class, $routes);
 
         foreach ($routes as $route) {
             $this->assertSame('/prefix/blog/{slug}', $route->getPath());
@@ -82,7 +83,7 @@ class PhpFileLoaderTest extends TestCase
         $routeCollection = $loader->load('with_define_path_variable.php');
         $resources = $routeCollection->getResources();
         $this->assertCount(1, $resources);
-        $this->assertContainsOnly('Symfony\Component\Config\Resource\ResourceInterface', $resources);
+        $this->assertContainsOnlyInstancesOf(ResourceInterface::class, $resources);
         $fileResource = reset($resources);
         $this->assertSame(
             realpath($locator->locate('with_define_path_variable.php')),
