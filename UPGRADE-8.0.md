@@ -184,6 +184,7 @@ FrameworkBundle
  * Remove the `router.cache_dir` config option
  * Remove the `validation.cache` option
  * Remove `TranslationUpdateCommand` in favor of `TranslationExtractCommand`
+ * Remove deprecated `--show-arguments` option from `debug:container` command
 
 HtmlSanitizer
 -------------
