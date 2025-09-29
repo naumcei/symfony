@@ -57,6 +57,7 @@ HttpClient
 ----------
 
  * Deprecate using amphp/http-client < 5
+ * Deprecate passing an instance of `StoreInterface` as `$cache` argument to `CachingHttpClient` constructor
 
 HttpFoundation
 --------------
