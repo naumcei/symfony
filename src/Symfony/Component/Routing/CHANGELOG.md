@@ -10,6 +10,7 @@ CHANGELOG
  * Add argument `$parameters` to `RequestContext`'s constructor
  * Deprecate class aliases in the `Annotation` namespace, use attributes instead
  * Deprecate getters and setters in attribute classes in favor of public properties
+ * Deprecate accessing the internal scope of the loader in PHP config files, use only its public API instead
 
 7.3
 ---
