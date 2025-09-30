@@ -246,7 +246,7 @@ class YamlFileLoader extends FileLoader
     protected function validate(mixed $config, string $name, string $path): void
     {
         if (!\is_array($config)) {
-            throw new \InvalidArgumentException(\sprintf('The definition of "%s" in "%s" must be a YAML array.', $name, $path));
+            throw new \InvalidArgumentException(\sprintf('The definition of "%s" in "%s" must be an array.', $name, $path));
         }
         if (isset($config['alias'])) {
             $this->validateAlias($config, $name, $path);

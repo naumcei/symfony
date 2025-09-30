@@ -355,6 +355,34 @@ class PhpFileLoaderTest extends TestCase
         $this->assertEquals($expectedRoutes('php'), $routes);
     }
 
+    public function testWhenEnv()
+    {
+        $locator = new FileLocator([__DIR__.'/../Fixtures']);
+        $loader = new PhpFileLoader($locator, 'some-env');
+        $routes = $loader->load('when-env.php');
+
+        $this->assertSame(['b', 'a'], array_keys($routes->all()));
+        $this->assertSame('/b', $routes->get('b')->getPath());
+    }
+
+    public function testLoadsArrayRoutes()
+    {
+        $loader = new PhpFileLoader(new FileLocator([__DIR__.'/../Fixtures']));
+        $routes = $loader->load('array_routes.php');
+        $this->assertSame('/a', $routes->get('a')->getPath());
+        $this->assertSame('/b', $routes->get('b')->getPath());
+        $this->assertSame(['GET'], $routes->get('b')->getMethods());
+    }
+
+    public function testWhenEnvWithArray()
+    {
+        $locator = new FileLocator([__DIR__.'/../Fixtures']);
+        $loader = new PhpFileLoader($locator, 'some-env');
+        $routes = $loader->load('array_when_env.php');
+        $this->assertSame('/a', $routes->get('a')->getPath());
+        $this->assertSame('/x', $routes->get('x')->getPath());
+    }
+
     #[DataProvider('providePsr4ConfigFiles')]
     public function testImportAttributesWithPsr4Prefix(string $configFile)
     {
