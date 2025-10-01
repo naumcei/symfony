@@ -12,6 +12,8 @@
 namespace Symfony\Component\Routing\Tests\Loader;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\LoaderResolver;
@@ -24,6 +26,8 @@ use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Tests\Fixtures\CustomXmlFileLoader;
 use Symfony\Component\Routing\Tests\Fixtures\Psr4Controllers\MyController;
 
+#[IgnoreDeprecations]
+#[Group('legacy')]
 class XmlFileLoaderTest extends TestCase
 {
     public function testSupports()
