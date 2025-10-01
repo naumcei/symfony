@@ -18,6 +18,11 @@ Cache
 
  * Bump ext-redis to 6.2 and ext-relay to 0.11 minimum
 
+Config
+------
+
+ * Deprecate accessing the internal scope of the loader in PHP config files, use only its public API instead
+
 Console
 -------
 
@@ -29,6 +34,8 @@ DependencyInjection
  * Add argument `$target` to `ContainerBuilder::registerAliasForArgument()`
  * Add argument `$throwOnAbstract` to `ContainerBuilder::findTaggedResourceIds()`
  * Deprecate registering a service without a class when its id is a non-existing FQCN
+ * Deprecate using `$this` or its internal scope from PHP config files; use the `$loader` variable instead
+ * Deprecate XML configuration format, use YAML or PHP instead
 
 DoctrineBridge
 --------------
@@ -39,6 +46,11 @@ DomCrawler
 ----------
 
  * Disabling HTML5 parsing is deprecated; Symfony 8 will unconditionally use the native HTML5 parser
+
+Form
+----
+
+ * [BC BREAK] The `CurrencyType` returns only the currencies that are active and recognized as [legal tender](https://en.wikipedia.org/wiki/Legal_tender) for the current date; set the `active_at`, and `legal_tender` options to `null` to list all currencies no matter their current state
 
 FrameworkBundle
 ---------------
@@ -57,6 +69,7 @@ HttpClient
 ----------
 
  * Deprecate using amphp/http-client < 5
+ * Deprecate passing an instance of `StoreInterface` as `$cache` argument to `CachingHttpClient` constructor
 
 HttpFoundation
 --------------
@@ -86,6 +99,8 @@ Routing
 
  * Deprecate class aliases in the `Annotation` namespace, use attributes instead
  * Deprecate getters and setters in attribute classes in favor of public properties
+ * Deprecate accessing the internal scope of the loader in PHP config files, use only its public API instead
+ * Deprecate XML configuration format, use YAML, PHP or attributes instead
 
 Security
 --------
