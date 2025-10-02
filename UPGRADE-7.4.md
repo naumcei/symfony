@@ -36,6 +36,9 @@ DependencyInjection
  * Deprecate registering a service without a class when its id is a non-existing FQCN
  * Deprecate using `$this` or its internal scope from PHP config files; use the `$loader` variable instead
  * Deprecate XML configuration format, use YAML or PHP instead
+ * Deprecate `ExtensionInterface::getXsdValidationBasePath()` and `getNamespace()`;
+   bundles that need to support older versions of Symfony can keep the methods
+   but need to add the `@deprecated` annotation on them
 
 DoctrineBridge
 --------------
