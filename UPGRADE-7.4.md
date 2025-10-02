@@ -59,6 +59,7 @@ FrameworkBundle
 ---------------
 
  * Deprecate `Symfony\Bundle\FrameworkBundle\Console\Application::add()` in favor of `addCommand()`
+ * Deprecate `Symfony\Bundle\FrameworkBundle\Command\WorkflowDumpCommand` in favor of `Symfony\Component\Workflow\Command\WorkflowDumpCommand`
 
 HtmlSanitizer
 -------------

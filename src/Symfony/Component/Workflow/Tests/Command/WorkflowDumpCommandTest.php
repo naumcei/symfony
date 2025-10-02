@@ -9,14 +9,14 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Bundle\FrameworkBundle\Tests\Command;
+namespace Symfony\Component\Workflow\Tests\Command;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Symfony\Bundle\FrameworkBundle\Command\WorkflowDumpCommand;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Workflow\Command\WorkflowDumpCommand;
 
 class WorkflowDumpCommandTest extends TestCase
 {
