@@ -45,20 +45,8 @@ class PhpFileLoader extends FileLoader
             return include $file;
         }, null, null);
 
-        try {
-            if (1 === $result = $load($path)) {
-                $result = null;
-            }
-        } catch (\Error $e) {
-            $load = \Closure::bind(static function ($file) use ($loader) {
-                return include $file;
-            }, null, ProtectedPhpFileLoader::class);
-
-            if (1 === $result = $load($path)) {
-                $result = null;
-            }
-
-            trigger_deprecation('symfony/routing', '7.4', 'Accessing the internal scope of the loader in config files is deprecated, use only its public API instead in "%s" on line %d.', $e->getFile(), $e->getLine());
+        if (1 === $result = $load($path)) {
+            $result = null;
         }
 
         if (\is_object($result) && \is_callable($result)) {
