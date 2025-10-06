@@ -59,6 +59,7 @@ FrameworkBundle
 ---------------
 
  * Deprecate `Symfony\Bundle\FrameworkBundle\Console\Application::add()` in favor of `addCommand()`
+ * Deprecate `Symfony\Bundle\FrameworkBundle\Command\WorkflowDumpCommand` in favor of `Symfony\Component\Workflow\Command\WorkflowDumpCommand`
 
 HtmlSanitizer
 -------------
@@ -77,8 +78,9 @@ HttpClient
 HttpFoundation
 --------------
 
- * Deprecate using `Request::sendHeaders()` after headers have already been sent; use a `StreamedResponse` instead
  * Add argument `$subtypeFallback` to `Request::getFormat()`
+ * Deprecate using `Request::sendHeaders()` after headers have already been sent; use a `StreamedResponse` instead
+ * Deprecate method `Request::get()`, use properties `->attributes`, `query` or `request` directly instead
 
 HttpKernel
 ----------
