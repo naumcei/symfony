@@ -4,6 +4,7 @@ CHANGELOG
 8.0
 ---
 
+ * Remove support for accessing the internal scope of the loader in PHP config files, use only its public API instead
  * Providing a non-array `_query` parameter to `UrlGenerator` causes an `InvalidParameterException`
  * Remove the protected `AttributeClassLoader::$routeAnnotationClass` property and the `setRouteAnnotationClass()` method, use `AttributeClassLoader::setRouteAttributeClass()` instead
  * Remove class aliases in the `Annotation` namespace, use attributes instead

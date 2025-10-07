@@ -27,6 +27,7 @@ Cache
 Config
 ------
 
+ * Remove support for accessing the internal scope of the loader in PHP config files, use only its public API instead
  * Add argument `$singular` to `NodeBuilder::arrayNode()`
  * Add argument `$info` to `ArrayNodeDefinition::canBeDisabled()` and `canBeEnabled()`
 
@@ -95,6 +96,7 @@ Console
 DependencyInjection
 -------------------
 
+ * Remove support for using `$this` or the loader's internal scope from PHP config files; use the `$loader` variable instead
  * Remove `ExtensionInterface::getXsdValidationBasePath()` and `getNamespace()` without alternatives, the XML configuration format is no longer supported
  * Add argument `$throwOnAbstract` to `ContainerBuilder::findTaggedResourceIds()`
  * Registering a service without a class when its id is a non-existing FQCN throws an error
@@ -366,6 +368,7 @@ PropertyInfo
 Routing
 -------
 
+ * Remove support for accessing the internal scope of the loader in PHP config files, use only its public API instead
  * Providing a non-array `_query` parameter to `UrlGenerator` causes an `InvalidParameterException`
  * Remove the protected `AttributeClassLoader::$routeAnnotationClass` property and the `setRouteAnnotationClass()` method, use `AttributeClassLoader::setRouteAttributeClass()` instead
  * Remove class aliases in the `Annotation` namespace, use attributes instead
