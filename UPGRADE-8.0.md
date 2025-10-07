@@ -172,7 +172,7 @@ Form
 FrameworkBundle
 ---------------
 
- * Remove the `WorkflowDumpCommand`, use the command from the Workflow component instead
+ * Remove the `WorkflowDumpCommand` class; the `workflow:dump` command and its class were moved to the Workflow component, but the command still works as before
  * Remove `errors.xml` and `webhook.xml` routing configuration files (use their PHP equivalent instead)
  * Make `Router` class `final`
  * Make `SerializerCacheWarmer` class `final`
