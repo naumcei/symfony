@@ -44,6 +44,7 @@ DoctrineBridge
 --------------
 
  * Deprecate `UniqueEntity::getRequiredOptions()` and `UniqueEntity::getDefaultOption()`
+ * Deprecate the `AbstractDoctrineExtension` class; its code is incorporated into the extension classes of Doctrine bundles
 
 DomCrawler
 ----------
