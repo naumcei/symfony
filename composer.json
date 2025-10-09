@@ -194,6 +194,10 @@
             "Symfony\\Bridge\\Twig\\": "src/Symfony/Bridge/Twig/",
             "Symfony\\Bundle\\": "src/Symfony/Bundle/",
             "Symfony\\Component\\": "src/Symfony/Component/",
+            "Symfony\\Config\\": [
+                "src/Symfony/Component/DependencyInjection/Loader/Config/",
+                "src/Symfony/Component/Routing/Loader/Config/"
+            ],
             "Symfony\\Runtime\\Symfony\\Component\\": "src/Symfony/Component/Runtime/Internal/"
         },
         "files": [
