@@ -126,6 +126,7 @@ FrameworkBundle
 ---------------
 
  * [BC break] Add native return type to `Translator` and to `Application::reset()`
+ * `AbstractController::render()` no longer calls `renderView()`
  * Deprecate the integration of Doctrine annotations, either uninstall the `doctrine/annotations` package or disable
    the integration by setting `framework.annotations` to `false`
  * Deprecate not setting some config options, their defaults will change in Symfony 7.0:
