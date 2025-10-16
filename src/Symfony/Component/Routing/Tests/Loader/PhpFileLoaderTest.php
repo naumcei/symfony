@@ -392,6 +392,17 @@ class PhpFileLoaderTest extends TestCase
         $this->assertSame('/x', $routes->get('x')->getPath());
     }
 
+    public function testYamlImportsAreResolvedWhenProcessingPhpReturnedArrays()
+    {
+        $locator = new FileLocator([__DIR__.'/../Fixtures']);
+        $loader = new PhpFileLoader($locator);
+
+        $routes = $loader->load('importer-php-returns-array.php');
+
+        $this->assertSame('/blog/{slug}', $routes->get('blog_show')->getPath());
+        $this->assertSame('/direct', $routes->get('direct')->getPath());
+    }
+
     #[DataProvider('providePsr4ConfigFiles')]
     public function testImportAttributesWithPsr4Prefix(string $configFile)
     {

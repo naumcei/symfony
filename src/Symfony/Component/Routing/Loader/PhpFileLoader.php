@@ -12,6 +12,7 @@
 namespace Symfony\Component\Routing\Loader;
 
 use Symfony\Component\Config\Loader\FileLoader;
+use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\Routing\Exception\InvalidArgumentException;
 use Symfony\Component\Routing\Loader\Configurator\AliasConfigurator;
@@ -114,6 +115,7 @@ class PhpFileLoader extends FileLoader
         }
 
         $loader = new YamlFileLoader($this->locator, $this->env);
+        $loader->setResolver(new LoaderResolver([$this]));
 
         \Closure::bind(function () use ($collection, $routes, $path, $file) {
             foreach ($routes as $name => $config) {
@@ -148,7 +150,7 @@ class PhpFileLoader extends FileLoader
                     }
                 }
             }
-        }, $loader, $loader::class)();
+        }, $loader, YamlFileLoader::class)();
     }
 }
 
