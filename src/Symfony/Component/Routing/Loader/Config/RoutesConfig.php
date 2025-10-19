@@ -51,7 +51,7 @@ namespace Symfony\Config;
  *     alias: string,
  *     deprecated?: array{package:string, version:string, message?:string},
  * }
- * @psalm-type Routes = array<string, Route|Import|Alias>
+ * @psalm-type Routes = array<string, Route|Import|Alias|RoutesConfig|array<string, Route|Import|Alias>>
  */
 class RoutesConfig
 {
