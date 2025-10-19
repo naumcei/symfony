@@ -30,6 +30,7 @@ Config
  * Remove support for accessing the internal scope of the loader in PHP config files, use only its public API instead
  * Add argument `$singular` to `NodeBuilder::arrayNode()`
  * Add argument `$info` to `ArrayNodeDefinition::canBeDisabled()` and `canBeEnabled()`
+ * Ensure configuration nodes do not have both `isRequired()` and `defaultValue()`
 
 Console
 -------
