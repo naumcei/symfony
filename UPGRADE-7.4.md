@@ -22,6 +22,7 @@ Config
 ------
 
  * Deprecate accessing the internal scope of the loader in PHP config files, use only its public API instead
+ * Deprecate setting a default value to a node that is required, and vice versa
 
 Console
 -------
