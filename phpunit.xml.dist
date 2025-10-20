@@ -27,6 +27,7 @@
         <env name="COUCHBASE_HOST" value="localhost" />
         <env name="COUCHBASE_USER" value="Administrator" />
         <env name="COUCHBASE_PASS" value="111111@" />
+        <env name="TEST_GENERATE_FIXTURES" value="0" />
     </php>
 
     <testsuites>
