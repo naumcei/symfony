@@ -10,4 +10,14 @@ return new RoutesConfig([
         'path' => '/b',
         'methods' => ['GET'],
     ],
+    'when@dev' => new RoutesConfig([
+        'c' => [
+            'path' => '/c',
+        ],
+    ]),
+    'when@test' => [
+        'd' => [
+            'path' => '/d',
+        ],
+    ],
 ]);

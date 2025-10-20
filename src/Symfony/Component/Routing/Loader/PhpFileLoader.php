@@ -109,7 +109,7 @@ class PhpFileLoader extends FileLoader
         }
 
         if ($routes instanceof RoutesConfig) {
-            $routes = [$routes];
+            $routes = $routes->routes;
         } elseif (!is_iterable($routes)) {
             throw new InvalidArgumentException(\sprintf('The return value in config file "%s" is invalid: "%s" given.', $path, get_debug_type($routes)));
         }
@@ -119,8 +119,7 @@ class PhpFileLoader extends FileLoader
 
         \Closure::bind(function () use ($collection, $routes, $path, $file) {
             foreach ($routes as $name => $config) {
-                $when = $name;
-                if (str_starts_with($name, 'when@')) {
+                if (str_starts_with($when = $name, 'when@')) {
                     if (!$this->env || 'when@'.$this->env !== $name) {
                         continue;
                     }
@@ -133,22 +132,11 @@ class PhpFileLoader extends FileLoader
 
                 if ($config instanceof RoutesConfig) {
                     $config = $config->routes;
-                } elseif (!is_iterable($config)) {
+                } elseif (!\is_array($config)) {
                     throw new InvalidArgumentException(\sprintf('The "%s" key should contain an array in "%s".', $name, $path));
                 }
 
-                foreach ($config as $name => $config) {
-                    if (str_starts_with($name, 'when@')) {
-                        throw new InvalidArgumentException(\sprintf('A route name cannot start with "when@" in "%s".', $path));
-                    }
-                    $this->validate($config, $when, $path);
-
-                    if (isset($config['resource'])) {
-                        $this->parseImport($collection, $config, $path, $file);
-                    } else {
-                        $this->parseRoute($collection, $name, $config, $path);
-                    }
-                }
+                $this->loadContent($collection, $config, $path, $file);
             }
         }, $loader, YamlFileLoader::class)();
     }
