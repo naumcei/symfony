@@ -23,6 +23,7 @@ Config
 
  * Deprecate accessing the internal scope of the loader in PHP config files, use only its public API instead
  * Deprecate setting a default value to a node that is required, and vice versa
+ * Deprecate generating fluent methods in config builders
 
 Console
 -------
@@ -40,6 +41,15 @@ DependencyInjection
  * Deprecate `ExtensionInterface::getXsdValidationBasePath()` and `getNamespace()`;
    bundles that need to support older versions of Symfony can keep the methods
    but need to add the `@deprecated` annotation on them
+ * Deprecate the fluent PHP format for semantic configuration, instantiate builders inline with the config array as argument and return them instead:
+   ```diff
+   -return function (AcmeConfig $config) {
+   -    $config->color('red');
+   -}
+   +return new AcmeConfig([
+   +    'color' => 'red',
+   +]);
+   ```
 
 DoctrineBridge
 --------------
