@@ -15,13 +15,10 @@ use Symfony\Component\Config\Loader\FileLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\Routing\Exception\InvalidArgumentException;
-use Symfony\Component\Routing\Loader\Configurator\AliasConfigurator;
-use Symfony\Component\Routing\Loader\Configurator\CollectionConfigurator;
-use Symfony\Component\Routing\Loader\Configurator\ImportConfigurator;
-use Symfony\Component\Routing\Loader\Configurator\RouteConfigurator;
+use Symfony\Component\Routing\Loader\Configurator\Routes;
+use Symfony\Component\Routing\Loader\Configurator\RoutesReference;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Symfony\Component\Routing\RouteCollection;
-use Symfony\Config\RoutesConfig;
 
 /**
  * PhpFileLoader loads routes from a PHP file.
@@ -41,6 +38,11 @@ class PhpFileLoader extends FileLoader
     {
         $path = $this->locator->locate($file);
         $this->setCurrentDir(\dirname($path));
+
+        // Expose RoutesReference::config() as Routes::config()
+        if (!class_exists(Routes::class)) {
+            class_alias(RoutesReference::class, Routes::class);
+        }
 
         // the closure forbids access to the private scope in the included file
         $loader = $this;
@@ -66,9 +68,13 @@ class PhpFileLoader extends FileLoader
 
         if (\is_object($result) && \is_callable($result)) {
             $collection = $this->callConfigurator($result, $path, $file);
-        } else {
+        } elseif (\is_array($result)) {
             $collection = new RouteCollection();
-            $this->loadRoutes($collection, $result, $path, $file);
+            $loader = new YamlFileLoader($this->locator, $this->env);
+            $loader->setResolver($this->resolver ?? new LoaderResolver([$this]));
+            (new \ReflectionMethod(YamlFileLoader::class, 'loadContent'))->invoke($loader, $collection, $result, $path, $file);
+        } elseif (!($collection = $result) instanceof RouteCollection) {
+            throw new InvalidArgumentException(\sprintf('The return value in config file "%s" is expected to be a RouteCollection, an array or a configurator callable, but got "%s".', $path, get_debug_type($result)));
         }
 
         $collection->addResource(new FileResource($path));
@@ -85,60 +91,9 @@ class PhpFileLoader extends FileLoader
     {
         $collection = new RouteCollection();
 
-        $result = $callback(new RoutingConfigurator($collection, $this, $path, $file, $this->env));
-        $this->loadRoutes($collection, $result, $path, $file);
+        $callback(new RoutingConfigurator($collection, $this, $path, $file, $this->env));
 
         return $collection;
-    }
-
-    private function loadRoutes(RouteCollection $collection, mixed $routes, string $path, string $file): void
-    {
-        if (null === $routes
-            || $routes instanceof RouteCollection
-            || $routes instanceof AliasConfigurator
-            || $routes instanceof CollectionConfigurator
-            || $routes instanceof ImportConfigurator
-            || $routes instanceof RouteConfigurator
-            || $routes instanceof RoutingConfigurator
-        ) {
-            if ($routes instanceof RouteCollection && $collection !== $routes) {
-                $collection->addCollection($routes);
-            }
-
-            return;
-        }
-
-        if ($routes instanceof RoutesConfig) {
-            $routes = $routes->routes;
-        } elseif (!is_iterable($routes)) {
-            throw new InvalidArgumentException(\sprintf('The return value in config file "%s" is invalid: "%s" given.', $path, get_debug_type($routes)));
-        }
-
-        $loader = new YamlFileLoader($this->locator, $this->env);
-        $loader->setResolver(new LoaderResolver([$this]));
-
-        \Closure::bind(function () use ($collection, $routes, $path, $file) {
-            foreach ($routes as $name => $config) {
-                if (str_starts_with($when = $name, 'when@')) {
-                    if (!$this->env || 'when@'.$this->env !== $name) {
-                        continue;
-                    }
-                    $when .= '" when "@'.$this->env;
-                } elseif (!$config instanceof RoutesConfig) {
-                    $config = [$name => $config];
-                } elseif (!\is_int($name)) {
-                    throw new InvalidArgumentException(\sprintf('Invalid key "%s" returned for the "%s" config builder; none or "when@%%env%%" expected in file "%s".', $name, get_debug_type($config), $path));
-                }
-
-                if ($config instanceof RoutesConfig) {
-                    $config = $config->routes;
-                } elseif (!\is_array($config)) {
-                    throw new InvalidArgumentException(\sprintf('The "%s" key should contain an array in "%s".', $name, $path));
-                }
-
-                $this->loadContent($collection, $config, $path, $file);
-            }
-        }, $loader, YamlFileLoader::class)();
     }
 }
 
