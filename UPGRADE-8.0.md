@@ -31,6 +31,7 @@ Config
  * Add argument `$singular` to `NodeBuilder::arrayNode()`
  * Add argument `$info` to `ArrayNodeDefinition::canBeDisabled()` and `canBeEnabled()`
  * Ensure configuration nodes do not have both `isRequired()` and `defaultValue()`
+ * Remove generation of fluent methods in config builders
 
 Console
 -------
@@ -116,6 +117,15 @@ DependencyInjection
  * Remove `!tagged` tag, use `!tagged_iterator` instead
  * Remove the `ContainerBuilder::getAutoconfiguredAttributes()` method, use `getAttributeAutoconfigurators()` instead to retrieve all the callbacks for a specific attribute class
  * Add argument `$target` to `ContainerBuilder::registerAliasForArgument()`
+ * Remove support for the fluent PHP format for semantic configuration, instantiate builders inline with the config array as argument and return them instead:
+   ```diff
+   -return function (AcmeConfig $config) {
+   -    $config->color('red');
+   -}
+   +return new AcmeConfig([
+   +    'color' => 'red',
+   +]);
+   ```
 
 DoctrineBridge
 --------------

@@ -84,10 +84,3 @@ class PhpFileLoader extends FileLoader
         return $collection;
     }
 }
-
-/**
- * @internal
- */
-final class ProtectedPhpFileLoader extends PhpFileLoader
-{
-}
