@@ -9,10 +9,30 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Config;
+namespace Symfony\Component\Routing\Loader\Configurator;
+
+// For the phpdoc to remain compatible with the generation of per-app Routes class,
+// this file should have no "use" statements: all symbols referenced by
+// the phpdoc need to be in the current namespace or be root-scoped.
 
 /**
- * @psalm-type Route = array{
+ * This class provides array-shapes for configuring the routes of an application.
+ *
+ * Example:
+ *
+ *     ```php
+ *     // config/routes.php
+ *     namespace Symfony\Component\Routing\Loader\Configurator;
+ *
+ *     return Routes::config([
+ *         'controllers' => [
+ *             'resource' => 'attributes',
+ *             'type' => 'tagged_services',
+ *         ],
+ *     ]);
+ *     ```
+ *
+ * @psalm-type RouteConfig = array{
  *     path: string|array<string,string>,
  *     controller?: string,
  *     methods?: string|list<string>,
@@ -27,7 +47,7 @@ namespace Symfony\Config;
  *     utf8?: bool,
  *     stateless?: bool,
  * }
- * @psalm-type Import = array{
+ * @psalm-type ImportConfig = array{
  *     resource: string,
  *     type?: string,
  *     exclude?: string|list<string>,
@@ -47,19 +67,21 @@ namespace Symfony\Config;
  *     utf8?: bool,
  *     stateless?: bool,
  * }
- * @psalm-type Alias = array{
+ * @psalm-type AliasConfig = array{
  *     alias: string,
  *     deprecated?: array{package:string, version:string, message?:string},
  * }
- * @psalm-type Routes = array<string, Route|Import|Alias|RoutesConfig|array<string, Route|Import|Alias>>
+ * @psalm-type RoutesConfig = array<string, RouteConfig|ImportConfig|AliasConfig|array<string, RouteConfig|ImportConfig|AliasConfig>>
  */
-class RoutesConfig
+class RoutesReference
 {
     /**
-     * @param Routes $routes
+     * @param RoutesConfig $config
+     *
+     * @psalm-return RoutesConfig
      */
-    public function __construct(
-        public readonly array $routes,
-    ) {
+    public static function config(array $config): array
+    {
+        return $config;
     }
 }

@@ -33,10 +33,7 @@
         "symfony/yaml": "<6.4"
     },
     "autoload": {
-        "psr-4": {
-            "Symfony\\Component\\Routing\\": "",
-            "Symfony\\Config\\": "Loader/Config/"
-        },
+        "psr-4": { "Symfony\\Component\\Routing\\": "" },
         "exclude-from-classmap": [
             "/Tests/"
         ]
