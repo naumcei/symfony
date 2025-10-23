@@ -41,13 +41,15 @@ DependencyInjection
  * Deprecate `ExtensionInterface::getXsdValidationBasePath()` and `getNamespace()`;
    bundles that need to support older versions of Symfony can keep the methods
    but need to add the `@deprecated` annotation on them
- * Deprecate the fluent PHP format for semantic configuration, instantiate builders inline with the config array as argument and return them instead:
+ * Deprecate the fluent PHP format for semantic configuration, use `$container->extension()` or return an array instead
    ```diff
    -return function (AcmeConfig $config) {
    -    $config->color('red');
    -}
-   +return new AcmeConfig([
-   +    'color' => 'red',
+   +return App::config([
+   +    'acme' => [
+   +        'color' => 'red',
+   +    ],
    +]);
    ```
 
