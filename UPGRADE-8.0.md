@@ -234,6 +234,7 @@ HttpKernel
  * Remove `Kernel::getAnnotatedClassesToCompile()` and `Kernel::setAnnotatedClassCache()`
  * Make `ServicesResetter` class `final`
  * Add argument `$logChannel` to `ErrorListener::logException()`
+ * Add argument `$event` to `DumpListener::configure()`
  * Replace `__sleep/wakeup()` by `__(un)serialize()` on kernels and data collectors
 
 Intl
@@ -778,6 +779,7 @@ Workflow
 
  * Add method `getEnabledTransition()` to `WorkflowInterface`
  * Add `$nbToken` argument to `Marking::mark()` and `Marking::unmark()`
+ * Add `$asArc` argument to `Transition::getFroms()` and `Transition::getTos()`
  * Remove `Event::getWorkflow()` method
 
    *Before*
