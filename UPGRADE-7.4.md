@@ -104,6 +104,14 @@ HttpKernel
  * Deprecate implementing `__sleep/wakeup()` on data collectors; use `__(un)serialize()` instead
  * Make `Profile` final and `Profiler::__sleep()` internal
 
+JsonStreamer
+------------
+
+ * Deprecate `PropertyMetadata::$streamToNativeValueTransformers`, use `PropertyMetadata::$valueTransformers` instead
+ * Deprecate `PropertyMetadata::getNativeToStreamValueTransformer()` and `PropertyMetadata::getStreamToNativeValueTransformers()`, use `PropertyMetadata::getValueTransformers()` instead
+ * Deprecate `PropertyMetadata::withNativeToStreamValueTransformers()` and `PropertyMetadata::withStreamToNativeValueTransformers()`, use `PropertyMetadata::withValueTransformers()` instead
+ * Deprecate `PropertyMetadata::withAdditionalNativeToStreamValueTransformer()` and `PropertyMetadata::withAdditionalStreamToNativeValueTransformer`, use `PropertyMetadata::withAdditionalValueTransformer()` instead
+
 Mime
 ----
 
