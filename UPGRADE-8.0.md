@@ -242,6 +242,14 @@ Intl
 
  * Remove `Symfony\Component\Intl\Transliterator\EmojiTransliterator`, use `Symfony\Component\Emoji\EmojiTransliterator` instead
 
+JsonStreamer
+------------
+
+ * Remove `$streamToNativeValueTransformers` argument of `PropertyMetadata::__construct()`, use `$valueTransformer` instead
+ * Remove `PropertyMetadata::getNativeToStreamValueTransformer()` and `PropertyMetadata::getStreamToNativeValueTransformers()`, use `PropertyMetadata::getValueTransformers()` instead
+ * Remove `PropertyMetadata::withNativeToStreamValueTransformers()` and `PropertyMetadata::withStreamToNativeValueTransformers()`, use `PropertyMetadata::withValueTransformers()` instead
+ * Remove `PropertyMetadata::withAdditionalNativeToStreamValueTransformer()` and `PropertyMetadata::withAdditionalStreamToNativeValueTransformer`, use `PropertyMetadata::withAdditionalValueTransformer()` instead
+
 Ldap
 ----
 
