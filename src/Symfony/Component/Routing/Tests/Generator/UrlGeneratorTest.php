@@ -803,7 +803,6 @@ class UrlGeneratorTest extends TestCase
     }
 
     #[IgnoreDeprecations]
-    #[Group('legacy')]
     public function testDeprecatedAlias()
     {
         $this->expectUserDeprecationMessage('Since foo/bar 1.0.0: The "b" route alias is deprecated. You should stop using it, as it will be removed in the future.');
@@ -817,7 +816,6 @@ class UrlGeneratorTest extends TestCase
     }
 
     #[IgnoreDeprecations]
-    #[Group('legacy')]
     public function testDeprecatedAliasWithCustomMessage()
     {
         $this->expectUserDeprecationMessage('Since foo/bar 1.0.0: foo b.');
@@ -831,7 +829,6 @@ class UrlGeneratorTest extends TestCase
     }
 
     #[IgnoreDeprecations]
-    #[Group('legacy')]
     public function testTargettingADeprecatedAliasShouldTriggerDeprecation()
     {
         $this->expectUserDeprecationMessage('Since foo/bar 1.0.0: foo b.');
