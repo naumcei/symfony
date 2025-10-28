@@ -7,6 +7,25 @@ in 6.4 minor versions.
 To get the diff for a specific change, go to https://github.com/symfony/symfony/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/symfony/symfony/compare/v6.4.0...v6.4.1
 
+* 6.4.27 (2025-10-28)
+
+ * bug #62145 [Mailer] Fix parsing message ids in SMTP responses (hacfi)
+ * bug #62096 [Cache] fix compatibility with Relay 0.12.1 (xabbuh)
+ * bug #62078 [FrameworkBundle] Fix secrets:encrypt-from-local (nicolas-grekas)
+ * bug #62028 [Validator] Update regular expression in URL validator (mjaschen)
+ * bug #62054 [AssetMapper] Fix parsing `@import` that don't use url() (nicolas-grekas)
+ * bug #62041 [DebugBundle] Wire `DumpDataCollector`'s `webMode` argument (HypeMC)
+ * bug #62038 [Translation][Loco] filter should be empty when filtering on all domains (atomiix)
+ * bug #62003 [Serializer] Fix unexpected type in denormalization errors when float|int union type used in constructor with non numeric string in form-data request (d-mitrofanov-v)
+ * bug #61990 [Cache][RedisTagAwareAdapter] Add Predis2 Replication Interface check (BrianMwit)
+ * bug #61960 [WebProfilerBundle] ”finish” errored requests (MatTheCat)
+ * bug #61945 [Cache] fix compatibility with Relay 0.12 (xabbuh)
+ * bug #61928 [Form] keep labels from configured choices (xabbuh)
+ * bug #61889 [Serializer] Fix discriminator class mapping with allow_extra_attributes=false (chris54721)
+ * bug #61861 [Console] Ensure terminal is usable after termination signal (johnstevenson)
+ * bug #61876 [Mailer][MailJet] Fix forbidden headers case-sensitive comparison (benjamintoussaint)
+ * bug #61875 [Form] do not cast too big floats to int (xabbuh)
+
 * 6.4.26 (2025-09-27)
 
  * bug #61856 [Console] do not pass the empty string to ord() (xabbuh)
