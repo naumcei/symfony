@@ -157,7 +157,7 @@ class MicrosoftGraphApiTransport extends AbstractApiTransport
             ];
 
             if ('inline' === $disposition) {
-                $attr['contentId'] = $filename;
+                $attr['contentId'] = $attachment->getContentId();
                 $attr['isInline'] = true;
             }
 
