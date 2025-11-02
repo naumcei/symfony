@@ -7,6 +7,32 @@ in 7.4 minor versions.
 To get the diff for a specific change, go to https://github.com/symfony/symfony/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/symfony/symfony/compare/v7.4.0...v7.4.1
 
+* 7.4.0-BETA2 (2025-11-02)
+
+ * feature #62270 [Lock][DynamoDB] Allow symfony/lock 8.0 (DavidPrevot)
+ * bug #62267 [Config] Use the empty string instead of null as an array offset (santysisi)
+ * feature #62230 [Messenger] Support signing messages per handler (nicolas-grekas)
+ * bug #62246 [HttpFoundation] Allow Request::setFormat() to override predefined formats (longwave)
+ * feature #60153 [Serializer] Allow forcing timezone in `DateTimeNormalizer` during denormalization (frankdekker)
+ * bug #62240 [DomCrawler] Handle malformed tags in HTML5 parser (longwave)
+ * bug #62242 [MonologBridge] Accept HttpExceptionInterface in HttpCodeActivationStrategy (GromNaN)
+ * bug #62222 [Cache] fix ext-redis 6.2.0 compatibility (xabbuh)
+ * bug #62211 [Workflow] State contamination due to class-based setter cache (nicolas-grekas)
+ * bug #62184 [EventDispatcher][FrameworkBundle] Rework union types on `#[AsEventListener]` (HypeMC)
+ * bug #62199 [Workflow] State Contamination in Marking Stores due to Class-based Getter Cache (siganushka)
+ * bug #62197 [Validator] Fix call to undefined getParser() in YamlValidator (yoeunes)
+ * bug #62203 [Mailer] Fix contentId assignment for inline attachments (webflo)
+ * bug #62201 [HtmlSanitizer] Remove `srcdoc` from allowed attributes (Spomky)
+ * feature #62190 [Runtime] Expose `project_dir` as `APP_PROJECT_DIR` env var (nicolas-grekas)
+ * bug #62191 [FrameworkBundle] Change HttpCache directory to use new getShareDir (alexander-schranz)
+ * bug #62169 [HttpClient] Fix caching client decorating scoping client (pierredup)
+ * bug #62185 [FrameworkBundle] Add missing `container.excluded` to `serializer.attribute_metadata` (HypeMC)
+ * bug #62186 [DomCrawler] Fix converting HTML5 trees to DOM nodes (nicolas-grekas)
+ * bug #62182 [VarDumper] Fix dumping CurlHttpClient instances (nicolas-grekas)
+ * bug #62180 [DomCrawler] Properly ignore errors when using the native HTML5 parser (nicolas-grekas)
+ * bug #62178 [FrameworkBundle] Expose share directory in AboutCommand (ro0NL)
+ * bug #62167 [Lock][DynamoDB] Enable `http_client` injection and fix tests using AmpV5 client (GromNaN)
+
 * 7.4.0-BETA1 (2025-10-27)
 
  * feature #62170 [HttpKernel] Add `KernelInterface::getShareDir()`, `APP_SHARE_DIR` and `kernel.share_dir` (nicolas-grekas)
