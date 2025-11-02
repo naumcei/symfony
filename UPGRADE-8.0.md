@@ -218,6 +218,7 @@ HttpFoundation
  * Add argument `$partitioned` to `ResponseHeaderBag::clearCookie()`
  * Add argument `$expiration` to `UriSigner::sign()`
  * Remove `Request::get()`, use properties `->attributes`, `query` or `request` directly instead
+ * Remove accepting null `$format` argument to `Request::setFormat()`
 
 HttpClient
 ----------
