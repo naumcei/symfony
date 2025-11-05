@@ -26,8 +26,7 @@ namespace Symfony\Component\Routing\Loader\Configurator;
  *
  *     return Routes::config([
  *         'controllers' => [
- *             'resource' => 'attributes',
- *             'type' => 'tagged_services',
+ *             'resource' => 'routing.controllers',
  *         ],
  *     ]);
  *     ```
