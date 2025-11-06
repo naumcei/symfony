@@ -7,6 +7,25 @@ in 7.3 minor versions.
 To get the diff for a specific change, go to https://github.com/symfony/symfony/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/symfony/symfony/compare/v7.3.0...v7.3.1
 
+* 7.3.6 (2025-11-06)
+
+ * bug #62324 [HttpFoundation] Fix parsing hosts and schemes in URLs (nicolas-grekas)
+ * bug #62171 [Messenger] Fix commands writing to `STDERR` instead of `STDOUT` (wazum)
+ * bug #62315  Keep body size limit for AMP redirects (villermen)
+ * bug #62237 [Form] Fix EnumType choice_label logic for grouped choices (yoeunes)
+ * bug #62283 [Filesystem] Unify logic for isAbsolute() in Path (yoeunes)
+ * bug #62091 [BrowserKit] The BrowserKit history with parameter separator without slash. (biozshock)
+ * bug #62297 [Twig] Ensure WrappedTemplatedEmail::getReturnPath() returns a string (yoeunes)
+ * bug #62294 [Console] Add missing VERBOSITY_SILENT case in CommandDataCollector (yoeunes)
+ * bug #62290 [Routing] Fix matching the "0" URL (cs278)
+ * bug #62285 [HttpClient] Reject 3xx pushed responses (nicolas-grekas)
+ * bug #62267 [Config] Use the empty string instead of null as an array offset (santysisi)
+ * bug #62246 [HttpFoundation] Allow Request::setFormat() to override predefined formats (longwave)
+ * bug #62242 [MonologBridge] Accept HttpExceptionInterface in HttpCodeActivationStrategy (GromNaN)
+ * bug #62222 [Cache] fix ext-redis 6.2.0 compatibility (xabbuh)
+ * bug #62197 [Validator] Fix call to undefined getParser() in YamlValidator (yoeunes)
+ * bug #62201 [HtmlSanitizer] Remove `srcdoc` from allowed attributes (Spomky)
+
 * 7.3.5 (2025-10-28)
 
  * bug #62153 [HttpFoundation] Fix issue where ServerEvent with "0" data is not sent (santysisi)
