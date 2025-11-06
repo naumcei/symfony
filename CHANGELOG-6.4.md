@@ -7,6 +7,20 @@ in 6.4 minor versions.
 To get the diff for a specific change, go to https://github.com/symfony/symfony/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/symfony/symfony/compare/v6.4.0...v6.4.1
 
+* 6.4.28 (2025-11-06)
+
+ * bug #62324 [HttpFoundation] Fix parsing hosts and schemes in URLs (nicolas-grekas)
+ * bug #62171 [Messenger] Fix commands writing to `STDERR` instead of `STDOUT` (wazum)
+ * bug #62315  Keep body size limit for AMP redirects (villermen)
+ * bug #62091 [BrowserKit] The BrowserKit history with parameter separator without slash. (biozshock)
+ * bug #62290 [Routing] Fix matching the "0" URL (cs278)
+ * bug #62285 [HttpClient] Reject 3xx pushed responses (nicolas-grekas)
+ * bug #62267 [Config] Use the empty string instead of null as an array offset (santysisi)
+ * bug #62246 [HttpFoundation] Allow Request::setFormat() to override predefined formats (longwave)
+ * bug #62242 [MonologBridge] Accept HttpExceptionInterface in HttpCodeActivationStrategy (GromNaN)
+ * bug #62222 [Cache] fix ext-redis 6.2.0 compatibility (xabbuh)
+ * bug #62201 [HtmlSanitizer] Remove `srcdoc` from allowed attributes (Spomky)
+
 * 6.4.27 (2025-10-28)
 
  * bug #62145 [Mailer] Fix parsing message ids in SMTP responses (hacfi)
