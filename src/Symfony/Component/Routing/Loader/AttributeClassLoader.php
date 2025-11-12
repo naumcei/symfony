@@ -202,11 +202,11 @@ abstract class AttributeClassLoader implements LoaderInterface
                 continue;
             }
             foreach ($paths as $locale => $path) {
-                if (preg_match(\sprintf('/\{%s(?:<.*?>)?\}/', preg_quote($param->name)), $path)) {
+                if (preg_match(\sprintf('/\{(?|([^\}:<]++):%s(?:\.[^\}<]++)?|(%1$s))(?:<.*?>)?\}/', preg_quote($param->name)), $path, $matches)) {
                     if (\is_scalar($defaultValue = $param->getDefaultValue()) || null === $defaultValue) {
-                        $defaults[$param->name] = $defaultValue;
+                        $defaults[$matches[1]] = $defaultValue;
                     } elseif ($defaultValue instanceof \BackedEnum) {
-                        $defaults[$param->name] = $defaultValue->value;
+                        $defaults[$matches[1]] = $defaultValue->value;
                     }
                     break;
                 }
