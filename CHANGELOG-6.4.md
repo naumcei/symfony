@@ -7,6 +7,10 @@ in 6.4 minor versions.
 To get the diff for a specific change, go to https://github.com/symfony/symfony/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/symfony/symfony/compare/v6.4.0...v6.4.1
 
+* 6.4.29 (2025-11-12)
+
+ * security #cve-2025-64500 [HttpFoundation] Fix parsing pathinfo with no leading slash (nicolas-grekas)
+
 * 6.4.28 (2025-11-06)
 
  * bug #62324 [HttpFoundation] Fix parsing hosts and schemes in URLs (nicolas-grekas)
