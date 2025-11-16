@@ -7,6 +7,20 @@ in 8.0 minor versions.
 To get the diff for a specific change, go to https://github.com/symfony/symfony/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/symfony/symfony/compare/v8.0.0...v8.0.1
 
+* 8.0.0-RC2 (2025-11-16)
+
+ * bug #62411 [HttpKernel] Conflict with symfony/flex < 2.10 (nicolas-grekas)
+ * bug #62409 [Yaml] Align unquoted multiline scalar parsing with spec for comments (yoeunes)
+ * bug #62398 [Cache] Fix accepting named closures as early-expiration callbacks (nicolas-grekas)
+ * bug #62406 [Notifier] do not use recipient phone numbers as sender e-mail addresses (xabbuh)
+ * bug #62407 [FrameworkBundle] work around limitation in `JsonResponse` when the data is `null` (xabbuh)
+ * bug #62402 [FrameworkBundle] Revert auto-import of #[Route] defined on controllers (nicolas-grekas)
+ * bug #62400 [Form] Fix EnumType choice_label logic for grouped choices (yoeunes)
+ * bug #62369 [Security] Set OIDC JWKS cache TTL from provider headers (Ali-HENDA)
+ * bug #62393 [Dependencyinjection] Call default index method when index is not provided by tag (yoeunes)
+ * bug #62372 [Cache] Recognize saveDeferred events as writes in `CacheDataCollector` (yitznewton)
+ * bug #62389 [Routing] Align routing.schema.json with YamlFileLoader behavior (yoeunes)
+
 * 8.0.0-RC1 (2025-11-13)
 
  * bug #62335 [Console] Fix signal handlers not being cleared after command termination (yoeunes)
