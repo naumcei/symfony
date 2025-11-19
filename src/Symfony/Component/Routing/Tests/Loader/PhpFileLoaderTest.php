@@ -21,6 +21,7 @@ use Symfony\Component\Config\Resource\ResourceInterface;
 use Symfony\Component\Routing\Loader\AttributeClassLoader;
 use Symfony\Component\Routing\Loader\PhpFileLoader;
 use Symfony\Component\Routing\Loader\Psr4DirectoryLoader;
+use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Tests\Fixtures\Psr4Controllers\MyController;
@@ -372,6 +373,10 @@ class PhpFileLoaderTest extends TestCase
     {
         $locator = new FileLocator([__DIR__.'/../Fixtures']);
         $loader = new PhpFileLoader($locator);
+        $yamlFileLoader = new YamlFileLoader($locator);
+        $loaderResolver = new LoaderResolver([$loader, $yamlFileLoader]);
+        $loader->setResolver($loaderResolver);
+        $yamlFileLoader->setResolver($loaderResolver);
 
         $routes = $loader->load('importer-php-returns-array.php');
 
