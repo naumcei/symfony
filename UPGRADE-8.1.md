@@ -28,6 +28,17 @@ HttpKernel
 ----------
 
  * Deprecate passing a non-flat list of attributes to `Controller::setController()`
+ * Deprecate the `Symfony\Component\HttpKernel\DependencyInjection\Extension` class, use the parent `Symfony\Component\DependencyInjection\Extension\Extension` class instead:
+
+   ```diff
+   - use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+   + use Symfony\Component\DependencyInjection\Extension\Extension;
+
+   class ExampleExtension extends Extension
+   {
+       // ...
+   }
+   ```
 
 Uid
 ---
