@@ -36,6 +36,9 @@ use Symfony\Component\ObjectMapper\Tests\Fixtures\DefaultLazy\OrderTarget;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\DefaultLazy\UserSource;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\DefaultLazy\UserTarget;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\DefaultValueStdClass\TargetDto;
+use Symfony\Component\ObjectMapper\Tests\Fixtures\EmbeddedMapping\Address;
+use Symfony\Component\ObjectMapper\Tests\Fixtures\EmbeddedMapping\User as UserEmbeddedMapping;
+use Symfony\Component\ObjectMapper\Tests\Fixtures\EmbeddedMapping\UserDto;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\Flatten\TargetUser;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\Flatten\User;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\Flatten\UserProfile;
@@ -67,8 +70,16 @@ use Symfony\Component\ObjectMapper\Tests\Fixtures\PromotedConstructor\Source as 
 use Symfony\Component\ObjectMapper\Tests\Fixtures\PromotedConstructor\Target as PromotedConstructorTarget;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\PromotedConstructorWithMetadata\Source as PromotedConstructorWithMetadataSource;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\PromotedConstructorWithMetadata\Target as PromotedConstructorWithMetadataTarget;
+use Symfony\Component\ObjectMapper\Tests\Fixtures\ReadOnlyPromotedProperty\ReadOnlyPromotedPropertyA;
+use Symfony\Component\ObjectMapper\Tests\Fixtures\ReadOnlyPromotedProperty\ReadOnlyPromotedPropertyAMapped;
+use Symfony\Component\ObjectMapper\Tests\Fixtures\ReadOnlyPromotedProperty\ReadOnlyPromotedPropertyB;
+use Symfony\Component\ObjectMapper\Tests\Fixtures\ReadOnlyPromotedProperty\ReadOnlyPromotedPropertyBMapped;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\Recursion\AB;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\Recursion\Dto;
+use Symfony\Component\ObjectMapper\Tests\Fixtures\ServiceLoadedValue\LoadedValueService;
+use Symfony\Component\ObjectMapper\Tests\Fixtures\ServiceLoadedValue\ServiceLoadedValueTransformer;
+use Symfony\Component\ObjectMapper\Tests\Fixtures\ServiceLoadedValue\ValueToMap;
+use Symfony\Component\ObjectMapper\Tests\Fixtures\ServiceLoadedValue\ValueToMapRelation;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\ServiceLocator\A as ServiceLocatorA;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\ServiceLocator\B as ServiceLocatorB;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\ServiceLocator\ConditionCallable;
@@ -89,7 +100,7 @@ final class ObjectMapperTest extends TestCase
         $mapper = new ObjectMapper(...$deps);
         $mapped = $mapper->map(...$args);
 
-        if (isset($mapped->relation) && $mapped->relation instanceof D ) {
+        if (isset($mapped->relation) && $mapped->relation instanceof D) {
             $mapped->relation->baz;
         }
 
@@ -579,5 +590,65 @@ final class ObjectMapperTest extends TestCase
         $this->assertTrue($refl->isUninitializedLazyObject($target->user));
         $this->assertSame('Test User', $target->user->name);
         $this->assertFalse($refl->isUninitializedLazyObject($target->user));
+    }
+
+    public function testSkipLazyGhostWithClassTransform()
+    {
+        $service = new LoadedValueService();
+        $service->load();
+
+        $metadataFactory = new ReflectionObjectMapperMetadataFactory();
+        $mapper = new ObjectMapper(
+            metadataFactory: $metadataFactory,
+            transformCallableLocator: $this->getServiceLocator([ServiceLoadedValueTransformer::class => new ServiceLoadedValueTransformer($service, $metadataFactory)])
+        );
+
+        $value = new ValueToMap();
+        $value->relation = new ValueToMapRelation('test');
+
+        $result = $mapper->map($value);
+        if (\PHP_VERSION_ID >= 80400) {
+            $refl = new \ReflectionClass($result->relation);
+            $this->assertFalse($refl->isUninitializedLazyObject($result->relation));
+        }
+
+        $this->assertSame($result->relation, $service->get());
+        $this->assertSame($result->relation->name, 'loaded');
+    }
+
+    public function testMapEmbeddedProperties()
+    {
+        $dto = new UserDto(
+            userAddressZipcode: '12345',
+            userAddressCity: 'Test City',
+            name: 'John Doe'
+        );
+
+        $mapper = new ObjectMapper(propertyAccessor: PropertyAccess::createPropertyAccessor());
+        $user = $mapper->map($dto, UserEmbeddedMapping::class);
+
+        $this->assertInstanceOf(UserEmbeddedMapping::class, $user);
+        $this->assertSame('John Doe', $user->name);
+        $this->assertInstanceOf(Address::class, $user->address);
+        $this->assertSame('12345', $user->address->zipcode);
+        $this->assertSame('Test City', $user->address->city);
+    }
+
+    public function testBugReportLazyLoadingPromotedReadonlyProperty()
+    {
+        $source = new ReadOnlyPromotedPropertyA(
+            b: new ReadOnlyPromotedPropertyB(
+                var2: 'bar',
+            ),
+            var1: 'foo',
+        );
+
+        $mapper = new ObjectMapper();
+        $out = $mapper->map($source);
+
+        $this->assertInstanceOf(ReadOnlyPromotedPropertyAMapped::class, $out);
+        $this->assertInstanceOf(ReadOnlyPromotedPropertyBMapped::class, $out->b);
+        $this->assertSame('foo', $out->var1);
+        $this->assertSame('bar', $out->b->var2);
     }
 }
