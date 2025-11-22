@@ -53,7 +53,7 @@ return (new PhpCsFixer\Config())
                 'Symfony/Bridge/PhpUnit/Tests/DeprecationErrorHandler/',
                 'Symfony/Component/Intl/Resources/data/',
             ])
-            // explicit tests for ommited @param type, against `no_superfluous_phpdoc_tags`
+            // explicit tests for omitted @param type, against `no_superfluous_phpdoc_tags`
             ->notPath('Symfony/Component/PropertyInfo/Tests/Extractor/PhpDocExtractorTest.php')
             ->notPath('Symfony/Component/PropertyInfo/Tests/Extractor/PhpStanExtractorTest.php')
             // Support for older PHPunit version
