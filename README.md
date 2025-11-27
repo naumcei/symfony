@@ -17,6 +17,8 @@ Installation
 Sponsor
 -------
 
+Symfony 7.4 is backed by:
+
 - [SensioLabs][27]
 - [Private Packagist][28]
 - [redirection.io][29]
