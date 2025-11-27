@@ -7,6 +7,21 @@ in 7.4 minor versions.
 To get the diff for a specific change, go to https://github.com/symfony/symfony/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/symfony/symfony/compare/v7.4.0...v7.4.1
 
+* 7.4.0 (2025-11-27)
+
+ * feature #62528  Thank you redirection.io and JoliCode for backing Symfony 7.4! (nicolas-grekas)
+ * feature #62527  Thank you Private Packagist for backing Symfony 7.4! (nicolas-grekas)
+ * feature #62526  Thank you SensioLabs for backing Symfony 7.4! (nicolas-grekas)
+ * bug #62474 [Config] Fix nullable EnumNode with BackedEnum (yoeunes)
+ * bug #62485 [DependencyInjection] Fix loop corruption in `CheckTypeDeclarationsPass` (yoeunes)
+ * bug #62486 [DependencyInjection] Fix invalid PHP syntax for nullable `TypedReference` in `PhpDumper` (yoeunes)
+ * bug #62487 [Security] Fix `UserBadge` validation bypass via identifier normalizer (yoeunes)
+ * bug #62489 [FrameworkBundle] Fix TypeError when traversing scalar values in debug:config (yoeunes)
+ * bug #62493 [Console] Fix exception message when abbreviation matches multiple hidden commands (yoeunes)
+ * bug #62471 [String] Fix normalization in trimPrefix/trimSuffix (yoeunes)
+ * bug #62476 [DependencyInjection] Fix wrong trait usage in ServiceLocatorArgument (yoeunes)
+ * feature #62469 [Security] Keep SymfonyCasts as backers of the Security components v7.4 🤗 (nicolas-grekas)
+
 * 7.4.0-RC3 (2025-11-21)
 
  * bug #62454 [ObjectMapper] mapping of nested classes with promoted read-only properties (soyuka)
