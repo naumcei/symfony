@@ -19,6 +19,8 @@ Sponsor
 
 - [SensioLabs][27]
 - [Private Packagist][28]
+- [redirection.io][29]
+- [JoliCode][30]
 
 As the creator of Symfony, **SensioLabs** supports companies using Symfony,
 with an offering encompassing consultancy, expertise, services, training, and
@@ -28,7 +30,15 @@ technical assistance to ensure the success of web application development projec
 private packages. It mirrors all your open-source dependencies for better
 availability and monitors them for security vulnerabilities.
 
-Help Symfony by [sponsoring][29] its development!
+**redirection.io** logs all your website’s HTTP traffic, and lets you fix errors with
+redirect rules in seconds. Give your marketing, SEO and IT teams the right tool to
+manage your website traffic efficiently!
+
+**JoliCode** is a team of passionate developers and open-source lovers, with a
+strong expertise in PHP & Symfony technologies. They can help you build your projects
+using state-of-the-art practices.
+
+Help Symfony by [sponsoring][31] its development!
 
 Documentation
 -------------
@@ -92,4 +102,6 @@ and supported by [Symfony contributors][19].
 [26]: https://symfony.com/book
 [27]: https://sensiolabs.com
 [28]: https://packagist.com/
-[29]: https://symfony.com/sponsor
+[29]: https://redirection.io
+[30]: https://jolicode.com
+[31]: https://symfony.com/sponsor
