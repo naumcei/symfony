@@ -17,6 +17,15 @@ Installation
 Sponsor
 -------
 
+Symfony 8.0 is backed by:
+
+- [Sulu][27]
+
+Sulu is the CMS for Symfony developers. It provides pre-built content-management
+features while giving developers the freedom to build, deploy, and maintain custom
+solutions using full-stack Symfony. Sulu is ideal for creating complex websites,
+integrating external tools, and building custom-built solutions.
+
 Help Symfony by [sponsoring][31] its development!
 
 Documentation
@@ -79,4 +88,5 @@ and supported by [Symfony contributors][19].
 [24]: https://symfony.com/coc
 [25]: https://symfony.com/doc/current/contributing/code_of_conduct/care_team.html
 [26]: https://symfony.com/book
+[27]: https://sulu.io/
 [31]: https://symfony.com/sponsor
