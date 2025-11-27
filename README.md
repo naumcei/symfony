@@ -17,7 +17,13 @@ Installation
 Sponsor
 -------
 
-Help Symfony by [sponsoring][28] its development!
+- [SensioLabs][27]
+
+As the creator of Symfony, **SensioLabs** supports companies using Symfony,
+with an offering encompassing consultancy, expertise, services, training, and
+technical assistance to ensure the success of web application development projects.
+
+Help Symfony by [sponsoring][29] its development!
 
 Documentation
 -------------
@@ -79,4 +85,5 @@ and supported by [Symfony contributors][19].
 [24]: https://symfony.com/coc
 [25]: https://symfony.com/doc/current/contributing/code_of_conduct/care_team.html
 [26]: https://symfony.com/book
-[28]: https://symfony.com/sponsor
+[27]: https://sensiolabs.com
+[29]: https://symfony.com/sponsor
