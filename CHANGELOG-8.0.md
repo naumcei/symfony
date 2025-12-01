@@ -7,6 +7,35 @@ in 8.0 minor versions.
 To get the diff for a specific change, go to https://github.com/symfony/symfony/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/symfony/symfony/compare/v8.0.0...v8.0.1
 
+* 8.0.0 (2025-11-27)
+
+ * feature #62530  Thank you PhpStorm for backing Symfony 8.0! (nicolas-grekas)
+ * feature #62529  Thank you Sulu for backing Symfony 8.0! (nicolas-grekas)
+ * feature #62528  Thank you redirection.io and JoliCode for backing Symfony 7.4! (nicolas-grekas)
+ * feature #62527  Thank you Private Packagist for backing Symfony 7.4! (nicolas-grekas)
+ * feature #62526  Thank you SensioLabs for backing Symfony 7.4! (nicolas-grekas)
+ * bug #62476 [DependencyInjection] Fix wrong trait usage in ServiceLocatorArgument (yoeunes)
+ * feature #62469 [Security] Keep SymfonyCasts as backers of the Security components v7.4 🤗 (nicolas-grekas)
+
+* 8.0.0-RC3 (2025-11-21)
+
+ * bug #62454 [ObjectMapper] mapping of nested classes with promoted read-only properties (soyuka)
+ * bug #62456 [AssetMapper] Fix entrypoint status lost during update (yoeunes)
+ * bug #62416 [Console] Fix completion for global options values (HypeMC)
+ * bug #62455 [ObjectMapper] map to embedded object with property access (soyuka)
+ * bug #62458 [Workflow] Fix `MethodMarkingStore` crash with inherited uninitialized properties (yoeunes)
+ * bug #62459 [Routing] Fix case sensitivity for static host matching in compiled routes (yoeunes)
+ * bug #62461 [Routing] Fix localized prefix updates breaking aliases (yoeunes)
+ * bug #62460 [Routing] Fix addNamePrefix breaking aliases to external routes (yoeunes)
+ * bug #62453 [FrameworkBundle] Make `APP_*_DIR` relative to the project directory (nicolas-grekas)
+ * bug #62447 [Form] Mark FormFlow as finished if the last step is skipped (yceruto)
+ * bug #62436 [FrameworkBundle] Dump all registered extensions’ configuration reference (MatTheCat)
+ * bug #62449 [HttpKernel] Fix using MapRequestPayload on nullable arguments (nicolas-grekas)
+ * bug #62415 [HttpClient] Don't reset unused clients in data collector (HypeMC)
+ * bug #62417 [ObjectMapper] bypass lazy ghost with class transform (soyuka)
+ * bug #62437 [DependencyInjection] Fix preloading `LazyClosure` (nicolas-grekas)
+ * bug #62441 [WebProfilerBundle] fix displaying runner (94noni)
+
 * 8.0.0-RC2 (2025-11-16)
 
  * bug #62411 [HttpKernel] Conflict with symfony/flex < 2.10 (nicolas-grekas)

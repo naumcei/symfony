@@ -32,8 +32,6 @@ jobs:
             mode: low-deps
           - php: '8.4'
           - php: '8.5'
-            # to be removed when ext-zstd is ready for PHP 8.5
-            extensions: amqp,apcu,brotli,igbinary,intl,mbstring,memcached,redis,relay
             #mode: experimental
       fail-fast: false
 
