@@ -5,3 +5,8 @@ DependencyInjection
 -------------------
 
  * Deprecate configuring options `alias`, `parent`, `synthetic`, `file`, `arguments`, `properties`, `configurator` or `calls` when using `from_callable`
+
+FrameworkBundle
+---------------
+
+ * Deprecate setting the `framework.profiler.collect_serializer_data` config option
