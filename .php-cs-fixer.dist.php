@@ -26,8 +26,8 @@ return (new PhpCsFixer\Config())
     // @see https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/pull/7777
     ->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect())
     ->setRules([
-        '@PHP71Migration' => true,
-        '@PHPUnit75Migration:risky' => true,
+        '@PHP7x1Migration' => true, // take lowest version from `git grep -h '"php"' **/composer.json | uniq | sort`
+        '@PHPUnit7x5Migration:risky' => true, // take version from src/Symfony/Bridge/PhpUnit/phpunit.xml.dist#L4
         '@Symfony' => true,
         '@Symfony:risky' => true,
         'phpdoc_var_annotation_correct_order' => true,
