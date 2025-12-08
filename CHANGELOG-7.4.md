@@ -7,6 +7,11 @@ in 7.4 minor versions.
 To get the diff for a specific change, go to https://github.com/symfony/symfony/commit/XXX where XXX is the change hash
 To get the diff between two versions, go to https://github.com/symfony/symfony/compare/v7.4.0...v7.4.1
 
+* 7.4.2 (2025-12-08)
+
+ * bug #62682 [Serializer][Validator] Attribute metadata no longer requires `container.excluded` tags (HypeMC)
+ * bug #62685 [DependencyInjection] Fix `PriorityTaggedServiceTrait` when tag attributes are not a list (GromNaN)
+
 * 7.4.1 (2025-12-07)
 
  * bug #62663 [HttpFoundation] Improve logic in Request::createFromGlobals() (nicolas-grekas)
