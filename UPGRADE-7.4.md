@@ -183,6 +183,11 @@ Translation
 
  * Deprecate `TranslatableMessage::__toString`
 
+TwigBundle
+----------
+
+ * Deprecate setting the `exception_controller` config to `null`. This was a legacy opt-out of a deprecation that is a no-op since Symfony 5.0. Remove that setting entirely instead.
+
 Uid
 ---
 
