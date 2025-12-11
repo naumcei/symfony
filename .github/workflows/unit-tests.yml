@@ -34,7 +34,7 @@ jobs:
           - php: '8.3'
           - php: '8.4'
           - php: '8.5'
-            #mode: experimental
+          - php: '8.6'
       fail-fast: false
 
     runs-on: ubuntu-24.04
@@ -181,7 +181,7 @@ jobs:
               echo -e "\n\\e[32mOK\\e[0m $title\\n\\n::endgroup::"
             fi
 
-            [[ "${{ matrix.mode }}" = experimental ]] || (exit $ok)
+            exit $ok
           }
           export -f _run_tests
 
