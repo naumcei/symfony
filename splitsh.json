@@ -39,6 +39,7 @@
         "lock": {
             "prefixes": [{ "from": "src/Symfony/Component/Lock", "to": "", "excludes": ["Bridge"] }]
         },
+        "dynamo-db-lock": "src/Symfony/Component/Lock/Bridge/DynamoDb",
         "mailer": {
             "prefixes": [{ "from": "src/Symfony/Component/Mailer", "to": "", "excludes": ["Bridge"] }]
         },
@@ -55,6 +56,7 @@
         "mailjet-mailer": "src/Symfony/Component/Mailer/Bridge/Mailjet",
         "mailomat-mailer": "src/Symfony/Component/Mailer/Bridge/Mailomat",
         "mailtrap-mailer": "src/Symfony/Component/Mailer/Bridge/Mailtrap",
+        "microsoft-graph-mailer": "src/Symfony/Component/Mailer/Bridge/MicrosoftGraph",
         "postal-mailer": "src/Symfony/Component/Mailer/Bridge/Postal",
         "postmark-mailer": "src/Symfony/Component/Mailer/Bridge/Postmark",
         "resend-mailer": "src/Symfony/Component/Mailer/Bridge/Resend",
