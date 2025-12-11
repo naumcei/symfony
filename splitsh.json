@@ -135,7 +135,6 @@
         "sinch-notifier": "src/Symfony/Component/Notifier/Bridge/Sinch",
         "sipgate-notifier": "src/Symfony/Component/Notifier/Bridge/Sipgate",
         "slack-notifier": "src/Symfony/Component/Notifier/Bridge/Slack",
-        "sms77-notifier": "src/Symfony/Component/Notifier/Bridge/Sms77",
         "sms-biuras-notifier": "src/Symfony/Component/Notifier/Bridge/SmsBiuras",
         "sms-factor-notifier": "src/Symfony/Component/Notifier/Bridge/SmsFactor",
         "sms-sluzba-notifier": "src/Symfony/Component/Notifier/Bridge/SmsSluzba",
