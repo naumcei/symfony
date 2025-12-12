@@ -31,7 +31,7 @@ return (new PhpCsFixer\Config())
         '@Symfony' => true,
         '@Symfony:risky' => true,
         'phpdoc_var_annotation_correct_order' => true,
-        'protected_to_private' => false,
+        'protected_to_private' => true,
         'no_superfluous_phpdoc_tags' => [
             'remove_inheritdoc' => true,
             'allow_unused_params' => true, // for future-ready params, to be replaced with https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/issues/7377
