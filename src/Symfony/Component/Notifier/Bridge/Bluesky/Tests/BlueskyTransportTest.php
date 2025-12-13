@@ -64,7 +64,7 @@ final class BlueskyTransportTest extends TransportTestCase
         $transport = self::createTransport();
 
         $this->expectException(LogicException::class);
-        $transport->send($this->createMock(MessageInterface::class));
+        $transport->send($this->createStub(MessageInterface::class));
     }
 
     /**
@@ -348,7 +348,7 @@ final class BlueskyTransportTest extends TransportTestCase
             'expectedJsonResponse' => '{"repo":null,"collection":"app.bsky.feed.post","record":{"$type":"app.bsky.feed.post","text":"Hello World!","createdAt":"2024-04-28T08:40:17.000000Z","embed":{"$type":"app.bsky.embed.images","images":[{"alt":"A fixture","image":{"$type":"blob","ref":{"$link":"bafkreibabalobzn6cd366ukcsjycp4yymjymgfxcv6xczmlgpemzkz3cfa"},"mimeType":"image\/png","size":760898}}]}}}',
         ];
 
-        yield 'With website preview card and all optionnal informations' => [
+        yield 'With website preview card and all optional informations' => [
             'blueskyOptions' => (new BlueskyOptions())
                 ->attachCard(
                     'https://example.com',
