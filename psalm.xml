@@ -26,22 +26,10 @@
     <issueHandlers>
         <UndefinedClass>
             <errorLevel type="suppress">
-                <!-- These classes have been added in PHP 8.1 -->
-                <referencedClass name="BackedEnum"/>
-                <referencedClass name="ReflectionIntersectionType"/>
-                <referencedClass name="UnitEnum"/>
-                <!-- These classes have been added in PHP 8.2 -->
-                <referencedClass name="Random\*"/>
+                <!-- These classes have been added in PHP 8.4 -->
+                <referencedClass name="BcMath\Number"/>
             </errorLevel>
         </UndefinedClass>
-        <UndefinedDocblockClass>
-            <errorLevel type="suppress">
-                <!-- These classes have been added in PHP 8.1 -->
-                <referencedClass name="BackedEnum"/>
-                <referencedClass name="ReflectionIntersectionType"/>
-                <referencedClass name="UnitEnum"/>
-            </errorLevel>
-        </UndefinedDocblockClass>
         <UnusedClass>
             <errorLevel type="suppress">
                 <!--
@@ -60,12 +48,6 @@
                 <directory name="src/Symfony" />
             </errorLevel>
         </UnusedConstructor>
-        <UndefinedAttributeClass>
-            <errorLevel type="suppress">
-                <!-- These classes have been added in PHP 8.2 -->
-                <referencedClass name="SensitiveParameter"/>
-            </errorLevel>
-        </UndefinedAttributeClass>
     </issueHandlers>
 
     <forbiddenFunctions>
