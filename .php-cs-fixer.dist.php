@@ -36,7 +36,7 @@ return (new PhpCsFixer\Config())
         '@Symfony' => true,
         '@Symfony:risky' => true,
         'phpdoc_var_annotation_correct_order' => true,
-        'protected_to_private' => false,
+        'protected_to_private' => true,
         'header_comment' => [
             'header' => implode('', $fileHeaderParts),
             'validator' => implode('', [
