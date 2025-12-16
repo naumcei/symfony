@@ -148,6 +148,7 @@ class UrlGeneratorTest extends TestCase
             'stdClass in nested stdClass' => ['?foo%5Bnested%5D%5Bbaz%5D=bar', 'foo', $nestedStdClass],
             'non stringable object' => ['', 'foo', new NonStringableObject()],
             'non stringable object but has public property' => ['?foo%5Bfoo%5D=property', 'foo', new NonStringableObjectWithPublicProperty()],
+            'numeric key' => ['?123=foo', '123', 'foo'],
         ];
     }
 

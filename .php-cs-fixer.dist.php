@@ -34,7 +34,7 @@ return (new PhpCsFixer\Config())
         '@PHPUnit9x1Migration:risky' => true, // take version from src/Symfony/Bridge/PhpUnit/phpunit.xml.dist#L4
         '@Symfony' => true,
         '@Symfony:risky' => true,
-        'protected_to_private' => false,
+        'protected_to_private' => true,
         'header_comment' => [
             'header' => implode('', $fileHeaderParts),
             'validator' => implode('', [
