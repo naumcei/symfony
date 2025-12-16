@@ -268,7 +268,7 @@ class MicrosoftGraphApiTransportTest extends TestCase
 
     public function testNonSuccessCodeThrown()
     {
-        $client = new MockHttpClient(fn (): ResponseInterface => new MockResponse('', ['http_code' => 503]));
+        $client = new MockHttpClient(static fn (): ResponseInterface => new MockResponse('', ['http_code' => 503]));
 
         $transport = new MicrosoftGraphApiTransport('graph', new TokenManagerMock(), true, $client);
 

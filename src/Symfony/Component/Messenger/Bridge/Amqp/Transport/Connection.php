@@ -213,7 +213,7 @@ class Connection
             $amqpOptions['auto_setup'] = filter_var($amqpOptions['auto_setup'], \FILTER_VALIDATE_BOOL);
         }
 
-        $queuesOptions = array_map(function ($queueOptions) {
+        $queuesOptions = array_map(static function ($queueOptions) {
             if (!\is_array($queueOptions)) {
                 $queueOptions = [];
             }
