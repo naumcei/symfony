@@ -6,6 +6,11 @@ DependencyInjection
 
  * Deprecate configuring options `alias`, `parent`, `synthetic`, `file`, `arguments`, `properties`, `configurator` or `calls` when using `from_callable`
 
+DoctrineBridge
+--------------
+
+ * Deprecate setting an `$aliasMap` in `RegisterMappingsPass`. Namespace aliases are no longer supported in Doctrine.
+
 FrameworkBundle
 ---------------
 
