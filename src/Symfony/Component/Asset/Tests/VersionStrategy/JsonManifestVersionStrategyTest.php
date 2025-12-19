@@ -88,7 +88,7 @@ class JsonManifestVersionStrategyTest extends TestCase
 
     public static function provideStrategies(string $manifestPath): \Generator
     {
-        $httpClient = new MockHttpClient(function ($method, $url, $options) {
+        $httpClient = new MockHttpClient(static function ($method, $url, $options) {
             $filename = __DIR__.'/../Fixtures/'.basename($url);
 
             if (file_exists($filename)) {

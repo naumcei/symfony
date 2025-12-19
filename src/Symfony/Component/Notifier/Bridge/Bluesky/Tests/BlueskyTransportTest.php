@@ -326,7 +326,7 @@ final class BlueskyTransportTest extends TransportTestCase
         $recordUri = 'at://did:plc:u5cwb2mwiv2bfq53cjufe6yn/app.bsky.feed.post/3k4duaz5vfs2b';
         $recordCid = 'bafyreibjifzpqj6o6wcq3hejh7y4z4z2vmiklkvykc57tw3pcbx3kxifpm';
 
-        $client = new MockHttpClient(function () use ($recordUri, $recordCid) {
+        $client = new MockHttpClient(static function () use ($recordUri, $recordCid) {
             return new JsonMockResponse([
                 'uri' => $recordUri,
                 'cid' => $recordCid,
