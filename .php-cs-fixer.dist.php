@@ -46,6 +46,7 @@ return (new PhpCsFixer\Config())
             ]),
         ],
         'php_unit_attributes' => true,
+        'random_api_migration' => true,
         // 'static_lambda' => true, // @todo @keradus to fix last issues
     ])
     ->setRiskyAllowed(true)
