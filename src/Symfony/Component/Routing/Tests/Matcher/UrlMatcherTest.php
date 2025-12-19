@@ -1046,10 +1046,7 @@ class UrlMatcherTest extends TestCase
             '_route' => 'a',
             'slug' => 'vienna-2024',
             '_route_mapping' => [
-                'slug' => [
-                    'conference',
-                    'slug',
-                ],
+                'slug' => 'conference',
             ],
         ];
         $this->assertEquals($expected, $matcher->match('/conference/vienna-2024'));
