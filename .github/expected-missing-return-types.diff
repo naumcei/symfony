@@ -6247,7 +6247,14 @@ diff --git a/src/Symfony/Component/Form/Extension/Core/Type/TextType.php b/src/S
 diff --git a/src/Symfony/Component/Form/Extension/Core/Type/TextareaType.php b/src/Symfony/Component/Form/Extension/Core/Type/TextareaType.php
 --- a/src/Symfony/Component/Form/Extension/Core/Type/TextareaType.php
 +++ b/src/Symfony/Component/Form/Extension/Core/Type/TextareaType.php
-@@ -21,5 +21,5 @@ class TextareaType extends AbstractType
+@@ -23,5 +23,5 @@ class TextareaType extends AbstractType
+      * @return void
+      */
+-    public function buildForm(FormBuilderInterface $builder, array $options)
++    public function buildForm(FormBuilderInterface $builder, array $options): void
+     {
+         $builder->addEventSubscriber(new CrlfNormalizerListener());
+@@ -31,5 +31,5 @@ class TextareaType extends AbstractType
       * @return void
       */
 -    public function buildView(FormView $view, FormInterface $form, array $options)
