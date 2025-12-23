@@ -336,21 +336,21 @@ diff --git a/src/Symfony/Component/Form/Test/FormIntegrationTestCase.php b/src/S
 diff --git a/src/Symfony/Component/Form/Test/TypeTestCase.php b/src/Symfony/Component/Form/Test/TypeTestCase.php
 --- a/src/Symfony/Component/Form/Test/TypeTestCase.php
 +++ b/src/Symfony/Component/Form/Test/TypeTestCase.php
-@@ -33,5 +33,5 @@ abstract class TypeTestCase extends FormIntegrationTestCase
+@@ -35,5 +35,5 @@ abstract class TypeTestCase extends FormIntegrationTestCase
       * @return FormExtensionInterface[]
       */
 -    protected function getExtensions()
 +    protected function getExtensions(): array
      {
          $extensions = [];
-@@ -47,5 +47,5 @@ abstract class TypeTestCase extends FormIntegrationTestCase
+@@ -49,5 +49,5 @@ abstract class TypeTestCase extends FormIntegrationTestCase
       * @return void
       */
 -    public static function assertDateTimeEquals(\DateTime $expected, \DateTime $actual)
 +    public static function assertDateTimeEquals(\DateTime $expected, \DateTime $actual): void
      {
          self::assertEquals($expected->format('c'), $actual->format('c'));
-@@ -55,5 +55,5 @@ abstract class TypeTestCase extends FormIntegrationTestCase
+@@ -57,5 +57,5 @@ abstract class TypeTestCase extends FormIntegrationTestCase
       * @return void
       */
 -    public static function assertDateIntervalEquals(\DateInterval $expected, \DateInterval $actual)
