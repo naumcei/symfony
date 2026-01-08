@@ -189,7 +189,11 @@
         "web-link": "src/Symfony/Component/WebLink",
         "webhook": "src/Symfony/Component/Webhook",
         "workflow": "src/Symfony/Component/Workflow",
-        "yaml": "src/Symfony/Component/Yaml"
+        "yaml": "src/Symfony/Component/Yaml",
+        "contracts": {
+            "prefixes": [{ "from": "src/Symfony/Contracts", "to": "" }],
+            "target_branch": "main"
+        }
     },
     "defaults": {
         "git_constraint": "<1.8.2"
