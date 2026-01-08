@@ -65,7 +65,7 @@ final class BlueskyTransportTest extends TransportTestCase
         $transport = self::createTransport();
 
         $this->expectException(LogicException::class);
-        $transport->send($this->createMock(MessageInterface::class));
+        $transport->send($this->createStub(MessageInterface::class));
     }
 
     /**
