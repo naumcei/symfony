@@ -169,7 +169,10 @@
         "webhook": "src/Symfony/Component/Webhook",
         "workflow": "src/Symfony/Component/Workflow",
         "yaml": "src/Symfony/Component/Yaml",
-        "contracts": "src/Symfony/Contracts"
+        "contracts": {
+            "prefixes": [{ "from": "src/Symfony/Contracts", "to": "" }],
+            "target_branch": "3.4"
+        }
     },
     "defaults": {
         "git_constraint": "<1.8.2"
