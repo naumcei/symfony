@@ -21,7 +21,6 @@ use Symfony\Component\Notifier\Message\SmsMessage;
 use Symfony\Component\Notifier\Test\TransportTestCase;
 use Symfony\Component\Notifier\Tests\Transport\DummyMessage;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class SipgateTransportTest extends TransportTestCase
 {
@@ -62,10 +61,7 @@ class SipgateTransportTest extends TransportTestCase
      */
     public function testExceptionIsThrownWhenSendFailed(int $statusCode, string $content, string $expectedExceptionMessage)
     {
-        $response = $this->createMock(ResponseInterface::class);
-        $response->method('getStatusCode')->willReturn($statusCode);
-        $response->method('getContent')->willReturn($content);
-        $client = new MockHttpClient($response);
+        $client = new MockHttpClient(new MockResponse($content, ['http_code' => $statusCode]));
         $transport = $this->createTransport($client);
 
         $this->expectException(TransportException::class);
