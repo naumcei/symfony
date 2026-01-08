@@ -189,8 +189,7 @@
         "web-link": "src/Symfony/Component/WebLink",
         "webhook": "src/Symfony/Component/Webhook",
         "workflow": "src/Symfony/Component/Workflow",
-        "yaml": "src/Symfony/Component/Yaml",
-        "contracts": "src/Symfony/Contracts"
+        "yaml": "src/Symfony/Component/Yaml"
     },
     "defaults": {
         "git_constraint": "<1.8.2"
