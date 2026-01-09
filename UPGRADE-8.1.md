@@ -23,3 +23,8 @@ FrameworkBundle
 ---------------
 
  * Deprecate setting the `framework.profiler.collect_serializer_data` config option
+
+Uid
+---
+
+ * Add argument `$format` to `Ulid::isValid()`
