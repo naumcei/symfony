@@ -16,6 +16,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\ObjectMapper\Exception\MappingException;
 use Symfony\Component\ObjectMapper\Exception\MappingTransformException;
+use Symfony\Component\ObjectMapper\Exception\NoSuchCallableException;
 use Symfony\Component\ObjectMapper\Exception\NoSuchPropertyException;
 use Symfony\Component\ObjectMapper\Metadata\Mapping;
 use Symfony\Component\ObjectMapper\Metadata\ObjectMapperMetadataFactoryInterface;
@@ -57,6 +58,7 @@ use Symfony\Component\ObjectMapper\Tests\Fixtures\InstanceCallback\A as Instance
 use Symfony\Component\ObjectMapper\Tests\Fixtures\InstanceCallback\B as InstanceCallbackB;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\InstanceCallbackWithArguments\A as InstanceCallbackWithArgumentsA;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\InstanceCallbackWithArguments\B as InstanceCallbackWithArgumentsB;
+use Symfony\Component\ObjectMapper\Tests\Fixtures\InvalidConfiguration;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\LazyFoo;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\MapStruct\AToBMapper;
 use Symfony\Component\ObjectMapper\Tests\Fixtures\MapStruct\MapStructMapperMetadataFactory;
@@ -359,6 +361,14 @@ final class ObjectMapperTest extends TestCase
         $metadata->method('create')->with($u)->willReturn([new Mapping(target: \stdClass::class, transform: static fn () => 'str')]);
         $mapper = new ObjectMapper($metadata);
         $mapper->map($u);
+    }
+
+    public function testHasInvalidTransformValue()
+    {
+        $this->expectException(NoSuchCallableException::class);
+        $this->expectExceptionMessage('"wrongMethod" is not a valid callable. If you use a class, make sure it implements "Symfony\Component\ObjectMapper\TransformCallableInterface".');
+
+        (new ObjectMapper())->map(new InvalidConfiguration('foo', 'bar'));
     }
 
     public function testTransformToWrongObject()
