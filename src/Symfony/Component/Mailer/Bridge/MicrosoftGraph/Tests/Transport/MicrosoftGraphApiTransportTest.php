@@ -231,6 +231,46 @@ class MicrosoftGraphApiTransportTest extends TestCase
         $transport->send($mail);
     }
 
+    #[DataProvider('headersToByPassProvider')]
+    public function testHeadersToBypass(string $header, string $value)
+    {
+        $client = new MockHttpClient(function (string $method, string $url, array $options): ResponseInterface {
+            $message = json_decode($options['body'], true)['message'];
+
+            $headers = $message['internetMessageHeaders'] ?? null;
+
+            $this->assertNull($headers);
+
+            return new MockResponse('', ['http_code' => 202]);
+        });
+        $transport = new MicrosoftGraphApiTransport('graph', new TokenManagerMock(), true, $client);
+        $mail = new Email();
+        $mail->subject('Hello!')
+            ->to(new Address('bob@symfony.com', 'Bob'))
+            ->from(new Address('fabpot@symfony.com', 'Fabien'))
+            ->text('Hello There!');
+        $mail->getHeaders()->addHeader($header, $value);
+        $transport->send($mail);
+    }
+
+    public static function headersToByPassProvider()
+    {
+        return [
+            ['x-ms-client-request-id', 'id'],
+            ['operation-id', 'operation-id'],
+            ['authorization', 'auth'],
+            ['x-ms-content-sha256', 'hash'],
+            ['received', 'from localhost'],
+            ['dkim-signature', 'signature'],
+            ['content-transfer-encoding', 'quoted-printable'],
+            ['cc', 'alice@example.com'],
+            ['bcc', 'bob@example.com'],
+            ['content-type', 'text/plain'],
+            ['reply-to', 'fabpot@symfony.com'],
+            ['Return-Path', 'fabpot@symfony.com'],
+        ];
+    }
+
     #[DataProvider('importanceProvider')]
     public function testImportance(string $expected, int $priority)
     {
