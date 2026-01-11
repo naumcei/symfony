@@ -45,6 +45,7 @@ return (new PhpCsFixer\Config())
                 '/s',
             ]),
         ],
+        'no_useless_return' => true,
         'php_unit_attributes' => true,
         'random_api_migration' => true,
         'static_lambda' => true,
