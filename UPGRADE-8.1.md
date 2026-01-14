@@ -24,6 +24,11 @@ FrameworkBundle
 
  * Deprecate setting the `framework.profiler.collect_serializer_data` config option
 
+HttpKernel
+----------
+
+ * Deprecate passing a non-flat list of attributes to `Controller::setController()`
+
 Uid
 ---
 
