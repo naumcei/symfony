@@ -16,7 +16,7 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\Routing\Loader\AnnotationClassLoader;
 use Symfony\Component\Routing\Route;
 
-class AnnotationClassLoaderWithAnnotationsTest extends AnnotationClassLoaderTest
+class AnnotationClassLoaderWithAnnotationsTest extends AnnotationClassLoaderTestCase
 {
     protected function setUp(string $env = null): void
     {
@@ -26,7 +26,9 @@ class AnnotationClassLoaderWithAnnotationsTest extends AnnotationClassLoaderTest
             {
             }
         };
-        AnnotationRegistry::registerLoader('class_exists');
+        if (method_exists(AnnotationRegistry::class, 'registerLoader')) {
+            AnnotationRegistry::registerLoader('class_exists');
+        }
     }
 
     public function testDefaultRouteName()

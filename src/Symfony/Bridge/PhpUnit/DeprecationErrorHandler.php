@@ -12,8 +12,9 @@
 namespace Symfony\Bridge\PhpUnit;
 
 use PHPUnit\Framework\TestResult;
+use PHPUnit\Runner\ErrorHandler;
 use PHPUnit\Util\Error\Handler;
-use PHPUnit\Util\ErrorHandler;
+use PHPUnit\Util\ErrorHandler as UtilErrorHandler;
 use Symfony\Bridge\PhpUnit\DeprecationErrorHandler\Configuration;
 use Symfony\Bridge\PhpUnit\DeprecationErrorHandler\Deprecation;
 use Symfony\Bridge\PhpUnit\DeprecationErrorHandler\DeprecationGroup;
@@ -75,7 +76,12 @@ class DeprecationErrorHandler
         if (null !== $oldErrorHandler) {
             restore_error_handler();
 
-            if ($oldErrorHandler instanceof ErrorHandler || [ErrorHandler::class, 'handleError'] === $oldErrorHandler) {
+            if (
+                $oldErrorHandler instanceof UtilErrorHandler
+                || [UtilErrorHandler::class, 'handleError'] === $oldErrorHandler
+                || $oldErrorHandler instanceof ErrorHandler
+                || [ErrorHandler::class, 'handleError'] === $oldErrorHandler
+            ) {
                 restore_error_handler();
                 self::register($mode);
             }
@@ -203,7 +209,7 @@ class DeprecationErrorHandler
         // store failing status
         $isFailing = !$configuration->tolerates($this->deprecationGroups);
 
-        $this->displayDeprecations($groups, $configuration, $isFailing);
+        $this->displayDeprecations($groups, $configuration);
 
         $this->resetDeprecationGroups();
 
@@ -216,7 +222,7 @@ class DeprecationErrorHandler
             }
 
             $isFailingAtShutdown = !$configuration->tolerates($this->deprecationGroups);
-            $this->displayDeprecations($groups, $configuration, $isFailingAtShutdown);
+            $this->displayDeprecations($groups, $configuration);
 
             if ($configuration->isGeneratingBaseline()) {
                 $configuration->writeBaseline();
@@ -292,11 +298,10 @@ class DeprecationErrorHandler
     /**
      * @param string[]      $groups
      * @param Configuration $configuration
-     * @param bool          $isFailing
      *
      * @throws \InvalidArgumentException
      */
-    private function displayDeprecations($groups, $configuration, $isFailing)
+    private function displayDeprecations($groups, $configuration)
     {
         $cmp = function ($a, $b) {
             return $b->count() - $a->count();
@@ -323,7 +328,8 @@ class DeprecationErrorHandler
                     fwrite($handle, "\n".self::colorize($deprecationGroupMessage, 'legacy' !== $group && 'indirect' !== $group)."\n");
                 }
 
-                if ('legacy' !== $group && !$configuration->verboseOutput($group) && !$isFailing) {
+                // Skip the verbose output if the group is quiet and not failing according to its threshold:
+                if ('legacy' !== $group && !$configuration->verboseOutput($group) && $configuration->toleratesForGroup($group, $this->deprecationGroups)) {
                     continue;
                 }
                 $notices = $this->deprecationGroups[$group]->notices();
@@ -359,6 +365,8 @@ class DeprecationErrorHandler
         if (!$eh = self::$errorHandler) {
             if (class_exists(Handler::class)) {
                 $eh = self::$errorHandler = Handler::class;
+            } elseif (method_exists(UtilErrorHandler::class, '__invoke')) {
+                $eh = self::$errorHandler = UtilErrorHandler::class;
             } elseif (method_exists(ErrorHandler::class, '__invoke')) {
                 $eh = self::$errorHandler = ErrorHandler::class;
             } else {

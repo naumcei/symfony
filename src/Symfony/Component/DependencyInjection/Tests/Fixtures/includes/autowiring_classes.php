@@ -13,6 +13,13 @@ if (\PHP_VERSION_ID >= 80200) {
 
 class Foo
 {
+    /**
+     * @required
+     */
+    public function cloneFoo(): static
+    {
+        return clone $this;
+    }
 }
 
 class Bar
@@ -412,6 +419,13 @@ class NonAutowirableDecorator implements DecoratorInterface
 final class ElsaAction
 {
     public function __construct(NotExisting $notExisting)
+    {
+    }
+}
+
+class ParametersLikeDefaultValue
+{
+    public function __construct(string $parameterLike = '%not%one%parameter%here%', string $willBeSetToKeepFirstArgumentDefaultValue = 'ok')
     {
     }
 }

@@ -11,6 +11,7 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Tests\DependencyInjection;
 
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
@@ -18,7 +19,7 @@ use Symfony\Component\DependencyInjection\Exception\OutOfBoundsException;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\Workflow\Exception\InvalidDefinitionException;
 
-class PhpFrameworkExtensionTest extends FrameworkExtensionTest
+class PhpFrameworkExtensionTest extends FrameworkExtensionTestCase
 {
     protected function loadFromFile(ContainerBuilder $container, $file)
     {
@@ -58,6 +59,36 @@ class PhpFrameworkExtensionTest extends FrameworkExtensionTest
         });
     }
 
+    public function testWorkflowValidationPlacesIsArray()
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('The "places" option must be an array in workflow configuration.');
+        $this->createContainerFromClosure(function ($container) {
+            $container->loadFromExtension('framework', [
+                'workflows' => [
+                    'article' => [
+                        'places' => null,
+                    ],
+                ],
+            ]);
+        });
+    }
+
+    public function testWorkflowValidationTransitonsIsArray()
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('The "transitions" option must be an array in workflow configuration.');
+        $this->createContainerFromClosure(function ($container) {
+            $container->loadFromExtension('framework', [
+                'workflows' => [
+                    'article' => [
+                        'transitions' => null,
+                    ],
+                ],
+            ]);
+        });
+    }
+
     public function testWorkflowValidationStateMachine()
     {
         $this->expectException(InvalidDefinitionException::class);
@@ -86,6 +117,63 @@ class PhpFrameworkExtensionTest extends FrameworkExtensionTest
                 ],
             ]);
         });
+    }
+
+    public function testWorkflowDefaultMarkingStoreDefinition()
+    {
+        $container = $this->createContainerFromClosure(function ($container) {
+            $container->loadFromExtension('framework', [
+                'http_method_override' => false,
+                'workflows' => [
+                    'workflow_a' => [
+                        'type' => 'state_machine',
+                        'marking_store' => [
+                            'type' => 'method',
+                            'property' => 'status',
+                        ],
+                        'supports' => [
+                            __CLASS__,
+                        ],
+                        'places' => [
+                            'a',
+                            'b',
+                        ],
+                        'transitions' => [
+                            'a_to_b' => [
+                                'from' => ['a'],
+                                'to' => ['b'],
+                            ],
+                        ],
+                    ],
+                    'workflow_b' => [
+                        'type' => 'state_machine',
+                        'supports' => [
+                            __CLASS__,
+                        ],
+                        'places' => [
+                            'a',
+                            'b',
+                        ],
+                        'transitions' => [
+                            'a_to_b' => [
+                                'from' => ['a'],
+                                'to' => ['b'],
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+        });
+
+        $workflowA = $container->getDefinition('state_machine.workflow_a');
+        $argumentsA = $workflowA->getArguments();
+        $this->assertArrayHasKey('index_1', $argumentsA, 'workflow_a has a marking_store argument');
+        $this->assertNotNull($argumentsA['index_1'], 'workflow_a marking_store argument is not null');
+
+        $workflowB = $container->getDefinition('state_machine.workflow_b');
+        $argumentsB = $workflowB->getArguments();
+        $this->assertArrayHasKey('index_1', $argumentsB, 'workflow_b has a marking_store argument');
+        $this->assertNull($argumentsB['index_1'], 'workflow_b marking_store argument is null');
     }
 
     public function testRateLimiterWithLockFactory()

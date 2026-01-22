@@ -156,7 +156,7 @@ class ContextListenerTest extends TestCase
         $listener(new RequestEvent($this->createMock(HttpKernelInterface::class), $request, HttpKernelInterface::MAIN_REQUEST));
     }
 
-    public function provideInvalidToken()
+    public static function provideInvalidToken()
     {
         return [
             ['foo'],
@@ -307,7 +307,7 @@ class ContextListenerTest extends TestCase
 
     public function testSessionIsNotReported()
     {
-        $usageReporter = $this->getMockBuilder(\stdClass::class)->setMethods(['__invoke'])->getMock();
+        $usageReporter = $this->getMockBuilder(\stdClass::class)->addMethods(['__invoke'])->getMock();
         $usageReporter->expects($this->never())->method('__invoke');
 
         $session = new Session(new MockArraySessionStorage(), null, null, $usageReporter);

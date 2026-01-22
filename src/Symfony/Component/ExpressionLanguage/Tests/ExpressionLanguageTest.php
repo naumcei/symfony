@@ -119,10 +119,21 @@ class ExpressionLanguageTest extends TestCase
         $expressionLanguage->parse('node.', ['node']);
     }
 
-    public function shortCircuitProviderEvaluate()
+    public static function shortCircuitProviderEvaluate()
     {
-        $object = $this->getMockBuilder(\stdClass::class)->setMethods(['foo'])->getMock();
-        $object->expects($this->never())->method('foo');
+        $object = new class(\Closure::fromCallable([static::class, 'fail'])) {
+            private $fail;
+
+            public function __construct(callable $fail)
+            {
+                $this->fail = $fail;
+            }
+
+            public function foo()
+            {
+                ($this->fail)();
+            }
+        };
 
         return [
             ['false and object.foo()', ['object' => $object], false],
@@ -132,7 +143,7 @@ class ExpressionLanguageTest extends TestCase
         ];
     }
 
-    public function shortCircuitProviderCompile()
+    public static function shortCircuitProviderCompile()
     {
         return [
             ['false and foo', ['foo' => 'foo'], false],
@@ -255,7 +266,7 @@ class ExpressionLanguageTest extends TestCase
         $this->assertNull(eval(sprintf('return %s;', $expressionLanguage->compile($expression, ['foo' => 'foo']))));
     }
 
-    public function provideNullSafe()
+    public static function provideNullSafe()
     {
         $foo = new class() extends \stdClass {
             public function bar()
@@ -304,11 +315,24 @@ class ExpressionLanguageTest extends TestCase
     {
         $expressionLanguage = new ExpressionLanguage();
 
-        $this->expectWarning();
-        eval(sprintf('return %s;', $expressionLanguage->compile($expression, ['foo' => 'foo'])));
+        $this->expectException(\ErrorException::class);
+
+        set_error_handler(static function (int $errno, string $errstr, string $errfile = null, int $errline = null): bool {
+            if ($errno & (\E_WARNING | \E_USER_WARNING) && (str_contains($errstr, 'Attempt to read property') || str_contains($errstr, 'Trying to access'))) {
+                throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+            }
+
+            return false;
+        });
+
+        try {
+            eval(sprintf('return %s;', $expressionLanguage->compile($expression, ['foo' => 'foo'])));
+        } finally {
+            restore_error_handler();
+        }
     }
 
-    public function provideInvalidNullSafe()
+    public static function provideInvalidNullSafe()
     {
         yield ['foo?.bar.baz', (object) ['bar' => null], 'Unable to get property "baz" of non-object "foo.bar".'];
         yield ['foo?.bar["baz"]', (object) ['bar' => null], 'Unable to get an item of non-array "foo.bar".'];
@@ -333,7 +357,7 @@ class ExpressionLanguageTest extends TestCase
         $this->assertSame(eval(sprintf('return %s;', $expressionLanguage->compile($expression, ['foo' => 'foo']))), 'default');
     }
 
-    public function provideNullCoalescing()
+    public static function provideNullCoalescing()
     {
         $foo = new class() extends \stdClass {
             public function bar()
@@ -364,7 +388,7 @@ class ExpressionLanguageTest extends TestCase
         $registerCallback($el);
     }
 
-    public function getRegisterCallbacks()
+    public static function getRegisterCallbacks()
     {
         return [
             [

@@ -34,6 +34,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'afh',
         'agq',
         'ain',
+        'ajp',
         'ak',
         'akk',
         'akz',
@@ -670,6 +671,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'afr',
         'agq',
         'ain',
+        'ajp',
         'aka',
         'akk',
         'akz',
@@ -1504,6 +1506,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'bam' => 'bm',
         'ben' => 'bn',
         'bod' => 'bo',
+        'tib' => 'bo',
         'bre' => 'br',
         'bos' => 'bs',
         'cat' => 'ca',
@@ -1512,26 +1515,33 @@ class LanguagesTest extends ResourceBundleTestCase
         'cos' => 'co',
         'cre' => 'cr',
         'ces' => 'cs',
+        'cze' => 'cs',
         'chu' => 'cu',
         'chv' => 'cv',
         'cym' => 'cy',
+        'wel' => 'cy',
         'dan' => 'da',
         'deu' => 'de',
+        'ger' => 'de',
         'div' => 'dv',
         'dzo' => 'dz',
         'ewe' => 'ee',
         'ell' => 'el',
+        'gre' => 'el',
         'eng' => 'en',
         'epo' => 'eo',
         'spa' => 'es',
         'est' => 'et',
+        'baq' => 'eu',
         'eus' => 'eu',
         'fas' => 'fa',
+        'per' => 'fa',
         'ful' => 'ff',
         'fin' => 'fi',
         'fij' => 'fj',
         'fao' => 'fo',
         'fra' => 'fr',
+        'fre' => 'fr',
         'fry' => 'fy',
         'gle' => 'ga',
         'gla' => 'gd',
@@ -1546,6 +1556,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'hrv' => 'hr',
         'hat' => 'ht',
         'hun' => 'hu',
+        'arm' => 'hy',
         'hye' => 'hy',
         'her' => 'hz',
         'ina' => 'ia',
@@ -1555,11 +1566,13 @@ class LanguagesTest extends ResourceBundleTestCase
         'iii' => 'ii',
         'ipk' => 'ik',
         'ido' => 'io',
+        'ice' => 'is',
         'isl' => 'is',
         'ita' => 'it',
         'iku' => 'iu',
         'jpn' => 'ja',
         'jav' => 'jv',
+        'geo' => 'ka',
         'kat' => 'ka',
         'kon' => 'kg',
         'kik' => 'ki',
@@ -1586,22 +1599,27 @@ class LanguagesTest extends ResourceBundleTestCase
         'lav' => 'lv',
         'mlg' => 'mg',
         'mah' => 'mh',
+        'mao' => 'mi',
         'mri' => 'mi',
+        'mac' => 'mk',
         'mkd' => 'mk',
         'mal' => 'ml',
         'mon' => 'mn',
         'mar' => 'mr',
+        'may' => 'ms',
         'msa' => 'ms',
         'mlt' => 'mt',
+        'bur' => 'my',
         'mya' => 'my',
         'nau' => 'na',
         'nob' => 'nb',
-        'nor' => 'no',
         'nde' => 'nd',
         'nep' => 'ne',
         'ndo' => 'ng',
+        'dut' => 'nl',
         'nld' => 'nl',
         'nno' => 'nn',
+        'nor' => 'no',
         'nbl' => 'nr',
         'nav' => 'nv',
         'nya' => 'ny',
@@ -1620,6 +1638,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'run' => 'rn',
         'mol' => 'ro',
         'ron' => 'ro',
+        'rum' => 'ro',
         'rus' => 'ru',
         'kin' => 'rw',
         'san' => 'sa',
@@ -1629,10 +1648,12 @@ class LanguagesTest extends ResourceBundleTestCase
         'sag' => 'sg',
         'sin' => 'si',
         'slk' => 'sk',
+        'slo' => 'sk',
         'slv' => 'sl',
         'smo' => 'sm',
         'sna' => 'sn',
         'som' => 'so',
+        'alb' => 'sq',
         'sqi' => 'sq',
         'srp' => 'sr',
         'ssw' => 'ss',
@@ -1665,6 +1686,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'yid' => 'yi',
         'yor' => 'yo',
         'zha' => 'za',
+        'chi' => 'zh',
         'zho' => 'zh',
         'zul' => 'zu',
     ];
@@ -1742,7 +1764,7 @@ class LanguagesTest extends ResourceBundleTestCase
         }
     }
 
-    public function provideLanguagesWithAlpha3Equivalent()
+    public static function provideLanguagesWithAlpha3Equivalent()
     {
         return array_map(
             function ($value) { return [$value]; },
@@ -1758,7 +1780,7 @@ class LanguagesTest extends ResourceBundleTestCase
         $this->assertSame(self::ALPHA2_TO_ALPHA3[$language], Languages::getAlpha3Code($language));
     }
 
-    public function provideLanguagesWithoutAlpha3Equivalent()
+    public static function provideLanguagesWithoutAlpha3Equivalent()
     {
         return array_map(
             function ($value) { return [$value]; },
@@ -1792,7 +1814,7 @@ class LanguagesTest extends ResourceBundleTestCase
         $this->assertSame(self::ALPHA3_CODES, Languages::getAlpha3Codes());
     }
 
-    public function provideLanguagesWithAlpha2Equivalent()
+    public static function provideLanguagesWithAlpha2Equivalent()
     {
         return array_map(
             function ($value) { return [$value]; },
@@ -1808,7 +1830,7 @@ class LanguagesTest extends ResourceBundleTestCase
         $this->assertSame(self::ALPHA3_TO_ALPHA2[$language], Languages::getAlpha2Code($language));
     }
 
-    public function provideLanguagesWithoutAlpha2Equivalent()
+    public static function provideLanguagesWithoutAlpha2Equivalent()
     {
         return array_map(
             function ($value) { return [$value]; },

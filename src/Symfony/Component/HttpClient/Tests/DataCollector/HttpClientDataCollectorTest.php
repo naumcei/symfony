@@ -15,8 +15,6 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\DataCollector\HttpClientDataCollector;
 use Symfony\Component\HttpClient\NativeHttpClient;
 use Symfony\Component\HttpClient\TraceableHttpClient;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\Test\TestHttpServer;
 
 class HttpClientDataCollectorTest extends TestCase
@@ -50,7 +48,7 @@ class HttpClientDataCollectorTest extends TestCase
         $sut->registerClient('http_client2', $httpClient2);
         $sut->registerClient('http_client3', $httpClient3);
         $this->assertEquals(0, $sut->getRequestCount());
-        $sut->collect(new Request(), new Response());
+        $sut->lateCollect();
         $this->assertEquals(3, $sut->getRequestCount());
     }
 
@@ -79,7 +77,7 @@ class HttpClientDataCollectorTest extends TestCase
         $sut->registerClient('http_client2', $httpClient2);
         $sut->registerClient('http_client3', $httpClient3);
         $this->assertEquals(0, $sut->getErrorCount());
-        $sut->collect(new Request(), new Response());
+        $sut->lateCollect();
         $this->assertEquals(1, $sut->getErrorCount());
     }
 
@@ -108,7 +106,7 @@ class HttpClientDataCollectorTest extends TestCase
         $sut->registerClient('http_client2', $httpClient2);
         $sut->registerClient('http_client3', $httpClient3);
         $this->assertEquals([], $sut->getClients());
-        $sut->collect(new Request(), new Response());
+        $sut->lateCollect();
         $collectedData = $sut->getClients();
         $this->assertEquals(0, $collectedData['http_client1']['error_count']);
         $this->assertEquals(1, $collectedData['http_client2']['error_count']);
@@ -140,7 +138,7 @@ class HttpClientDataCollectorTest extends TestCase
         $sut->registerClient('http_client2', $httpClient2);
         $sut->registerClient('http_client3', $httpClient3);
         $this->assertEquals([], $sut->getClients());
-        $sut->collect(new Request(), new Response());
+        $sut->lateCollect();
         $collectedData = $sut->getClients();
         $this->assertCount(2, $collectedData['http_client1']['traces']);
         $this->assertCount(1, $collectedData['http_client2']['traces']);
@@ -157,7 +155,7 @@ class HttpClientDataCollectorTest extends TestCase
         ]);
         $sut = new HttpClientDataCollector();
         $sut->registerClient('http_client1', $httpClient1);
-        $sut->collect(new Request(), new Response());
+        $sut->lateCollect();
         $collectedData = $sut->getClients();
         $this->assertCount(1, $collectedData['http_client1']['traces']);
         $sut->reset();
@@ -168,20 +166,21 @@ class HttpClientDataCollectorTest extends TestCase
 
     /**
      * @requires extension openssl
+     *
      * @dataProvider provideCurlRequests
      */
     public function testItGeneratesCurlCommandsAsExpected(array $request, string $expectedCurlCommand)
     {
         $sut = new HttpClientDataCollector();
         $sut->registerClient('http_client', $this->httpClientThatHasTracedRequests([$request]));
-        $sut->collect(new Request(), new Response());
+        $sut->lateCollect();
         $collectedData = $sut->getClients();
         self::assertCount(1, $collectedData['http_client']['traces']);
         $curlCommand = $collectedData['http_client']['traces'][0]['curlCommand'];
         self::assertEquals(sprintf($expectedCurlCommand, '\\' === \DIRECTORY_SEPARATOR ? '"' : "'"), $curlCommand);
     }
 
-    public function provideCurlRequests(): iterable
+    public static function provideCurlRequests(): iterable
     {
         yield 'GET' => [
             [
@@ -310,7 +309,7 @@ class HttpClientDataCollectorTest extends TestCase
                 'curl \\
   --compressed \\
   --request GET \\
-  --url %1$shttp://localhost:8057/?foo=fooval&bar=newbarval&foobar%%5Bbaz%%5D=bazval&foobar%%5Bqux%%5D=quxval&bazqux%%5B0%%5D=bazquxval1&bazqux%%5B1%%5D=bazquxval2%1$s \\
+  --url %1$shttp://localhost:8057/?foo=fooval&bar=newbarval&foobar[baz]=bazval&foobar[qux]=quxval&bazqux[0]=bazquxval1&bazqux[1]=bazquxval2%1$s \\
   --header %1$sAccept: */*%1$s \\
   --header %1$sAccept-Encoding: gzip%1$s \\
   --header %1$sUser-Agent: Symfony HttpClient/Native%1$s',
@@ -358,7 +357,7 @@ class HttpClientDataCollectorTest extends TestCase
                 ],
             ],
         ]));
-        $sut->collect(new Request(), new Response());
+        $sut->lateCollect();
         $collectedData = $sut->getClients();
         self::assertCount(1, $collectedData['http_client']['traces']);
         $curlCommand = $collectedData['http_client']['traces'][0]['curlCommand'];
@@ -388,7 +387,7 @@ class HttpClientDataCollectorTest extends TestCase
                 ],
             ],
         ]));
-        $sut->collect(new Request(), new Response());
+        $sut->lateCollect();
         $collectedData = $sut->getClients();
         self::assertCount(1, $collectedData['http_client']['traces']);
         $curlCommand = $collectedData['http_client']['traces'][0]['curlCommand'];
@@ -410,7 +409,7 @@ class HttpClientDataCollectorTest extends TestCase
                 ],
             ],
         ]));
-        $sut->collect(new Request(), new Response());
+        $sut->lateCollect();
         $collectedData = $sut->getClients();
         self::assertCount(1, $collectedData['http_client']['traces']);
         $curlCommand = $collectedData['http_client']['traces'][0]['curlCommand'];
@@ -432,7 +431,7 @@ class HttpClientDataCollectorTest extends TestCase
                 ],
             ],
         ]));
-        $sut->collect(new Request(), new Response());
+        $sut->lateCollect();
         $collectedData = $sut->getClients();
         self::assertCount(1, $collectedData['http_client']['traces']);
         $curlCommand = $collectedData['http_client']['traces'][0]['curlCommand'];

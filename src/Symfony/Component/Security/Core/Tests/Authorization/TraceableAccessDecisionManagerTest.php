@@ -17,6 +17,7 @@ use Symfony\Component\Security\Core\Authorization\AccessDecisionManager;
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
 use Symfony\Component\Security\Core\Authorization\TraceableAccessDecisionManager;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
+use Symfony\Component\Security\Core\Tests\Fixtures\DummyVoter;
 
 class TraceableAccessDecisionManagerTest extends TestCase
 {
@@ -49,10 +50,10 @@ class TraceableAccessDecisionManagerTest extends TestCase
         $this->assertEquals($expectedLog, $adm->getDecisionLog());
     }
 
-    public function provideObjectsAndLogs(): \Generator
+    public static function provideObjectsAndLogs(): \Generator
     {
-        $voter1 = $this->getMockForAbstractClass(VoterInterface::class);
-        $voter2 = $this->getMockForAbstractClass(VoterInterface::class);
+        $voter1 = new DummyVoter();
+        $voter2 = new DummyVoter();
 
         yield [
             [[
@@ -177,17 +178,17 @@ class TraceableAccessDecisionManagerTest extends TestCase
     {
         $voter1 = $this
             ->getMockBuilder(VoterInterface::class)
-            ->setMethods(['vote'])
+            ->onlyMethods(['vote'])
             ->getMock();
 
         $voter2 = $this
             ->getMockBuilder(VoterInterface::class)
-            ->setMethods(['vote'])
+            ->onlyMethods(['vote'])
             ->getMock();
 
         $voter3 = $this
             ->getMockBuilder(VoterInterface::class)
-            ->setMethods(['vote'])
+            ->onlyMethods(['vote'])
             ->getMock();
 
         $sut = new TraceableAccessDecisionManager(new AccessDecisionManager([$voter1, $voter2, $voter3]));

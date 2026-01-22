@@ -40,6 +40,8 @@ class AutowireAttribute
         public string $expression,
         #[Autowire(value: '%some.parameter%/bar')]
         public string $value,
+        #[Autowire(value: '%null.parameter%')]
+        public ?string $nullableValue,
         #[Autowire('@some.id')]
         public \stdClass $serviceAsValue,
         #[Autowire("@=parameter('some.parameter')")]
@@ -50,6 +52,17 @@ class AutowireAttribute
         public string $escapedRawValue,
         #[Autowire(service: 'invalid.id')]
         public ?\stdClass $invalid = null,
+    ) {
+    }
+}
+
+class AutowireAttributeNullFallback
+{
+    public function __construct(
+        #[Autowire('%required.parameter%')]
+        public string $required,
+        #[Autowire('%optional.parameter%')]
+        public ?string $optional = null,
     ) {
     }
 }

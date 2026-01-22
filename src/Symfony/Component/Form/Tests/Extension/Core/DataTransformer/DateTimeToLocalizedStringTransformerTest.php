@@ -17,7 +17,7 @@ use Symfony\Component\Form\Extension\Core\DataTransformer\DateTimeToLocalizedStr
 use Symfony\Component\Form\Tests\Extension\Core\DataTransformer\Traits\DateTimeEqualsTrait;
 use Symfony\Component\Intl\Util\IntlTestHelper;
 
-class DateTimeToLocalizedStringTransformerTest extends BaseDateTimeTransformerTest
+class DateTimeToLocalizedStringTransformerTest extends BaseDateTimeTransformerTestCase
 {
     use DateTimeEqualsTrait;
 
@@ -52,7 +52,7 @@ class DateTimeToLocalizedStringTransformerTest extends BaseDateTimeTransformerTe
         \Locale::setDefault($this->defaultLocale);
     }
 
-    public function dataProvider()
+    public static function dataProvider()
     {
         return [
             [\IntlDateFormatter::SHORT, null, null, '03.02.10, 04:05', '2010-02-03 04:05:00 UTC'],
@@ -124,7 +124,7 @@ class DateTimeToLocalizedStringTransformerTest extends BaseDateTimeTransformerTe
 
         $transformer = new DateTimeToLocalizedStringTransformer('UTC', 'UTC');
 
-        $this->assertEquals('Feb 3, 2010, 4:05 AM', $transformer->transform($this->dateTime));
+        $this->assertMatchesRegularExpression('/^Feb 3, 2010, 4:05\s+AM$/u', $transformer->transform($this->dateTime));
     }
 
     public function testTransformEmpty()

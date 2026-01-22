@@ -50,7 +50,7 @@ class ObjectLoaderTest extends TestCase
         $loader->load($resourceString);
     }
 
-    public function getBadResourceStrings()
+    public static function getBadResourceStrings()
     {
         return [
             ['Foo:Bar:baz'],
@@ -82,7 +82,7 @@ class ObjectLoaderTest extends TestCase
     {
         $this->expectException(\LogicException::class);
         $service = $this->getMockBuilder(\stdClass::class)
-            ->setMethods(['loadRoutes'])
+            ->addMethods(['loadRoutes'])
             ->getMock();
         $service->expects($this->once())
             ->method('loadRoutes')

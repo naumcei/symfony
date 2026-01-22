@@ -34,7 +34,7 @@ class DoctrineExtensionTest extends TestCase
 
         $this->extension = $this
             ->getMockBuilder(AbstractDoctrineExtension::class)
-            ->setMethods([
+            ->onlyMethods([
                 'getMappingResourceConfigDirectory',
                 'getObjectManagerElementName',
                 'getMappingObjectDefaultName',
@@ -83,7 +83,7 @@ class DoctrineExtensionTest extends TestCase
         $method->invoke($this->extension, $emConfigs, $bundles);
     }
 
-    public function getAutomappingData()
+    public static function getAutomappingData()
     {
         return [
             [
@@ -187,14 +187,14 @@ class DoctrineExtensionTest extends TestCase
 
         // The ordinary fixtures contain annotation
         $mappingType = $method->invoke($this->extension, __DIR__.'/../Fixtures', $container);
-        $this->assertSame($mappingType, 'annotation');
+        $this->assertSame($mappingType, 'attribute');
 
         // In the attribute folder, attributes are used
         $mappingType = $method->invoke($this->extension, __DIR__.'/../Fixtures/Attribute', $container);
         $this->assertSame($mappingType, 'attribute');
     }
 
-    public function providerBasicDrivers()
+    public static function providerBasicDrivers()
     {
         return [
             ['doctrine.orm.cache.apc.class',       ['type' => 'apc']],
@@ -273,10 +273,11 @@ class DoctrineExtensionTest extends TestCase
         $this->invokeLoadCacheDriver($objectManager, $container, $cacheName);
     }
 
-    public function providerBundles()
+    public static function providerBundles()
     {
-        yield ['AnnotationsBundle', 'annotation', '/Entity'];
-        yield ['FullEmbeddableAnnotationsBundle', 'annotation', '/Entity'];
+        yield ['AnnotationsBundle', 'attribute', '/Entity'];
+        yield ['AnnotationsOneLineBundle', 'attribute', '/Entity'];
+        yield ['FullEmbeddableAnnotationsBundle', 'attribute', '/Entity'];
         yield ['AttributesBundle', 'attribute', '/Entity'];
         yield ['FullEmbeddableAttributesBundle', 'attribute', '/Entity'];
         yield ['XmlBundle', 'xml', '/Resources/config/doctrine'];
@@ -285,7 +286,7 @@ class DoctrineExtensionTest extends TestCase
 
         yield ['SrcXmlBundle', 'xml', '/Resources/config/doctrine'];
 
-        yield ['NewAnnotationsBundle', 'annotation', \DIRECTORY_SEPARATOR.'src/Entity'];
+        yield ['NewAnnotationsBundle', 'attribute', \DIRECTORY_SEPARATOR.'src/Entity'];
         yield ['NewXmlBundle', 'xml', '/config/doctrine'];
     }
 

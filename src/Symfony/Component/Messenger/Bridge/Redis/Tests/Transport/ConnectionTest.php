@@ -141,7 +141,7 @@ class ConnectionTest extends TestCase
         Connection::fromDsn($dsn, [], $redis);
     }
 
-    public function provideAuthDsn(): \Generator
+    public static function provideAuthDsn(): \Generator
     {
         yield 'Password only' => ['password', 'redis://password@localhost/queue'];
         yield 'User and password' => [['user', 'password'], 'redis://user:password@localhost/queue'];
@@ -234,12 +234,22 @@ class ConnectionTest extends TestCase
         $redis = $this->createMock(\Redis::class);
 
         $redis->expects($this->exactly(3))->method('xreadgroup')
-            ->withConsecutive(
-                ['symfony', 'consumer', ['queue' => '0'], 1, null], // first call for pending messages
-                ['symfony', 'consumer', ['queue' => '0'], 1, null], // second call because of claimed message (redisid-123)
-                ['symfony', 'consumer', ['queue' => '>'], 1, null] // third call because of no result (other consumer claimed message redisid-123)
-            )
-            ->willReturnOnConsecutiveCalls([], [], []);
+            ->willReturnCallback(function (...$args) {
+                static $series = [
+                    // first call for pending messages
+                    [['symfony', 'consumer', ['queue' => '0'], 1, null], []],
+                    // second call because of claimed message (redisid-123)
+                    [['symfony', 'consumer', ['queue' => '0'], 1, null], []],
+                    // third call because of no result (other consumer claimed message redisid-123)
+                    [['symfony', 'consumer', ['queue' => '>'], 1, null], []],
+                ];
+
+                [$expectedArgs, $return] = array_shift($series);
+                $this->assertSame($expectedArgs, $args);
+
+                return $return;
+            })
+        ;
 
         $redis->expects($this->once())->method('xpending')->willReturn([[
             0 => 'redisid-123', // message-id
@@ -260,14 +270,20 @@ class ConnectionTest extends TestCase
         $redis = $this->createMock(\Redis::class);
 
         $redis->expects($this->exactly(2))->method('xreadgroup')
-            ->withConsecutive(
-                ['symfony', 'consumer', ['queue' => '0'], 1, null], // first call for pending messages
-                ['symfony', 'consumer', ['queue' => '0'], 1, null] // second call because of claimed message (redisid-123)
-            )
-            ->willReturnOnConsecutiveCalls(
-                [], // first call returns no result
-                ['queue' => [['message' => '{"body":"1","headers":[]}']]] // second call returns claimed message (redisid-123)
-            );
+            ->willReturnCallback(function (...$args) {
+                static $series = [
+                    // first call for pending messages
+                    [['symfony', 'consumer', ['queue' => '0'], 1, null], []],
+                    // second call because of claimed message (redisid-123)
+                    [['symfony', 'consumer', ['queue' => '0'], 1, null], ['queue' => [['message' => '{"body":"1","headers":[]}']]]],
+                ];
+
+                [$expectedArgs, $return] = array_shift($series);
+                $this->assertSame($expectedArgs, $args);
+
+                return $return;
+            })
+        ;
 
         $redis->expects($this->once())->method('xpending')->willReturn([[
             0 => 'redisid-123', // message-id
@@ -367,23 +383,21 @@ class ConnectionTest extends TestCase
     /**
      * @dataProvider provideIdPatterns
      */
-    public function testAddReturnId(string $expected, \Redis $redis, int $delay = 0)
+    public function testAddReturnId(string $expected, int $delay, string $method, string $return)
     {
+        $redis = $this->createMock(\Redis::class);
+        $redis->expects($this->atLeastOnce())->method($method)->willReturn($return);
+
         $id = Connection::fromDsn(dsn: 'redis://localhost/queue', redis: $redis)->add('body', [], $delay);
 
         $this->assertMatchesRegularExpression($expected, $id);
     }
 
-    public function provideIdPatterns(): \Generator
+    public static function provideIdPatterns(): \Generator
     {
-        $redis = $this->createMock(\Redis::class);
-        $redis->expects($this->atLeastOnce())->method('xadd')->willReturn('THE_MESSAGE_ID');
+        yield 'No delay' => ['/^THE_MESSAGE_ID$/', 0, 'xadd', 'THE_MESSAGE_ID'];
 
-        yield 'No delay' => ['/^THE_MESSAGE_ID$/', $redis];
-
-        $redis = $this->createMock(\Redis::class);
-        $redis->expects($this->atLeastOnce())->method('rawCommand')->willReturn('1');
-        yield '100ms delay' => ['/^\w+\.\d+$/', $redis, 100];
+        yield '100ms delay' => ['/^\w+\.\d+$/', 100, 'rawCommand', '1'];
     }
 
     public function testInvalidSentinelMasterName()

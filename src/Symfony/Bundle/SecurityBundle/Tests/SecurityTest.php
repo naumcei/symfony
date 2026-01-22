@@ -74,7 +74,7 @@ class SecurityTest extends TestCase
         $this->assertSame($expectedUser, $security->getUser());
     }
 
-    public function getUserTests()
+    public static function getUserTests()
     {
         yield [null, null];
 
@@ -115,7 +115,7 @@ class SecurityTest extends TestCase
         $this->assertSame($expectedFirewallConfig, $security->getFirewallConfig($request));
     }
 
-    public function getFirewallConfigTests()
+    public static function getFirewallConfigTests()
     {
         $request = new Request();
 
@@ -141,7 +141,7 @@ class SecurityTest extends TestCase
             ->willReturnMap([
                 ['request_stack', $requestStack],
                 ['security.firewall.map', $firewallMap],
-                ['security.user_authenticator', $userAuthenticator],
+                ['security.authenticator.managers_locator', new ServiceLocator(['main' => fn () => $userAuthenticator])],
                 ['security.user_checker', $userChecker],
             ])
         ;

@@ -73,7 +73,7 @@ class DateTimeNormalizerTest extends TestCase
         ]));
     }
 
-    public function normalizeUsingTimeZonePassedInContextProvider()
+    public static function normalizeUsingTimeZonePassedInContextProvider()
     {
         yield ['2016-12-01T00:00:00+00:00', new \DateTime('2016/12/01', new \DateTimeZone('UTC')), null];
         yield ['2016-12-01T00:00:00+09:00', new \DateTime('2016/12/01', new \DateTimeZone('Japan')), new \DateTimeZone('Japan')];
@@ -99,7 +99,7 @@ class DateTimeNormalizerTest extends TestCase
         );
     }
 
-    public function normalizeUsingTimeZonePassedInContextAndExpectedFormatWithMicrosecondsProvider()
+    public static function normalizeUsingTimeZonePassedInContextAndExpectedFormatWithMicrosecondsProvider()
     {
         yield [
             '2018-12-01T18:03:06.067634',
@@ -178,6 +178,8 @@ class DateTimeNormalizerTest extends TestCase
         $this->assertEquals(new \DateTimeImmutable('2016/01/01', new \DateTimeZone('UTC')), $this->normalizer->denormalize('2016-01-01T00:00:00+00:00', \DateTimeImmutable::class));
         $this->assertEquals(new \DateTime('2016/01/01', new \DateTimeZone('UTC')), $this->normalizer->denormalize('2016-01-01T00:00:00+00:00', \DateTime::class));
         $this->assertEquals(new \DateTime('2016/01/01', new \DateTimeZone('UTC')), $this->normalizer->denormalize('  2016-01-01T00:00:00+00:00  ', \DateTime::class));
+        $this->assertEquals(new \DateTimeImmutable('2023-05-06T17:35:34.000000+0000', new \DateTimeZone('UTC')), $this->normalizer->denormalize(1683394534, \DateTimeImmutable::class, null, [DateTimeNormalizer::FORMAT_KEY => 'U']));
+        $this->assertEquals(new \DateTimeImmutable('2023-05-06T17:35:34.123400+0000', new \DateTimeZone('UTC')), $this->normalizer->denormalize(1683394534.1234, \DateTimeImmutable::class, null, [DateTimeNormalizer::FORMAT_KEY => 'U.u']));
     }
 
     public function testDenormalizeUsingTimezonePassedInConstructor()
@@ -211,7 +213,7 @@ class DateTimeNormalizerTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    public function denormalizeUsingTimezonePassedInContextProvider()
+    public static function denormalizeUsingTimezonePassedInContextProvider()
     {
         yield 'with timezone' => [
             '2016/12/01 17:35:00',
@@ -243,24 +245,31 @@ class DateTimeNormalizerTest extends TestCase
         $this->normalizer->denormalize('invalid date', \DateTimeInterface::class);
     }
 
+    public function testDenormalizeWrongTypeThrowsException()
+    {
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('The data is either not an string, an empty string, or null; you should pass a string that can be parsed with the passed format or a valid DateTime string.');
+        $this->normalizer->denormalize(['date' => '2023-03-03 00:00:00.000000', 'timezone_type' => 1, 'timezone' => '+01:00'], \DateTimeInterface::class);
+    }
+
     public function testDenormalizeNullThrowsException()
     {
         $this->expectException(UnexpectedValueException::class);
-        $this->expectExceptionMessage('The data is either an empty string or null, you should pass a string that can be parsed with the passed format or a valid DateTime string.');
+        $this->expectExceptionMessage('The data is either not an string, an empty string, or null; you should pass a string that can be parsed with the passed format or a valid DateTime string.');
         $this->normalizer->denormalize(null, \DateTimeInterface::class);
     }
 
     public function testDenormalizeEmptyStringThrowsException()
     {
         $this->expectException(UnexpectedValueException::class);
-        $this->expectExceptionMessage('The data is either an empty string or null, you should pass a string that can be parsed with the passed format or a valid DateTime string.');
+        $this->expectExceptionMessage('The data is either not an string, an empty string, or null; you should pass a string that can be parsed with the passed format or a valid DateTime string.');
         $this->normalizer->denormalize('', \DateTimeInterface::class);
     }
 
     public function testDenormalizeStringWithSpacesOnlyThrowsAnException()
     {
         $this->expectException(UnexpectedValueException::class);
-        $this->expectExceptionMessage('The data is either an empty string or null, you should pass a string that can be parsed with the passed format or a valid DateTime string.');
+        $this->expectExceptionMessage('The data is either not an string, an empty string, or null; you should pass a string that can be parsed with the passed format or a valid DateTime string.');
         $this->normalizer->denormalize('  ', \DateTimeInterface::class);
     }
 

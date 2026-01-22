@@ -11,10 +11,17 @@
 
 namespace Symfony\Bridge\Doctrine\Tests\PropertyInfo;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\EventManager;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Doctrine\DBAL\Types\Type as DBALType;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
+use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\Setup;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\PropertyInfo\DoctrineExtractor;
@@ -33,8 +40,24 @@ class DoctrineExtractorTest extends TestCase
 {
     private function createExtractor()
     {
-        $config = Setup::createAnnotationMetadataConfiguration([__DIR__.\DIRECTORY_SEPARATOR.'Fixtures'], true);
-        $entityManager = EntityManager::create(['driver' => 'pdo_sqlite'], $config);
+        $config = class_exists(ORMSetup::class)
+            ? ORMSetup::createConfiguration(true)
+            : Setup::createAnnotationMetadataConfiguration([__DIR__.\DIRECTORY_SEPARATOR.'Fixtures'], true);
+        if (\PHP_VERSION_ID >= 80000 && class_exists(AttributeDriver::class)) {
+            $config->setMetadataDriverImpl(new AttributeDriver([__DIR__.'/../Tests/Fixtures' => 'Symfony\Bridge\Doctrine\Tests\Fixtures'], true));
+        } else {
+            $config->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader(), null, true));
+        }
+        if (class_exists(DefaultSchemaManagerFactory::class)) {
+            $config->setSchemaManagerFactory(new DefaultSchemaManagerFactory());
+        }
+
+        if (!(new \ReflectionMethod(EntityManager::class, '__construct'))->isPublic()) {
+            $entityManager = EntityManager::create(['driver' => 'pdo_sqlite'], $config);
+        } else {
+            $eventManager = new EventManager();
+            $entityManager = new EntityManager(DriverManager::getConnection(['driver' => 'pdo_sqlite'], $config, $eventManager), $config, $eventManager);
+        }
 
         if (!DBALType::hasType('foo')) {
             DBALType::addType('foo', 'Symfony\Bridge\Doctrine\Tests\PropertyInfo\Fixtures\DoctrineFooType');
@@ -132,7 +155,7 @@ class DoctrineExtractorTest extends TestCase
         $this->assertNull($this->createExtractor()->getTypes(DoctrineEnum::class, 'enumCustom', []));
     }
 
-    public function typesProvider()
+    public static function typesProvider()
     {
         $provider = [
             ['id', [new Type(Type::BUILTIN_TYPE_INT)]],

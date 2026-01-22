@@ -53,7 +53,7 @@ class VarExporterTest extends TestCase
         }
     }
 
-    public function provideFailingSerialization()
+    public static function provideFailingSerialization()
     {
         yield [hash_init('md5')];
         yield [new \ReflectionClass(\stdClass::class)];
@@ -115,7 +115,7 @@ class VarExporterTest extends TestCase
         }
     }
 
-    public function provideExport()
+    public static function provideExport()
     {
         yield ['multiline-string', ["\0\0\r\nA" => "B\rC\n\n"], true];
         yield ['lf-ending-string', "'BOOM'\n.var_dump(123)//'", true];
@@ -232,6 +232,10 @@ class VarExporterTest extends TestCase
         yield ['private-constructor', PrivateConstructor::create('bar')];
 
         yield ['php74-serializable', new Php74Serializable()];
+
+        yield ['__unserialize-but-no-__serialize', new __UnserializeButNo__Serialize()];
+
+        yield ['__serialize-but-no-__unserialize', new __SerializeButNo__Unserialize()];
 
         yield ['unit-enum', [FooUnitEnum::Bar], true];
         yield ['readonly', new FooReadonly('k', 'v')];
@@ -436,4 +440,36 @@ class Php74Serializable implements \Serializable
 #[\AllowDynamicProperties]
 class ArrayObject extends \ArrayObject
 {
+}
+
+class __UnserializeButNo__Serialize
+{
+    public $foo;
+
+    public function __construct()
+    {
+        $this->foo = 'ccc';
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->foo = $data['foo'];
+    }
+}
+
+class __SerializeButNo__Unserialize
+{
+    public $foo;
+
+    public function __construct()
+    {
+        $this->foo = 'ccc';
+    }
+
+    public function __serialize(): array
+    {
+        return [
+            'foo' => $this->foo,
+        ];
+    }
 }

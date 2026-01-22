@@ -197,7 +197,7 @@ TXT
         $this->assertSame($expectedSuggestions, $tester->complete($input));
     }
 
-    public function provideCompletionSuggestions(): iterable
+    public static function provideCompletionSuggestions(): iterable
     {
         yield 'option --format' => [
             ['--format', ''],
@@ -206,7 +206,7 @@ TXT
 
         yield 'form_type' => [
             [''],
-            $this->getCoreTypes(),
+            self::getCoreTypes(),
         ];
 
         yield 'option for FQCN' => [
@@ -225,6 +225,7 @@ TXT
                 'translation_domain',
                 'auto_initialize',
                 'priority',
+                'form_attr',
             ],
         ];
 
@@ -244,6 +245,7 @@ TXT
                 'translation_domain',
                 'auto_initialize',
                 'priority',
+                'form_attr',
             ],
         ];
 
@@ -258,7 +260,7 @@ TXT
         ];
     }
 
-    private function getCoreTypes(): array
+    private static function getCoreTypes(): array
     {
         $coreExtension = new CoreExtension();
         $loadTypesRefMethod = (new \ReflectionObject($coreExtension))->getMethod('loadTypes');

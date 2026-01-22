@@ -62,7 +62,7 @@ class CheckCredentialsListenerTest extends TestCase
         }
     }
 
-    public function providePasswords()
+    public static function providePasswords()
     {
         yield ['ThePa$$word', true, true];
         yield ['Invalid', false, false];
@@ -100,7 +100,7 @@ class CheckCredentialsListenerTest extends TestCase
         }
     }
 
-    public function provideCustomAuthenticatedResults()
+    public static function provideCustomAuthenticatedResults()
     {
         yield [true];
         yield [false];
@@ -136,7 +136,7 @@ class CheckCredentialsListenerTest extends TestCase
         $this->hasherFactory->expects($this->any())->method('getPasswordHasher')->with($this->identicalTo($this->user))->willReturn($hasher);
 
         $passport = $this->getMockBuilder(Passport::class)
-            ->setMethods(['addBadge'])
+            ->onlyMethods(['addBadge'])
             ->setConstructorArgs([new UserBadge('wouter', function () { return $this->user; }), new PasswordCredentials('ThePa$$word'), [new PasswordUpgradeBadge('ThePa$$word')]])
             ->getMock();
 
@@ -153,7 +153,7 @@ class CheckCredentialsListenerTest extends TestCase
         $this->hasherFactory->expects($this->any())->method('getPasswordHasher')->with($this->identicalTo($this->user))->willReturn($hasher);
 
         $passport = $this->getMockBuilder(Passport::class)
-            ->setMethods(['addBadge'])
+            ->onlyMethods(['addBadge'])
             ->setConstructorArgs([new UserBadge('wouter', function () { return $this->user; }), new PasswordCredentials('ThePa$$word'), [new PasswordUpgradeBadge('ThePa$$word')]])
             ->getMock();
 

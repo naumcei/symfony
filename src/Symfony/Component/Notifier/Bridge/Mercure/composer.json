@@ -19,7 +19,7 @@
         "php": ">=8.1",
         "ext-json": "*",
         "symfony/mercure": "^0.5.2|^0.6",
-        "symfony/notifier": "^6.2",
+        "symfony/notifier": "^6.2.7",
         "symfony/service-contracts": "^1.10|^2|^3"
     },
     "autoload": {
@@ -28,16 +28,5 @@
             "/Tests/"
         ]
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "Tests/stella-maris-clock",
-            "options": {
-                "versions": {
-                    "stella-maris/clock": "0.1.x-dev"
-                }
-            }
-        }
-    ],
     "minimum-stability": "dev"
 }

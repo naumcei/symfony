@@ -45,7 +45,7 @@ class MemcachedSessionHandlerTest extends TestCase
 
         $this->memcached = $this->getMockBuilder(\Memcached::class)
             ->disableOriginalConstructor()
-            ->setMethods($methodsToMock)
+            ->onlyMethods($methodsToMock)
             ->getMock();
 
         $this->storage = new MemcachedSessionHandler(
@@ -147,7 +147,7 @@ class MemcachedSessionHandlerTest extends TestCase
         }
     }
 
-    public function getOptionFixtures()
+    public static function getOptionFixtures()
     {
         return [
             [['prefix' => 'session'], true],

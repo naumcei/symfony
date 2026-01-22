@@ -154,7 +154,7 @@ class DebugHandlersListenerTest extends TestCase
         $this->assertSame($userHandler, $eHandler->setExceptionHandler('var_dump'));
     }
 
-    public function provideLevelsAssignedToLoggers(): array
+    public static function provideLevelsAssignedToLoggers(): array
     {
         return [
             [false, false, '0', null, null],
@@ -215,7 +215,13 @@ class DebugHandlersListenerTest extends TestCase
         $handler
             ->expects($this->exactly(\count($expectedCalls)))
             ->method('setDefaultLogger')
-            ->withConsecutive(...$expectedCalls);
+            ->willReturnCallback(function (LoggerInterface $logger, $levels) use (&$expectedCalls) {
+                [$expectedLogger, $expectedLevels] = array_shift($expectedCalls);
+
+                $this->assertSame($expectedLogger, $logger);
+                $this->assertSame($expectedLevels, $levels);
+            })
+        ;
 
         $sut = new DebugHandlersListener(null, $logger, $levels, null, true, true, $deprecationLogger);
         $prevHander = set_exception_handler([$handler, 'handleError']);

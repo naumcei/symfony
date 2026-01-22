@@ -23,6 +23,7 @@ use Symfony\Component\Messenger\Exception\TransportException;
  * @author Robin Chalas <robin.chalas@gmail.com>
  *
  * @internal
+ *
  * @final
  */
 class Connection
@@ -154,7 +155,7 @@ class Connection
      */
     private static function initializeRedisCluster(?\RedisCluster $redis, array $hosts, string|array|null $auth, array $params): \RedisCluster
     {
-        $redis ??= new \RedisCluster(null, $hosts, $params['timeout'], $params['read_timeout'], (bool) $params['persistent'], $auth, ...\defined('Redis::SCAN_PREFIX') ? [$params['ssl'] ?? null] : []);
+        $redis ??= new \RedisCluster(null, $hosts, $params['timeout'], $params['read_timeout'], (bool) ($params['persistent'] ?? false), $auth, ...\defined('Redis::SCAN_PREFIX') ? [$params['ssl'] ?? null] : []);
         $redis->setOption(\Redis::OPT_SERIALIZER, $params['serializer']);
 
         return $redis;
@@ -295,7 +296,7 @@ class Connection
         $now = microtime();
         $now = substr($now, 11).substr($now, 2, 3);
 
-        $queuedMessageCount = $this->rawCommand('ZCOUNT', 0, $now);
+        $queuedMessageCount = $this->rawCommand('ZCOUNT', 0, $now) ?? 0;
 
         while ($queuedMessageCount--) {
             if (!$message = $this->rawCommand('ZPOPMIN', 1)) {

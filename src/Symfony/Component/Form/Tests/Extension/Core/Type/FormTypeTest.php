@@ -62,7 +62,7 @@ class FormTest_AuthorWithoutRefSetter
     }
 }
 
-class FormTypeTest extends BaseTypeTest
+class FormTypeTest extends BaseTypeTestCase
 {
     public const TESTED_TYPE = 'Symfony\Component\Form\Extension\Core\Type\FormType';
 
@@ -809,7 +809,7 @@ class FormTypeTest extends BaseTypeTest
     public function testFormAttrAsBoolWithNoId()
     {
         $this->expectException(LogicException::class);
-        $this->expectErrorMessage('form_attr');
+        $this->expectExceptionMessage('form_attr');
         $this->factory
             ->createNamedBuilder('', self::TESTED_TYPE, null, [
                 'form_attr' => true,

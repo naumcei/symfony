@@ -261,7 +261,7 @@ class HttpKernelTest extends TestCase
         $this->assertEquals($expectedStatusCode, $response->getStatusCode());
     }
 
-    public function getSpecificStatusCodes()
+    public static function getSpecificStatusCodes()
     {
         return [
             [200],
@@ -447,7 +447,7 @@ class HttpKernelTest extends TestCase
     {
         $request = new Request();
 
-        $stack = $this->getMockBuilder(RequestStack::class)->setMethods(['push', 'pop'])->getMock();
+        $stack = $this->getMockBuilder(RequestStack::class)->onlyMethods(['push', 'pop'])->getMock();
         $stack->expects($this->once())->method('push')->with($this->equalTo($request));
         $stack->expects($this->once())->method('pop');
 

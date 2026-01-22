@@ -402,7 +402,7 @@ class ErrorHandlerTest extends TestCase
         }
     }
 
-    public function handleExceptionProvider(): array
+    public static function handleExceptionProvider(): array
     {
         return [
             ['Uncaught Exception: foo', new \Exception('foo')],
@@ -602,7 +602,7 @@ class ErrorHandlerTest extends TestCase
         }
     }
 
-    public function errorHandlerWhenLoggingProvider(): iterable
+    public static function errorHandlerWhenLoggingProvider(): iterable
     {
         foreach ([false, true] as $previousHandlerWasDefined) {
             foreach ([false, true] as $loggerSetsAnotherHandler) {
@@ -619,6 +619,7 @@ class ErrorHandlerTest extends TestCase
             $this->markTestSkipped('zend.assertions is forcibly disabled');
         }
 
+        set_error_handler(function () {});
         $ini = [
             ini_set('zend.assertions', 1),
             ini_set('assert.active', 1),
@@ -627,6 +628,7 @@ class ErrorHandlerTest extends TestCase
             ini_set('assert.callback', null),
             ini_set('assert.exception', 0),
         ];
+        restore_error_handler();
 
         $logger = new BufferingLogger();
         $handler = new ErrorHandler($logger);

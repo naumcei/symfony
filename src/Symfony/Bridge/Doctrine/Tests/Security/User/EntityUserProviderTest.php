@@ -16,6 +16,7 @@ use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Persistence\ObjectRepository;
+use Doctrine\Persistence\Proxy;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\Security\User\EntityUserProvider;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
@@ -197,6 +198,27 @@ class EntityUserProviderTest extends TestCase
         $provider->upgradePassword($user, 'foobar');
     }
 
+    public function testRefreshedUserProxyIsLoaded()
+    {
+        $em = DoctrineTestHelper::createTestEntityManager();
+        $this->createSchema($em);
+
+        $user = new User(1, 1, 'user1');
+
+        $em->persist($user);
+        $em->flush();
+        $em->clear();
+
+        // store a proxy in the identity map
+        $em->getReference(User::class, ['id1' => 1, 'id2' => 1]);
+
+        $provider = new EntityUserProvider($this->getManager($em), User::class);
+        $refreshedUser = $provider->refreshUser($user);
+
+        $this->assertInstanceOf(Proxy::class, $refreshedUser);
+        $this->assertTrue($refreshedUser->__isInitialized());
+    }
+
     private function getManager($em, $name = null)
     {
         $manager = $this->createMock(ManagerRegistry::class);
@@ -211,7 +233,7 @@ class EntityUserProviderTest extends TestCase
     private function getObjectManager($repository)
     {
         $em = $this->getMockBuilder(ObjectManager::class)
-            ->setMethods(['getClassMetadata', 'getRepository'])
+            ->onlyMethods(['getClassMetadata', 'getRepository'])
             ->getMockForAbstractClass();
         $em->expects($this->any())
             ->method('getRepository')

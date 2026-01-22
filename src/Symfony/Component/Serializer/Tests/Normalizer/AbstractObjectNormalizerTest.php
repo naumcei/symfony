@@ -15,7 +15,10 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
+use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\Serializer\Annotation\Context;
+use Symfony\Component\Serializer\Annotation\DiscriminatorMap;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Serializer\Annotation\SerializedPath;
 use Symfony\Component\Serializer\Exception\ExtraAttributesException;
@@ -31,7 +34,9 @@ use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface;
 use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
 use Symfony\Component\Serializer\NameConverter\MetadataAwareNameConverter;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
@@ -40,7 +45,9 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Tests\Fixtures\Annotations\AbstractDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Annotations\AbstractDummyFirstChild;
 use Symfony\Component\Serializer\Tests\Fixtures\Annotations\AbstractDummySecondChild;
+use Symfony\Component\Serializer\Tests\Fixtures\DummyFirstChildQuux;
 use Symfony\Component\Serializer\Tests\Fixtures\DummySecondChildQuux;
+use Symfony\Component\Serializer\Tests\Normalizer\Features\ObjectDummyWithContextAttribute;
 
 class AbstractObjectNormalizerTest extends TestCase
 {
@@ -167,6 +174,53 @@ class AbstractObjectNormalizerTest extends TestCase
         $normalizer->denormalize($data, DuplicateKeyNestedDummy::class, 'any');
     }
 
+    public function testDenormalizeWithNestedAttributesInConstructor()
+    {
+        $normalizer = new AbstractObjectNormalizerWithMetadata();
+        $data = [
+            'one' => [
+                'two' => [
+                    'three' => 'foo',
+                ],
+                'four' => 'quux',
+            ],
+            'foo' => 'notfoo',
+            'baz' => 'baz',
+        ];
+        $test = $normalizer->denormalize($data, NestedDummyWithConstructor::class, 'any');
+        $this->assertSame('foo', $test->foo);
+        $this->assertSame('quux', $test->quux);
+        $this->assertSame('notfoo', $test->notfoo);
+        $this->assertSame('baz', $test->baz);
+    }
+
+    public function testDenormalizeWithNestedAttributesInConstructorAndDiscriminatorMap()
+    {
+        $normalizer = new AbstractObjectNormalizerWithMetadata();
+        $data = [
+            'one' => [
+                'two' => [
+                    'three' => 'foo',
+                ],
+                'four' => 'quux',
+            ],
+            'foo' => 'notfoo',
+            'baz' => 'baz',
+        ];
+
+        $test1 = $normalizer->denormalize($data + ['type' => 'first'], AbstractNestedDummyWithConstructorAndDiscriminator::class, 'any');
+        $this->assertInstanceOf(FirstNestedDummyWithConstructorAndDiscriminator::class, $test1);
+        $this->assertSame('foo', $test1->foo);
+        $this->assertSame('notfoo', $test1->notfoo);
+        $this->assertSame('baz', $test1->baz);
+
+        $test2 = $normalizer->denormalize($data + ['type' => 'second'], AbstractNestedDummyWithConstructorAndDiscriminator::class, 'any');
+        $this->assertInstanceOf(SecondNestedDummyWithConstructorAndDiscriminator::class, $test2);
+        $this->assertSame('quux', $test2->quux);
+        $this->assertSame('notfoo', $test2->notfoo);
+        $this->assertSame('baz', $test2->baz);
+    }
+
     public function testNormalizeWithNestedAttributesMixingArrayTypes()
     {
         $this->expectException(LogicException::class);
@@ -230,6 +284,52 @@ class AbstractObjectNormalizerTest extends TestCase
         $normalizer = new ObjectNormalizer();
         $test = $normalizer->normalize($foobar, 'any');
         $this->assertSame($data, $test);
+    }
+
+    public function testNormalizeWithNestedAttributesInConstructor()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
+        $normalizer = new ObjectNormalizer($classMetadataFactory, new MetadataAwareNameConverter($classMetadataFactory));
+
+        $test = $normalizer->normalize(new NestedDummyWithConstructor('foo', 'quux', 'notfoo', 'baz'), 'any');
+        $this->assertSame([
+            'one' => [
+                'two' => [
+                    'three' => 'foo',
+                ],
+                'four' => 'quux',
+            ],
+            'foo' => 'notfoo',
+            'baz' => 'baz',
+        ], $test);
+    }
+
+    public function testNormalizeWithNestedAttributesInConstructorAndDiscriminatorMap()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
+        $normalizer = new ObjectNormalizer($classMetadataFactory, new MetadataAwareNameConverter($classMetadataFactory));
+
+        $test1 = $normalizer->normalize(new FirstNestedDummyWithConstructorAndDiscriminator('foo', 'notfoo', 'baz'), 'any');
+        $this->assertSame([
+            'type' => 'first',
+            'one' => [
+                'two' => [
+                    'three' => 'foo',
+                ],
+            ],
+            'foo' => 'notfoo',
+            'baz' => 'baz',
+        ], $test1);
+
+        $test2 = $normalizer->normalize(new SecondNestedDummyWithConstructorAndDiscriminator('quux', 'notfoo', 'baz'), 'any');
+        $this->assertSame([
+            'type' => 'second',
+            'one' => [
+                'four' => 'quux',
+            ],
+            'foo' => 'notfoo',
+            'baz' => 'baz',
+        ], $test2);
     }
 
     public function testDenormalizeCollectionDecodedFromXmlWithOneChild()
@@ -382,6 +482,61 @@ class AbstractObjectNormalizerTest extends TestCase
         $this->assertInstanceOf(DummySecondChildQuux::class, $normalizedData->quux);
     }
 
+    public function testDenormalizeWithDiscriminatorMapAndObjectToPopulateUsesCorrectClassname()
+    {
+        $factory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
+
+        $loaderMock = new class() implements ClassMetadataFactoryInterface {
+            public function getMetadataFor($value): ClassMetadataInterface
+            {
+                if (AbstractDummy::class === $value) {
+                    return new ClassMetadata(
+                        AbstractDummy::class,
+                        new ClassDiscriminatorMapping('type', [
+                            'first' => AbstractDummyFirstChild::class,
+                            'second' => AbstractDummySecondChild::class,
+                        ])
+                    );
+                }
+
+                throw new InvalidArgumentException();
+            }
+
+            public function hasMetadataFor($value): bool
+            {
+                return AbstractDummy::class === $value;
+            }
+        };
+
+        $discriminatorResolver = new ClassDiscriminatorFromClassMetadata($loaderMock);
+        $normalizer = new AbstractObjectNormalizerDummy($factory, null, new PhpDocExtractor(), $discriminatorResolver);
+        $serializer = new Serializer([$normalizer]);
+        $normalizer->setSerializer($serializer);
+
+        $data = [
+            'foo' => 'foo',
+            'quux' => ['value' => 'quux'],
+        ];
+
+        $normalizedData1 = $normalizer->denormalize($data + ['bar' => 'bar'], AbstractDummy::class, 'any', [
+            AbstractNormalizer::OBJECT_TO_POPULATE => new AbstractDummyFirstChild('notfoo', 'notbar'),
+        ]);
+        $this->assertInstanceOf(AbstractDummyFirstChild::class, $normalizedData1);
+        $this->assertSame('foo', $normalizedData1->foo);
+        $this->assertSame('notbar', $normalizedData1->bar);
+        $this->assertInstanceOf(DummyFirstChildQuux::class, $normalizedData1->quux);
+        $this->assertSame('quux', $normalizedData1->quux->getValue());
+
+        $normalizedData2 = $normalizer->denormalize($data + ['baz' => 'baz'], AbstractDummy::class, 'any', [
+            AbstractNormalizer::OBJECT_TO_POPULATE => new AbstractDummySecondChild('notfoo', 'notbaz'),
+        ]);
+        $this->assertInstanceOf(AbstractDummySecondChild::class, $normalizedData2);
+        $this->assertSame('foo', $normalizedData2->foo);
+        $this->assertSame('baz', $normalizedData2->baz);
+        $this->assertInstanceOf(DummySecondChildQuux::class, $normalizedData2->quux);
+        $this->assertSame('quux', $normalizedData2->quux->getValue());
+    }
+
     public function testDenormalizeWithNestedDiscriminatorMap()
     {
         $classDiscriminatorResolver = new class() implements ClassDiscriminatorResolverInterface {
@@ -525,6 +680,50 @@ class AbstractObjectNormalizerTest extends TestCase
 
         $this->assertInstanceOf(ObjectInner::class, $obj->getInner());
     }
+
+    public function testDenormalizeUsesContextAttributeForPropertiesInConstructorWithSeralizedName()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
+
+        $extractor = new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]);
+        $normalizer = new ObjectNormalizer($classMetadataFactory, new MetadataAwareNameConverter($classMetadataFactory), null, $extractor);
+        $serializer = new Serializer([new DateTimeNormalizer([DateTimeNormalizer::FORMAT_KEY => 'd-m-Y']), $normalizer]);
+
+        /** @var ObjectDummyWithContextAttribute $obj */
+        $obj = $serializer->denormalize(['property_with_serialized_name' => '01-02-2022', 'propertyWithoutSerializedName' => '01-02-2022'], ObjectDummyWithContextAttribute::class);
+
+        $this->assertSame($obj->propertyWithSerializedName->format('Y-m-d'), $obj->propertyWithoutSerializedName->format('Y-m-d'));
+    }
+
+    public function testNormalizeUsesContextAttributeForPropertiesInConstructorWithSerializedPath()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
+
+        $extractor = new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]);
+        $normalizer = new ObjectNormalizer($classMetadataFactory, new MetadataAwareNameConverter($classMetadataFactory), null, $extractor);
+        $serializer = new Serializer([new DateTimeNormalizer(), $normalizer]);
+
+        $obj = new ObjectDummyWithContextAttributeAndSerializedPath(new \DateTimeImmutable('22-02-2023'));
+
+        $data = $serializer->normalize($obj);
+
+        $this->assertSame(['property' => ['with_path' => '02-22-2023']], $data);
+    }
+
+    public function testNormalizeUsesContextAttributeForProperties()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
+
+        $extractor = new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]);
+        $normalizer = new ObjectNormalizer($classMetadataFactory, new MetadataAwareNameConverter($classMetadataFactory), null, $extractor);
+        $serializer = new Serializer([$normalizer]);
+
+        $obj = new ObjectDummyWithContextAttributeSkipNullValues();
+
+        $data = $serializer->normalize($obj);
+
+        $this->assertSame(['propertyWithoutNullSkipNullValues' => 'foo'], $data);
+    }
 }
 
 class AbstractObjectNormalizerDummy extends AbstractObjectNormalizer
@@ -613,6 +812,78 @@ class NestedDummy
     public $baz;
 }
 
+class NestedDummyWithConstructor
+{
+    public function __construct(
+        /**
+         * @SerializedPath("[one][two][three]")
+         */
+        public $foo,
+
+        /**
+         * @SerializedPath("[one][four]")
+         */
+        public $quux,
+
+        /**
+         * @SerializedPath("[foo]")
+         */
+        public $notfoo,
+
+        public $baz,
+    ) {
+    }
+}
+
+/**
+ * @DiscriminatorMap(typeProperty="type", mapping={
+ *     "first" = FirstNestedDummyWithConstructorAndDiscriminator::class,
+ *     "second" = SecondNestedDummyWithConstructorAndDiscriminator::class,
+ * })
+ */
+abstract class AbstractNestedDummyWithConstructorAndDiscriminator
+{
+    public function __construct(
+        /**
+         * @SerializedPath("[foo]")
+         */
+        public $notfoo,
+
+        public $baz,
+    ) {
+    }
+}
+
+class FirstNestedDummyWithConstructorAndDiscriminator extends AbstractNestedDummyWithConstructorAndDiscriminator
+{
+    public function __construct(
+        /**
+         * @SerializedPath("[one][two][three]")
+         */
+        public $foo,
+
+        $notfoo,
+        $baz,
+    ) {
+        parent::__construct($notfoo, $baz);
+    }
+}
+
+class SecondNestedDummyWithConstructorAndDiscriminator extends AbstractNestedDummyWithConstructorAndDiscriminator
+{
+    public function __construct(
+        /**
+         * @SerializedPath("[one][four]")
+         */
+        public $quux,
+
+        $notfoo,
+        $baz,
+    ) {
+        parent::__construct($notfoo, $baz);
+    }
+}
+
 class DuplicateKeyNestedDummy
 {
     /**
@@ -624,6 +895,25 @@ class DuplicateKeyNestedDummy
      * @SerializedName("quux")
      */
     public $notquux;
+}
+
+class ObjectDummyWithContextAttributeAndSerializedPath
+{
+    public function __construct(
+        #[Context([DateTimeNormalizer::FORMAT_KEY => 'm-d-Y'])]
+        #[SerializedPath('[property][with_path]')]
+        public \DateTimeImmutable $propertyWithPath,
+    ) {
+    }
+}
+
+class ObjectDummyWithContextAttributeSkipNullValues
+{
+    #[Context([AbstractObjectNormalizer::SKIP_NULL_VALUES => true])]
+    public ?string $propertyWithoutNullSkipNullValues = 'foo';
+
+    #[Context([AbstractObjectNormalizer::SKIP_NULL_VALUES => true])]
+    public ?string $propertyWithNullSkipNullValues = null;
 }
 
 class AbstractObjectNormalizerWithMetadata extends AbstractObjectNormalizer
@@ -644,7 +934,9 @@ class AbstractObjectNormalizerWithMetadata extends AbstractObjectNormalizer
 
     protected function setAttributeValue(object $object, string $attribute, $value, string $format = null, array $context = [])
     {
-        $object->$attribute = $value;
+        if (property_exists($object, $attribute)) {
+            $object->$attribute = $value;
+        }
     }
 }
 

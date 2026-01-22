@@ -60,6 +60,7 @@ use Symfony\Component\Serializer\Tests\Fixtures\DummyMessageInterface;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyMessageNumberOne;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyMessageNumberTwo;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyObjectWithEnumConstructor;
+use Symfony\Component\Serializer\Tests\Fixtures\DummyObjectWithEnumProperty;
 use Symfony\Component\Serializer\Tests\Fixtures\FalseBuiltInDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\NormalizableTraversableDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Php74Full;
@@ -551,7 +552,7 @@ class SerializerTest extends TestCase
         $this->assertSame('{"foo":[],"bar":["notempty"],"baz":{"nested":[]},"a":{"nested":[]},"b":[]}', $serializer->serialize($object, 'json'));
     }
 
-    public function provideObjectOrCollectionTests()
+    public static function provideObjectOrCollectionTests()
     {
         $serializer = new Serializer(
             [
@@ -864,6 +865,9 @@ class SerializerTest extends TestCase
                 }
             ],
             "php74FullWithConstructor": {},
+            "php74FullWithTypedConstructor": {
+                "something": "not a float"
+            },
             "dummyMessage": {
             },
             "nestedObject": {
@@ -952,7 +956,7 @@ class SerializerTest extends TestCase
                 ],
                 'path' => 'dateTime',
                 'useMessageForUser' => true,
-                'message' => 'The data is either an empty string or null, you should pass a string that can be parsed with the passed format or a valid DateTime string.',
+                'message' => 'The data is either not an string, an empty string, or null; you should pass a string that can be parsed with the passed format or a valid DateTime string.',
             ],
             [
                 'currentType' => 'null',
@@ -961,7 +965,7 @@ class SerializerTest extends TestCase
                 ],
                 'path' => 'dateTimeImmutable',
                 'useMessageForUser' => true,
-                'message' => 'The data is either an empty string or null, you should pass a string that can be parsed with the passed format or a valid DateTime string.',
+                'message' => 'The data is either not an string, an empty string, or null; you should pass a string that can be parsed with the passed format or a valid DateTime string.',
             ],
             [
                 'currentType' => 'null',
@@ -1016,6 +1020,15 @@ class SerializerTest extends TestCase
                 'path' => 'php74FullWithConstructor',
                 'useMessageForUser' => true,
                 'message' => 'Failed to create object because the class misses the "constructorArgument" property.',
+            ],
+            [
+                'currentType' => 'string',
+                'expectedTypes' => [
+                    'float',
+                ],
+                'path' => 'php74FullWithTypedConstructor.something',
+                'useMessageForUser' => false,
+                'message' => 'The type of the "something" attribute for class "Symfony\Component\Serializer\Tests\Fixtures\Php74FullWithTypedConstructor" must be one of "float" ("string" given).',
             ],
             $classMetadataFactory ?
                 [
@@ -1220,7 +1233,48 @@ class SerializerTest extends TestCase
         $this->assertSame($expected, $exceptionsAsArray);
     }
 
-    public function testNoCollectDenormalizationErrorsWithWrongEnum()
+    public function testCollectDenormalizationErrorsWithWrongPropertyWithoutConstruct()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader());
+        $reflectionExtractor = new ReflectionExtractor();
+        $propertyInfoExtractor = new PropertyInfoExtractor([], [$reflectionExtractor], [], [], []);
+
+        $serializer = new Serializer(
+            [
+                new BackedEnumNormalizer(),
+                new ObjectNormalizer($classMetadataFactory, null, null, $propertyInfoExtractor),
+            ],
+            ['json' => new JsonEncoder()]
+        );
+
+        try {
+            $serializer->deserialize('{"get": "POST"}', DummyObjectWithEnumProperty::class, 'json', [
+                 DenormalizerInterface::COLLECT_DENORMALIZATION_ERRORS => true,
+             ]);
+        } catch (\Throwable $e) {
+            $this->assertInstanceOf(PartialDenormalizationException::class, $e);
+        }
+
+        $exceptionsAsArray = array_map(function (NotNormalizableValueException $e): array {
+            return [
+                'currentType' => $e->getCurrentType(),
+                'useMessageForUser' => $e->canUseMessageForUser(),
+                'message' => $e->getMessage(),
+            ];
+        }, $e->getErrors());
+
+        $expected = [
+            [
+                'currentType' => 'string',
+                'useMessageForUser' => true,
+                'message' => 'The data must belong to a backed enumeration of type Symfony\Component\Serializer\Tests\Fixtures\StringBackedEnumDummy',
+            ],
+        ];
+
+        $this->assertSame($expected, $exceptionsAsArray);
+    }
+
+    public function testNoCollectDenormalizationErrorsWithWrongEnumOnConstructor()
     {
         $serializer = new Serializer(
             [
@@ -1231,7 +1285,7 @@ class SerializerTest extends TestCase
         );
 
         try {
-            $serializer->deserialize('{"get": "invalid"}', DummyObjectWithEnumConstructor::class, 'json', [
+            $serializer->deserialize('{"get": "POST"}', DummyObjectWithEnumConstructor::class, 'json', [
                 DenormalizerInterface::COLLECT_DENORMALIZATION_ERRORS => true,
             ]);
         } catch (\Throwable $th) {
@@ -1240,7 +1294,7 @@ class SerializerTest extends TestCase
         }
     }
 
-    public function provideCollectDenormalizationErrors()
+    public static function provideCollectDenormalizationErrors()
     {
         return [
             [null],

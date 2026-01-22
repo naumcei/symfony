@@ -21,7 +21,7 @@ class SplCasterTest extends TestCase
 {
     use VarDumperTestTrait;
 
-    public function getCastFileInfoTests()
+    public static function getCastFileInfoTests()
     {
         return [
             [__FILE__, <<<'EOTXT'
@@ -135,7 +135,7 @@ EOTXT;
         $this->assertDumpMatchesFormat($dump, $var);
     }
 
-    public function provideCastSplDoublyLinkedList()
+    public static function provideCastSplDoublyLinkedList()
     {
         return [
             [\SplDoublyLinkedList::IT_MODE_FIFO, 'IT_MODE_FIFO | IT_MODE_KEEP'],
@@ -174,7 +174,7 @@ EOTXT;
         $expected = <<<EOTXT
 ArrayObject@anonymous {
   +"foo": 234
-  -storage: array:1 [
+  storage: array:1 [
     0 => 123
   ]
   flag::STD_PROP_LIST: false
@@ -192,7 +192,7 @@ EOTXT;
         $expected = <<<EOTXT
 Symfony\Component\VarDumper\Tests\Caster\MyArrayIterator {
   -foo: 123
-  -storage: array:1 [
+  storage: array:1 [
     0 => 234
   ]
   flag::STD_PROP_LIST: false

@@ -12,6 +12,7 @@
 namespace Symfony\Component\Translation\Bridge\Crowdin\Tests;
 
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\Translation\Bridge\Crowdin\CrowdinProvider;
@@ -23,39 +24,40 @@ use Symfony\Component\Translation\MessageCatalogue;
 use Symfony\Component\Translation\Provider\ProviderInterface;
 use Symfony\Component\Translation\Test\ProviderTestCase;
 use Symfony\Component\Translation\TranslatorBag;
+use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class CrowdinProviderTest extends ProviderTestCase
 {
-    public function createProvider(HttpClientInterface $client, LoaderInterface $loader, LoggerInterface $logger, string $defaultLocale, string $endpoint): ProviderInterface
+    public static function createProvider(HttpClientInterface $client, LoaderInterface $loader, LoggerInterface $logger, string $defaultLocale, string $endpoint, TranslatorBagInterface $translatorBag = null): ProviderInterface
     {
-        return new CrowdinProvider($client, $loader, $logger, $this->getXliffFileDumper(), $defaultLocale, $endpoint);
+        return new CrowdinProvider($client, $loader, $logger, new XliffFileDumper(), $defaultLocale, $endpoint);
     }
 
-    public function toStringProvider(): iterable
+    public static function toStringProvider(): iterable
     {
         yield [
-            $this->createProvider($this->getClient()->withOptions([
+            self::createProvider((new MockHttpClient())->withOptions([
                 'base_uri' => 'https://api.crowdin.com/api/v2/projects/1/',
                 'auth_bearer' => 'API_TOKEN',
-            ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com'),
+            ]), new ArrayLoader(), new NullLogger(), 'en', 'api.crowdin.com'),
             'crowdin://api.crowdin.com',
         ];
 
         yield [
-            $this->createProvider($this->getClient()->withOptions([
+            self::createProvider((new MockHttpClient())->withOptions([
                 'base_uri' => 'https://domain.api.crowdin.com/api/v2/projects/1/',
                 'auth_bearer' => 'API_TOKEN',
-            ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'domain.api.crowdin.com'),
+            ]), new ArrayLoader(), new NullLogger(), 'en', 'domain.api.crowdin.com'),
             'crowdin://domain.api.crowdin.com',
         ];
 
         yield [
-            $this->createProvider($this->getClient()->withOptions([
+            self::createProvider((new MockHttpClient())->withOptions([
                 'base_uri' => 'https://api.crowdin.com:99/api/v2/projects/1/',
                 'auth_bearer' => 'API_TOKEN',
-            ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com:99'),
+            ]), new ArrayLoader(), new NullLogger(), 'en', 'api.crowdin.com:99'),
             'crowdin://api.crowdin.com:99',
         ];
     }
@@ -148,7 +150,7 @@ XLIFF;
             'validators' => ['post.num_comments' => '{count, plural, one {# comment} other {# comments}}'],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://api.crowdin.com/api/v2/projects/1/',
             'auth_bearer' => 'API_TOKEN',
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com/api/v2/projects/1/');
@@ -210,7 +212,7 @@ XLIFF;
             'validators' => ['post.num_comments' => '{count, plural, one {# comment} other {# comments}}'],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://api.crowdin.com/api/v2/projects/1/',
             'auth_bearer' => 'API_TOKEN',
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com/api/v2/projects/1/');
@@ -282,7 +284,7 @@ XLIFF;
             'validators' => ['post.num_comments' => '{count, plural, one {# comment} other {# comments}}'],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://api.crowdin.com/api/v2/projects/1/',
             'auth_bearer' => 'API_TOKEN',
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com/api/v2/projects/1/');
@@ -389,7 +391,7 @@ XLIFF;
             'messages' => ['a' => 'trans_fr_a'],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://api.crowdin.com/api/v2/projects/1/',
             'auth_bearer' => 'API_TOKEN',
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com/api/v2/projects/1/');
@@ -463,7 +465,7 @@ XLIFF;
             'messages' => ['a' => 'trans_en_a', 'b' => 'trans_en_b'],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://api.crowdin.com/api/v2/projects/1/',
             'auth_bearer' => 'API_TOKEN',
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com/api/v2/projects/1/');
@@ -544,7 +546,7 @@ XLIFF;
             },
         ];
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://api.crowdin.com/api/v2/projects/1/',
             'auth_bearer' => 'API_TOKEN',
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com/api/v2/projects/1/');
@@ -552,7 +554,7 @@ XLIFF;
         $provider->write($translatorBag);
     }
 
-    public function getResponsesForProcessAddFileAndUploadTranslations(): \Generator
+    public static function getResponsesForProcessAddFileAndUploadTranslations(): \Generator
     {
         $arrayLoader = new ArrayLoader();
 
@@ -630,6 +632,30 @@ XLIFF
                     ],
                 ]));
             },
+            'listLanguages' => function (string $method, string $url, array $options = []): ResponseInterface {
+                $this->assertSame('GET', $method);
+                $this->assertSame('https://api.crowdin.com/api/v2/languages?limit=500', $url);
+                $this->assertSame('Authorization: Bearer API_TOKEN', $options['normalized_headers']['authorization'][0]);
+
+                return new MockResponse(json_encode([
+                    'data' => [
+                        [
+                            'data' => [
+                                'id' => 'en-GB',
+                                'osxLocale' => 'en_GB',
+                                'locale' => 'en-GB',
+                            ],
+                        ],
+                        [
+                            'data' => [
+                                'id' => 'fr',
+                                'osxLocale' => 'fr_FR',
+                                'locale' => 'fr-FR',
+                            ],
+                        ],
+                    ],
+                ]));
+            },
             'exportProjectTranslations' => function (string $method, string $url, array $options = []) use ($expectedTargetLanguageId): ResponseInterface {
                 $this->assertSame('POST', $method);
                 $this->assertSame('https://api.crowdin.com/api/v2/projects/1/translations/exports', $url);
@@ -650,7 +676,7 @@ XLIFF
             ->method('load')
             ->willReturn($expectedTranslatorBag->getCatalogue($locale));
 
-        $crowdinProvider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $crowdinProvider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://api.crowdin.com/api/v2/projects/1/',
             'auth_bearer' => 'API_TOKEN',
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com/api/v2');
@@ -660,7 +686,7 @@ XLIFF
         $this->assertEquals($expectedTranslatorBag->getCatalogues(), $translatorBag->getCatalogues());
     }
 
-    public function getResponsesForOneLocaleAndOneDomain(): \Generator
+    public static function getResponsesForOneLocaleAndOneDomain(): \Generator
     {
         $arrayLoader = new ArrayLoader();
 
@@ -744,6 +770,30 @@ XLIFF
                     ],
                 ]));
             },
+            'listLanguages' => function (string $method, string $url, array $options = []): ResponseInterface {
+                $this->assertSame('GET', $method);
+                $this->assertSame('https://api.crowdin.com/api/v2/languages?limit=500', $url);
+                $this->assertSame('Authorization: Bearer API_TOKEN', $options['normalized_headers']['authorization'][0]);
+
+                return new MockResponse(json_encode([
+                    'data' => [
+                        [
+                            'data' => [
+                                'id' => 'en',
+                                'osxLocale' => 'en_GB',
+                                'locale' => 'en-GB',
+                            ],
+                        ],
+                        [
+                            'data' => [
+                                'id' => 'fr',
+                                'osxLocale' => 'fr_FR',
+                                'locale' => 'fr-FR',
+                            ],
+                        ],
+                    ],
+                ]));
+            },
             'downloadSource' => function (string $method, string $url): ResponseInterface {
                 $this->assertSame('GET', $method);
                 $this->assertSame('https://api.crowdin.com/api/v2/projects/1/files/12/download', $url);
@@ -763,7 +813,7 @@ XLIFF
             ->method('load')
             ->willReturn($expectedTranslatorBag->getCatalogue($locale));
 
-        $crowdinProvider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $crowdinProvider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://api.crowdin.com/api/v2/projects/1/',
             'auth_bearer' => 'API_TOKEN',
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com/api/v2');
@@ -773,7 +823,7 @@ XLIFF
         $this->assertEquals($expectedTranslatorBag->getCatalogues(), $translatorBag->getCatalogues());
     }
 
-    public function getResponsesForDefaultLocaleAndOneDomain(): \Generator
+    public static function getResponsesForDefaultLocaleAndOneDomain(): \Generator
     {
         $arrayLoader = new ArrayLoader();
 
@@ -824,6 +874,30 @@ XLIFF
                     ],
                 ]));
             },
+            'listLanguages' => function (string $method, string $url, array $options = []): ResponseInterface {
+                $this->assertSame('GET', $method);
+                $this->assertSame('https://api.crowdin.com/api/v2/languages?limit=500', $url);
+                $this->assertSame('Authorization: Bearer API_TOKEN', $options['normalized_headers']['authorization'][0]);
+
+                return new MockResponse(json_encode([
+                    'data' => [
+                        [
+                            'data' => [
+                                'id' => 'en',
+                                'osxLocale' => 'en_GB',
+                                'locale' => 'en-GB',
+                            ],
+                        ],
+                        [
+                            'data' => [
+                                'id' => 'fr',
+                                'osxLocale' => 'fr_FR',
+                                'locale' => 'fr-FR',
+                            ],
+                        ],
+                    ],
+                ]));
+            },
             'exportProjectTranslations' => function (string $method, string $url, array $options = []): ResponseInterface {
                 $this->assertSame('POST', $method);
                 $this->assertSame('https://api.crowdin.com/api/v2/projects/1/translations/exports', $url);
@@ -832,7 +906,7 @@ XLIFF
             },
         ];
 
-        $crowdinProvider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $crowdinProvider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://api.crowdin.com/api/v2/projects/1/',
             'auth_bearer' => 'API_TOKEN',
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com/api/v2');
@@ -859,6 +933,30 @@ XLIFF
                     ],
                 ]));
             },
+            'listLanguages' => function (string $method, string $url, array $options = []): ResponseInterface {
+                $this->assertSame('GET', $method);
+                $this->assertSame('https://api.crowdin.com/api/v2/languages?limit=500', $url);
+                $this->assertSame('Authorization: Bearer API_TOKEN', $options['normalized_headers']['authorization'][0]);
+
+                return new MockResponse(json_encode([
+                    'data' => [
+                        [
+                            'data' => [
+                                'id' => 'en',
+                                'osxLocale' => 'en_GB',
+                                'locale' => 'en-GB',
+                            ],
+                        ],
+                        [
+                            'data' => [
+                                'id' => 'fr',
+                                'osxLocale' => 'fr_FR',
+                                'locale' => 'fr-FR',
+                            ],
+                        ],
+                    ],
+                ]));
+            },
             'exportProjectTranslations' => function (string $method, string $url, array $options = []): ResponseInterface {
                 $this->assertSame('POST', $method);
                 $this->assertSame('https://api.crowdin.com/api/v2/projects/1/translations/exports', $url);
@@ -873,7 +971,7 @@ XLIFF
             },
         ];
 
-        $crowdinProvider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $crowdinProvider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://api.crowdin.com/api/v2/projects/1/',
             'auth_bearer' => 'API_TOKEN',
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com/api/v2');
@@ -945,7 +1043,7 @@ XLIFF
             ],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://api.crowdin.com/api/v2/projects/1/',
             'auth_bearer' => 'API_TOKEN',
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com/api/v2/projects/1/');
@@ -984,7 +1082,7 @@ XLIFF
             ],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://api.crowdin.com/api/v2/projects/1/',
             'auth_bearer' => 'API_TOKEN',
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com/api/v2/projects/1/');
@@ -1049,7 +1147,7 @@ XLIFF
             ],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://api.crowdin.com/api/v2/projects/1/',
             'auth_bearer' => 'API_TOKEN',
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'api.crowdin.com/api/v2/projects/1/');

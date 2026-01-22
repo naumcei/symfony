@@ -211,7 +211,7 @@ class ContainerBuilderTest extends TestCase
         $builder->setDefinition($id, new Definition('Foo'));
     }
 
-    public function provideBadId()
+    public static function provideBadId()
     {
         return [
             [''],
@@ -863,8 +863,8 @@ class ContainerBuilderTest extends TestCase
         $container->register('foo', 'stdClass')
             ->setPublic(true)
             ->setProperties([
-            'fake' => '%env(int:FAKE)%',
-        ]);
+                'fake' => '%env(resolve:FAKE)%',
+            ]);
 
         $container->compile(true);
 
@@ -927,6 +927,11 @@ class ContainerBuilderTest extends TestCase
             ->addTag('foo', ['foo' => 'foo'])
             ->addTag('bar', ['bar' => 'bar'])
             ->addTag('foo', ['foofoo' => 'foofoo'])
+        ;
+        $builder
+            ->register('bar', 'Bar\FooClass')
+            ->addTag('foo')
+            ->addTag('container.excluded')
         ;
         $this->assertEquals([
             'foo' => [
@@ -1511,7 +1516,7 @@ class ContainerBuilderTest extends TestCase
         $this->assertInstanceOf(\stdClass::class, $listener4);
     }
 
-    public function provideAlmostCircular()
+    public static function provideAlmostCircular()
     {
         yield ['public'];
         yield ['private'];
@@ -1829,6 +1834,33 @@ class ContainerBuilderTest extends TestCase
 
         $this->assertSame(['tag1', 'tag2', 'tag3'], $container->findTags());
     }
+
+    public function testNamedArgumentAfterCompile()
+    {
+        $container = new ContainerBuilder();
+        $container->register(E::class)
+            ->setPublic(true)
+            ->setArguments(['$second' => 2]);
+
+        $container->compile();
+
+        $e = $container->get(E::class);
+
+        $this->assertSame('', $e->first);
+        $this->assertSame(2, $e->second);
+    }
+
+    public function testNamedArgumentBeforeCompile()
+    {
+        $container = new ContainerBuilder();
+        $container->register(E::class, E::class)
+            ->setPublic(true)
+            ->setArguments(['$first' => 1]);
+
+        $e = $container->get(E::class);
+
+        $this->assertSame(1, $e->first);
+    }
 }
 
 class FooClass
@@ -1856,4 +1888,16 @@ class C implements X
 
 class D implements X
 {
+}
+
+class E
+{
+    public $first;
+    public $second;
+
+    public function __construct($first = '', $second = '')
+    {
+        $this->first = $first;
+        $this->second = $second;
+    }
 }

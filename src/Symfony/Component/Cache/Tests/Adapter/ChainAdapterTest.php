@@ -25,6 +25,7 @@ use Symfony\Contracts\Cache\ItemInterface;
 
 /**
  * @author Kévin Dunglas <dunglas@gmail.com>
+ *
  * @group time-sensitive
  */
 class ChainAdapterTest extends AdapterTestCase
@@ -213,7 +214,7 @@ class ChainAdapterTest extends AdapterTestCase
 
         $adapter1 = $this->getMockBuilder(FilesystemAdapter::class)
             ->setConstructorArgs(['', 2])
-            ->setMethods(['save'])
+            ->onlyMethods(['save'])
             ->getMock();
         $adapter1->expects($this->once())
             ->method('save')
@@ -222,7 +223,7 @@ class ChainAdapterTest extends AdapterTestCase
 
         $adapter2 = $this->getMockBuilder(FilesystemAdapter::class)
             ->setConstructorArgs(['', 4])
-            ->setMethods(['save'])
+            ->onlyMethods(['save'])
             ->getMock();
         $adapter2->expects($this->once())
             ->method('save')

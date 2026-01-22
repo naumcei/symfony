@@ -12,8 +12,10 @@
 namespace Symfony\Component\HttpKernel\Tests\HttpCache;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\HttpCache\HttpCache;
 use Symfony\Component\HttpKernel\HttpCache\Store;
 
 class StoreTest extends TestCase
@@ -198,7 +200,7 @@ class StoreTest extends TestCase
     {
         $this->storeSimpleEntry();
         $response = $this->store->lookup($this->request);
-        $this->assertEquals($this->getStorePath('en'.hash('xxh128', 'test')), $response->getContent());
+        $this->assertEquals($this->getStorePath('en'.hash('xxh128', 'test')), $response->headers->get('X-Body-File'));
     }
 
     public function testInvalidatesMetaAndEntityStoreEntriesWithInvalidate()
@@ -251,9 +253,9 @@ class StoreTest extends TestCase
         $res3 = new Response('test 3', 200, ['Vary' => 'Foo Bar']);
         $this->store->write($req3, $res3);
 
-        $this->assertEquals($this->getStorePath('en'.hash('xxh128', 'test 3')), $this->store->lookup($req3)->getContent());
-        $this->assertEquals($this->getStorePath('en'.hash('xxh128', 'test 2')), $this->store->lookup($req2)->getContent());
-        $this->assertEquals($this->getStorePath('en'.hash('xxh128', 'test 1')), $this->store->lookup($req1)->getContent());
+        $this->assertEquals($this->getStorePath('en'.hash('xxh128', 'test 3')), $this->store->lookup($req3)->headers->get('X-Body-File'));
+        $this->assertEquals($this->getStorePath('en'.hash('xxh128', 'test 2')), $this->store->lookup($req2)->headers->get('X-Body-File'));
+        $this->assertEquals($this->getStorePath('en'.hash('xxh128', 'test 1')), $this->store->lookup($req1)->headers->get('X-Body-File'));
 
         $this->assertCount(3, $this->getStoreMetadata($key));
     }
@@ -263,17 +265,17 @@ class StoreTest extends TestCase
         $req1 = Request::create('/test', 'get', [], [], [], ['HTTP_FOO' => 'Foo', 'HTTP_BAR' => 'Bar']);
         $res1 = new Response('test 1', 200, ['Vary' => 'Foo Bar']);
         $this->store->write($req1, $res1);
-        $this->assertEquals($this->getStorePath('en'.hash('xxh128', 'test 1')), $this->store->lookup($req1)->getContent());
+        $this->assertEquals($this->getStorePath('en'.hash('xxh128', 'test 1')), $this->store->lookup($req1)->headers->get('X-Body-File'));
 
         $req2 = Request::create('/test', 'get', [], [], [], ['HTTP_FOO' => 'Bling', 'HTTP_BAR' => 'Bam']);
         $res2 = new Response('test 2', 200, ['Vary' => 'Foo Bar']);
         $this->store->write($req2, $res2);
-        $this->assertEquals($this->getStorePath('en'.hash('xxh128', 'test 2')), $this->store->lookup($req2)->getContent());
+        $this->assertEquals($this->getStorePath('en'.hash('xxh128', 'test 2')), $this->store->lookup($req2)->headers->get('X-Body-File'));
 
         $req3 = Request::create('/test', 'get', [], [], [], ['HTTP_FOO' => 'Foo', 'HTTP_BAR' => 'Bar']);
         $res3 = new Response('test 3', 200, ['Vary' => 'Foo Bar']);
         $key = $this->store->write($req3, $res3);
-        $this->assertEquals($this->getStorePath('en'.hash('xxh128', 'test 3')), $this->store->lookup($req3)->getContent());
+        $this->assertEquals($this->getStorePath('en'.hash('xxh128', 'test 3')), $this->store->lookup($req3)->headers->get('X-Body-File'));
 
         $this->assertCount(2, $this->getStoreMetadata($key));
     }
@@ -315,6 +317,44 @@ class StoreTest extends TestCase
         $this->assertTrue($this->store->purge('http://example.com/foo'));
         $this->assertEmpty($this->getStoreMetadata($requestHttp));
         $this->assertEmpty($this->getStoreMetadata($requestHttps));
+    }
+
+    public function testDoesNotStorePrivateHeaders()
+    {
+        $request = Request::create('https://example.com/foo');
+        $response = new Response('foo');
+        $response->headers->setCookie(Cookie::fromString('foo=bar'));
+
+        $this->store->write($request, $response);
+        $this->assertArrayNotHasKey('set-cookie', $this->getStoreMetadata($request)[0][1]);
+        $this->assertNotEmpty($response->headers->getCookies());
+    }
+
+    public function testDiscardsInvalidBodyEval()
+    {
+        $request = Request::create('https://example.com/foo');
+        $response = new Response('foo', 200, ['X-Body-Eval' => 'SSI']);
+
+        $this->store->write($request, $response);
+        $this->assertNull($this->store->lookup($request));
+
+        $request = Request::create('https://example.com/foo');
+        $content = str_repeat('a', 24).'b'.str_repeat('a', 24).'b';
+        $response = new Response($content, 200, ['X-Body-Eval' => 'SSI']);
+
+        $this->store->write($request, $response);
+        $this->assertNull($this->store->lookup($request));
+    }
+
+    public function testLoadsBodyEval()
+    {
+        $request = Request::create('https://example.com/foo');
+        $content = str_repeat('a', 24).'b'.str_repeat('a', 24);
+        $response = new Response($content, 200, ['X-Body-Eval' => 'SSI']);
+
+        $this->store->write($request, $response);
+        $response = $this->store->lookup($request);
+        $this->assertSame($content, $response->getContent());
     }
 
     protected function storeSimpleEntry($path = null, $headers = [])

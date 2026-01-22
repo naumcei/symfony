@@ -20,9 +20,10 @@ use Symfony\Component\Lock\Store\PdoStore;
  * @author Jérémy Derussé <jeremy@derusse.com>
  *
  * @requires extension pdo_sqlite
+ *
  * @group integration
  */
-class PdoStoreTest extends AbstractStoreTest
+class PdoStoreTest extends AbstractStoreTestCase
 {
     use ExpiringStoreTestTrait;
 
@@ -89,7 +90,7 @@ class PdoStoreTest extends AbstractStoreTest
         }
     }
 
-    public function provideDsn()
+    public static function provideDsn()
     {
         $dbFile = tempnam(sys_get_temp_dir(), 'sf_sqlite_cache');
         yield ['sqlite:'.$dbFile.'2', $dbFile.'2'];

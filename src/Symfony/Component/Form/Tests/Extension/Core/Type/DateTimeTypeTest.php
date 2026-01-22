@@ -14,7 +14,7 @@ namespace Symfony\Component\Form\Tests\Extension\Core\Type;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 
-class DateTimeTypeTest extends BaseTypeTest
+class DateTimeTypeTest extends BaseTypeTestCase
 {
     public const TESTED_TYPE = 'Symfony\Component\Form\Extension\Core\Type\DateTimeType';
 
@@ -530,7 +530,7 @@ class DateTimeTypeTest extends BaseTypeTest
         ]);
         $view = $form->createView();
 
-        $this->assertSame('2/13/19, 7:12:13 PM', $view->vars['value']);
+        $this->assertMatchesRegularExpression('#^2/13/19, 7:12:13\s+PM$#u', $view->vars['value']);
     }
 
     public function testDateTypeChoiceErrorsBubbleUp()
@@ -706,7 +706,7 @@ class DateTimeTypeTest extends BaseTypeTest
         $this->assertEquals($expectedData, $form->getData());
     }
 
-    public function provideEmptyData()
+    public static function provideEmptyData()
     {
         $expectedData = \DateTime::createFromFormat('Y-m-d H:i', '2018-11-11 21:23');
         $lazyEmptyData = static function (FormInterface $form) {

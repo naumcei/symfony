@@ -51,7 +51,7 @@ class RememberMeAuthenticatorTest extends TestCase
         $this->assertSame($support, $this->authenticator->supports($request));
     }
 
-    public function provideSupportsData()
+    public static function provideSupportsData()
     {
         yield [Request::create('/'), false];
 
@@ -60,6 +60,9 @@ class RememberMeAuthenticatorTest extends TestCase
 
         $request = Request::create('/', 'GET', [], ['_remember_me_cookie' => 'rememberme']);
         $request->attributes->set(ResponseListener::COOKIE_ATTR_NAME, new Cookie('_remember_me_cookie', null));
+        yield [$request, false];
+
+        $request = Request::create('/', 'GET', [], ['_remember_me_cookie' => '0']);
         yield [$request, false];
     }
 

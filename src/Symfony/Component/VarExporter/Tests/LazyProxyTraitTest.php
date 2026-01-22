@@ -19,6 +19,7 @@ use Symfony\Component\VarExporter\Tests\Fixtures\LazyProxy\FinalPublicClass;
 use Symfony\Component\VarExporter\Tests\Fixtures\LazyProxy\ReadOnlyClass;
 use Symfony\Component\VarExporter\Tests\Fixtures\LazyProxy\StringMagicGetClass;
 use Symfony\Component\VarExporter\Tests\Fixtures\LazyProxy\TestClass;
+use Symfony\Component\VarExporter\Tests\Fixtures\LazyProxy\TestOverwritePropClass;
 use Symfony\Component\VarExporter\Tests\Fixtures\LazyProxy\TestUnserializeClass;
 use Symfony\Component\VarExporter\Tests\Fixtures\LazyProxy\TestWakeupClass;
 
@@ -168,10 +169,10 @@ class LazyProxyTraitTest extends TestCase
         $this->assertSame(1, $initCounter);
         $this->assertSame(123, $proxy->dynProp);
         $this->assertTrue(isset($proxy->dynProp));
-        $this->assertCount(2, (array) $proxy);
+        $this->assertCount(1, (array) $proxy);
         unset($proxy->dynProp);
         $this->assertFalse(isset($proxy->dynProp));
-        $this->assertCount(2, (array) $proxy);
+        $this->assertCount(1, (array) $proxy);
     }
 
     public function testStringMagicGet()
@@ -192,6 +193,14 @@ class LazyProxyTraitTest extends TestCase
         $this->assertSame(1, $proxy->increment());
         $this->assertSame(2, $proxy->increment());
         $this->assertSame(1, $proxy->decrement());
+    }
+
+    public function testOverwritePropClass()
+    {
+        $proxy = $this->createLazyProxy(TestOverwritePropClass::class, fn () => new TestOverwritePropClass('123', 5));
+
+        $this->assertSame('123', $proxy->getDep());
+        $this->assertSame(1, $proxy->increment());
     }
 
     public function testWither()
@@ -250,9 +259,14 @@ class LazyProxyTraitTest extends TestCase
      */
     public function testReadOnlyClass()
     {
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Cannot generate lazy proxy: class "Symfony\Component\VarExporter\Tests\Fixtures\LazyProxy\ReadOnlyClass" is read-only.');
-        $this->createLazyProxy(ReadOnlyClass::class, fn () => new ReadOnlyClass(123));
+        if (\PHP_VERSION_ID < 80300) {
+            $this->expectException(LogicException::class);
+            $this->expectExceptionMessage('Cannot generate lazy proxy: class "Symfony\Component\VarExporter\Tests\Fixtures\LazyProxy\ReadOnlyClass" is readonly.');
+        }
+
+        $proxy = $this->createLazyProxy(ReadOnlyClass::class, fn () => new ReadOnlyClass(123));
+
+        $this->assertSame(123, $proxy->foo);
     }
 
     public function testLazyDecoratorClass()

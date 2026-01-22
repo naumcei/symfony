@@ -41,7 +41,7 @@ class TerminalTest extends TestCase
     {
         foreach (['height', 'width', 'stty'] as $name) {
             $property = new \ReflectionProperty(Terminal::class, $name);
-            $property->setValue(null);
+            $property->setValue(null, null);
         }
     }
 
@@ -77,8 +77,8 @@ class TerminalTest extends TestCase
             $this->markTestSkipped('Must be on windows');
         }
 
-        $sttyString = exec('(stty -a | grep columns) 2>&1', $output, $exitcode);
-        if (0 !== $exitcode) {
+        $sttyString = shell_exec('(stty -a | grep columns) 2> NUL');
+        if (!$sttyString) {
             $this->markTestSkipped('Must have stty support');
         }
 
@@ -115,7 +115,7 @@ class TerminalTest extends TestCase
         }
     }
 
-    public function provideTerminalColorEnv(): \Generator
+    public static function provideTerminalColorEnv(): \Generator
     {
         yield ['truecolor', null, AnsiColorMode::Ansi24];
         yield ['TRUECOLOR', null, AnsiColorMode::Ansi24];

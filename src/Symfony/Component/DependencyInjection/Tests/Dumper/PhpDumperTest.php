@@ -281,9 +281,8 @@ class PhpDumperTest extends TestCase
         $container = new ContainerBuilder();
         $container->setParameter('container.dumper.inline_factories', true);
         $container->setParameter('container.dumper.inline_class_loader', true);
-        $container->setParameter('lazy_foo_class', \Bar\FooClass::class);
 
-        $container->register('lazy_foo', '%lazy_foo_class%')
+        $container->register('lazy_foo', \Bar\FooClass::class)
             ->addArgument(new Definition(\Bar\FooLazyClass::class))
             ->setPublic(true)
             ->setLazy(true);
@@ -395,7 +394,7 @@ class PhpDumperTest extends TestCase
         $dumper->dump();
     }
 
-    public function provideInvalidFactories()
+    public static function provideInvalidFactories()
     {
         return [
             [['', 'method']],
@@ -693,6 +692,42 @@ class PhpDumperTest extends TestCase
         $this->assertStringEqualsFile(self::$fixturesPath.'/php/services13.php', $dumper->dump(), '->dump() dumps inline definitions which reference service_container');
     }
 
+    public function testNonSharedLazy()
+    {
+        $container = new ContainerBuilder();
+
+        $container
+            ->register('foo', Foo::class)
+            ->setFile(realpath(self::$fixturesPath.'/includes/foo_lazy.php'))
+            ->setShared(false)
+            ->setLazy(true)
+            ->setPublic(true);
+
+        $container->compile();
+        $dumper = new PhpDumper($container);
+        $dump = $dumper->dump([
+            'class' => 'Symfony_DI_PhpDumper_Service_Non_Shared_Lazy',
+            'file' => __DIR__,
+            'inline_factories_parameter' => false,
+            'inline_class_loader_parameter' => false,
+        ]);
+        $this->assertStringEqualsFile(
+            self::$fixturesPath.'/php/services_non_shared_lazy_public.php',
+            '\\' === \DIRECTORY_SEPARATOR ? str_replace("'.\\DIRECTORY_SEPARATOR.'", '/', $dump) : $dump
+        );
+        eval('?>'.$dump);
+
+        $container = new \Symfony_DI_PhpDumper_Service_Non_Shared_Lazy();
+
+        $foo1 = $container->get('foo');
+        $this->assertTrue($foo1->resetLazyObject());
+
+        $foo2 = $container->get('foo');
+        $this->assertTrue($foo2->resetLazyObject());
+
+        $this->assertNotSame($foo1, $foo2);
+    }
+
     /**
      * @testWith [false]
      *           [true]
@@ -701,7 +736,7 @@ class PhpDumperTest extends TestCase
     {
         $container = new ContainerBuilder();
         $container->register('foo', 'stdClass')->setShared(false)->setLazy(true);
-        $container->register('bar', 'stdClass')->addArgument(new Reference('foo', ContainerBuilder::EXCEPTION_ON_INVALID_REFERENCE, false))->setPublic(true);
+        $container->register('bar', 'stdClass')->addArgument(new Reference('foo', ContainerBuilder::EXCEPTION_ON_INVALID_REFERENCE))->setPublic(true);
         $container->compile();
 
         $dumper = new PhpDumper($container);
@@ -1103,7 +1138,7 @@ class PhpDumperTest extends TestCase
         $this->assertInstanceOf(\stdClass::class, $listener4);
     }
 
-    public function provideAlmostCircular()
+    public static function provideAlmostCircular()
     {
         yield ['public'];
         yield ['private'];
@@ -1229,6 +1264,11 @@ class PhpDumperTest extends TestCase
             ->register('foo', FooClassWithEnumAttribute::class)
             ->setPublic(true)
             ->addArgument(FooUnitEnum::BAR);
+        $container
+            ->register('bar', \stdClass::class)
+            ->setPublic(true)
+            ->addArgument('%unit_enum%')
+            ->addArgument('%enum_array%');
 
         $container->setParameter('unit_enum', FooUnitEnum::BAR);
         $container->setParameter('enum_array', [FooUnitEnum::BAR, FooUnitEnum::FOO]);
@@ -1246,6 +1286,11 @@ class PhpDumperTest extends TestCase
         $this->assertSame(FooUnitEnum::BAR, $container->getParameter('unit_enum'));
         $this->assertSame([FooUnitEnum::BAR, FooUnitEnum::FOO], $container->getParameter('enum_array'));
         $this->assertStringMatchesFormat(<<<'PHP'
+%A
+    protected function getBarService()
+    {
+        return $this->services['bar'] = new \stdClass(\Symfony\Component\DependencyInjection\Tests\Fixtures\FooUnitEnum::BAR, $this->getParameter('enum_array'));
+    }
 %A
     private function getDynamicParameter(string $name)
     {
@@ -1406,7 +1451,8 @@ PHP
     public function testWither()
     {
         $container = new ContainerBuilder();
-        $container->register(Foo::class);
+        $container->register(Foo::class)
+            ->setAutowired(true);
 
         $container
             ->register('wither', Wither::class)
@@ -1447,6 +1493,37 @@ PHP
         $wither = $container->get('wither');
         $this->assertInstanceOf(Foo::class, $wither->foo);
         $this->assertTrue($wither->resetLazyObject());
+    }
+
+    public function testLazyWitherNonShared()
+    {
+        $container = new ContainerBuilder();
+        $container->register(Foo::class);
+
+        $container
+            ->register('wither', Wither::class)
+            ->setShared(false)
+            ->setLazy(true)
+            ->setPublic(true)
+            ->setAutowired(true);
+
+        $container->compile();
+        $dumper = new PhpDumper($container);
+        $dump = $dumper->dump(['class' => 'Symfony_DI_PhpDumper_Service_Wither_Lazy_Non_Shared']);
+        $this->assertStringEqualsFile(self::$fixturesPath.'/php/services_wither_lazy_non_shared.php', $dump);
+        eval('?>'.$dump);
+
+        $container = new \Symfony_DI_PhpDumper_Service_Wither_Lazy_Non_Shared();
+
+        $wither1 = $container->get('wither');
+        $this->assertInstanceOf(Foo::class, $wither1->foo);
+        $this->assertTrue($wither1->resetLazyObject());
+
+        $wither2 = $container->get('wither');
+        $this->assertInstanceOf(Foo::class, $wither2->foo);
+        $this->assertTrue($wither2->resetLazyObject());
+
+        $this->assertNotSame($wither1, $wither2);
     }
 
     public function testWitherWithStaticReturnType()

@@ -13,11 +13,12 @@ namespace Symfony\Bridge\Doctrine\Tests\Validator\Constraints;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
-use Doctrine\Persistence\ObjectRepository;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bridge\Doctrine\Tests\DoctrineTestHelper;
 use Symfony\Bridge\Doctrine\Tests\Fixtures\AssociationEntity;
 use Symfony\Bridge\Doctrine\Tests\Fixtures\AssociationEntity2;
@@ -58,7 +59,7 @@ class UniqueEntityValidatorTest extends ConstraintValidatorTestCase
     protected $registry;
 
     /**
-     * @var ObjectRepository
+     * @var MockObject&EntityRepository
      */
     protected $repository;
 
@@ -95,8 +96,10 @@ class UniqueEntityValidatorTest extends ConstraintValidatorTestCase
 
     protected function createRepositoryMock()
     {
-        $repository = $this->getMockBuilder(ObjectRepository::class)
-            ->setMethods(['findByCustom', 'find', 'findAll', 'findOneBy', 'findBy', 'getClassName'])
+        $repository = $this->getMockBuilder(EntityRepository::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['find', 'findAll', 'findOneBy', 'findBy', 'getClassName'])
+            ->addMethods(['findByCustom'])
             ->getMock()
         ;
 
@@ -186,7 +189,7 @@ class UniqueEntityValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    public function provideUniquenessConstraints(): iterable
+    public static function provideUniquenessConstraints(): iterable
     {
         yield 'Doctrine style' => [new UniqueEntity([
             'message' => 'myMessage',
@@ -219,7 +222,7 @@ class UniqueEntityValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    public function provideConstraintsWithCustomErrorPath(): iterable
+    public static function provideConstraintsWithCustomErrorPath(): iterable
     {
         yield 'Doctrine style' => [new UniqueEntity([
             'message' => 'myMessage',
@@ -278,7 +281,7 @@ class UniqueEntityValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    public function provideConstraintsWithIgnoreNullDisabled(): iterable
+    public static function provideConstraintsWithIgnoreNullDisabled(): iterable
     {
         yield 'Doctrine style' => [new UniqueEntity([
             'message' => 'myMessage',
@@ -325,7 +328,7 @@ class UniqueEntityValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    public function provideConstraintsWithIgnoreNullEnabled(): iterable
+    public static function provideConstraintsWithIgnoreNullEnabled(): iterable
     {
         yield 'Doctrine style' => [new UniqueEntity([
             'message' => 'myMessage',
@@ -424,7 +427,7 @@ class UniqueEntityValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    public function provideConstraintsWithCustomRepositoryMethod(): iterable
+    public static function provideConstraintsWithCustomRepositoryMethod(): iterable
     {
         yield 'Doctrine style' => [new UniqueEntity([
             'message' => 'myMessage',
@@ -463,7 +466,7 @@ class UniqueEntityValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    public function resultTypesProvider()
+    public static function resultTypesProvider()
     {
         $entity = new SingleIntIdEntity(1, 'foo');
 
@@ -876,7 +879,7 @@ class UniqueEntityValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    public function resultWithEmptyIterator(): array
+    public static function resultWithEmptyIterator(): array
     {
         $entity = new SingleIntIdEntity(1, 'foo');
 

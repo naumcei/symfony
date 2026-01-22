@@ -17,6 +17,7 @@ use Doctrine\DBAL\Driver\Result as DriverResult;
 use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\MariaDBPlatform;
 use Doctrine\DBAL\Platforms\MySQL57Platform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
@@ -178,7 +179,7 @@ class ConnectionTest extends TestCase
         $this->assertEquals($expectedAutoSetup, $config['auto_setup']);
     }
 
-    public function buildConfigurationProvider(): iterable
+    public static function buildConfigurationProvider(): iterable
     {
         yield 'no options' => [
             'dsn' => 'doctrine://default',
@@ -387,12 +388,19 @@ class ConnectionTest extends TestCase
         $connection->get();
     }
 
-    public function providePlatformSql(): iterable
+    public static function providePlatformSql(): iterable
     {
         yield 'MySQL' => [
             new MySQL57Platform(),
             'SELECT m.* FROM messenger_messages m WHERE (m.delivered_at is null OR m.delivered_at < ?) AND (m.available_at <= ?) AND (m.queue_name = ?) ORDER BY available_at ASC LIMIT 1 FOR UPDATE',
         ];
+
+        if (class_exists(MariaDBPlatform::class)) {
+            yield 'MariaDB' => [
+                new MariaDBPlatform(),
+                'SELECT m.* FROM messenger_messages m WHERE (m.delivered_at is null OR m.delivered_at < ?) AND (m.available_at <= ?) AND (m.queue_name = ?) ORDER BY available_at ASC LIMIT 1 FOR UPDATE',
+            ];
+        }
 
         yield 'SQL Server' => [
             new SQLServer2012Platform(),
@@ -401,7 +409,7 @@ class ConnectionTest extends TestCase
 
         yield 'Oracle' => [
             new OraclePlatform(),
-            'SELECT w.id AS "id", w.body AS "body", w.headers AS "headers", w.queue_name AS "queue_name", w.created_at AS "created_at", w.available_at AS "available_at", w.delivered_at AS "delivered_at" FROM messenger_messages w WHERE w.id IN(SELECT a.id FROM (SELECT m.* FROM messenger_messages m WHERE (m.delivered_at is null OR m.delivered_at < ?) AND (m.available_at <= ?) AND (m.queue_name = ?) ORDER BY available_at ASC) a WHERE ROWNUM <= 1) FOR UPDATE',
+            'SELECT w.id AS "id", w.body AS "body", w.headers AS "headers", w.queue_name AS "queue_name", w.created_at AS "created_at", w.available_at AS "available_at", w.delivered_at AS "delivered_at" FROM messenger_messages w WHERE w.id IN (SELECT a.id FROM (SELECT m.id FROM messenger_messages m WHERE (m.delivered_at is null OR m.delivered_at < ?) AND (m.available_at <= ?) AND (m.queue_name = ?) ORDER BY available_at ASC) a WHERE ROWNUM <= 1) FOR UPDATE',
         ];
     }
 
@@ -436,5 +444,64 @@ class ConnectionTest extends TestCase
         $connection->configureSchema($schema, $driverConnection);
         $table = $schema->getTable('messenger_messages');
         $this->assertEmpty($table->getColumns(), 'The table was not overwritten');
+    }
+
+    /**
+     * @dataProvider provideFindAllSqlGeneratedByPlatform
+     */
+    public function testFindAllSqlGenerated(AbstractPlatform $platform, string $expectedSql)
+    {
+        $driverConnection = $this->createMock(DBALConnection::class);
+        $driverConnection->method('getDatabasePlatform')->willReturn($platform);
+        $driverConnection->method('createQueryBuilder')->willReturnCallback(function () use ($driverConnection) {
+            return new QueryBuilder($driverConnection);
+        });
+
+        if (interface_exists(DriverResult::class)) {
+            $result = $this->createMock(DriverResult::class);
+            $result->method('fetchAssociative')->willReturn(false);
+
+            if (class_exists(Result::class)) {
+                $result = new Result($result, $driverConnection);
+            }
+        } else {
+            $result = $this->createMock(ResultStatement::class);
+            $result->method('fetch')->willReturn(false);
+        }
+
+        $driverConnection
+            ->expects($this->once())
+            ->method('executeQuery')
+            ->with($expectedSql)
+            ->willReturn($result)
+        ;
+
+        $connection = new Connection([], $driverConnection);
+        $connection->findAll(50);
+    }
+
+    public function provideFindAllSqlGeneratedByPlatform(): iterable
+    {
+        yield 'MySQL' => [
+            new MySQL57Platform(),
+            'SELECT m.* FROM messenger_messages m WHERE (m.delivered_at is null OR m.delivered_at < ?) AND (m.available_at <= ?) AND (m.queue_name = ?) LIMIT 50',
+        ];
+
+        if (class_exists(MariaDBPlatform::class)) {
+            yield 'MariaDB' => [
+                new MariaDBPlatform(),
+                'SELECT m.* FROM messenger_messages m WHERE (m.delivered_at is null OR m.delivered_at < ?) AND (m.available_at <= ?) AND (m.queue_name = ?) LIMIT 50',
+            ];
+        }
+
+        yield 'SQL Server' => [
+            new SQLServer2012Platform(),
+            'SELECT m.* FROM messenger_messages m WHERE (m.delivered_at is null OR m.delivered_at < ?) AND (m.available_at <= ?) AND (m.queue_name = ?) ORDER BY (SELECT 0) OFFSET 0 ROWS FETCH NEXT 50 ROWS ONLY',
+        ];
+
+        yield 'Oracle' => [
+            new OraclePlatform(),
+            'SELECT a.* FROM (SELECT m.id AS "id", m.body AS "body", m.headers AS "headers", m.queue_name AS "queue_name", m.created_at AS "created_at", m.available_at AS "available_at", m.delivered_at AS "delivered_at" FROM messenger_messages m WHERE (m.delivered_at is null OR m.delivered_at < ?) AND (m.available_at <= ?) AND (m.queue_name = ?)) a WHERE ROWNUM <= 50',
+        ];
     }
 }

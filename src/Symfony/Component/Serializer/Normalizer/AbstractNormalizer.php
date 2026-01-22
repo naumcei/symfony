@@ -322,6 +322,7 @@ abstract class AbstractNormalizer implements NormalizerInterface, DenormalizerIn
 
         $constructor = $this->getConstructor($data, $class, $context, $reflectionClass, $allowedAttributes);
         if ($constructor) {
+            $context['has_constructor'] = true;
             if (true !== $constructor->isPublic()) {
                 return $reflectionClass->newInstanceWithoutConstructor();
             }
@@ -331,20 +332,20 @@ abstract class AbstractNormalizer implements NormalizerInterface, DenormalizerIn
             $params = [];
             foreach ($constructorParameters as $constructorParameter) {
                 $paramName = $constructorParameter->name;
+                $attributeContext = $this->getAttributeDenormalizationContext($class, $paramName, $context);
                 $key = $this->nameConverter ? $this->nameConverter->normalize($paramName, $class, $format, $context) : $paramName;
-                $attributeContext = $this->getAttributeDenormalizationContext($class, $key, $context);
 
                 $allowed = false === $allowedAttributes || \in_array($paramName, $allowedAttributes);
                 $ignored = !$this->isAllowedAttribute($class, $paramName, $format, $context);
                 if ($constructorParameter->isVariadic()) {
                     if ($allowed && !$ignored && (isset($data[$key]) || \array_key_exists($key, $data))) {
-                        if (!\is_array($data[$paramName])) {
+                        if (!\is_array($data[$key])) {
                             throw new RuntimeException(sprintf('Cannot create an instance of "%s" from serialized data because the variadic parameter "%s" can only accept an array.', $class, $constructorParameter->name));
                         }
 
                         $variadicParameters = [];
-                        foreach ($data[$paramName] as $parameterData) {
-                            $variadicParameters[] = $this->denormalizeParameter($reflectionClass, $constructorParameter, $paramName, $parameterData, $attributeContext, $format);
+                        foreach ($data[$key] as $parameterKey => $parameterData) {
+                            $variadicParameters[$parameterKey] = $this->denormalizeParameter($reflectionClass, $constructorParameter, $paramName, $parameterData, $attributeContext, $format);
                         }
 
                         $params = array_merge($params, $variadicParameters);
@@ -398,11 +399,21 @@ abstract class AbstractNormalizer implements NormalizerInterface, DenormalizerIn
             }
 
             if ($constructor->isConstructor()) {
-                return $reflectionClass->newInstanceArgs($params);
+                try {
+                    return $reflectionClass->newInstanceArgs($params);
+                } catch (\TypeError $e) {
+                    if (!isset($context['not_normalizable_value_exceptions'])) {
+                        throw $e;
+                    }
+
+                    return $reflectionClass->newInstanceWithoutConstructor();
+                }
             } else {
                 return $constructor->invokeArgs(null, $params);
             }
         }
+
+        unset($context['has_constructor']);
 
         return new $class();
     }

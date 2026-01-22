@@ -258,6 +258,7 @@ class ResponseCacheStrategyTest extends TestCase
 
     /**
      * @group time-sensitive
+     *
      * @dataProvider cacheControlMergingProvider
      */
     public function testCacheControlMerging(array $expects, array $master, array $surrogates)
@@ -274,7 +275,7 @@ class ResponseCacheStrategyTest extends TestCase
 
                     case 'expires':
                         $expires = clone $response->getDate();
-                        $expires->modify('+'.$value.' seconds');
+                        $expires = $expires->modify('+'.$value.' seconds');
                         $response->setExpires($expires);
                         break;
 
@@ -327,7 +328,7 @@ class ResponseCacheStrategyTest extends TestCase
         }
     }
 
-    public function cacheControlMergingProvider()
+    public static function cacheControlMergingProvider()
     {
         yield 'result is public if all responses are public' => [
             ['private' => false, 'public' => true],

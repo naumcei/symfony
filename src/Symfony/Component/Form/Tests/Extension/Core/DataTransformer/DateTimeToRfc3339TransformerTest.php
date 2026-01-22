@@ -16,7 +16,7 @@ use Symfony\Component\Form\Extension\Core\DataTransformer\BaseDateTimeTransforme
 use Symfony\Component\Form\Extension\Core\DataTransformer\DateTimeToRfc3339Transformer;
 use Symfony\Component\Form\Tests\Extension\Core\DataTransformer\Traits\DateTimeEqualsTrait;
 
-class DateTimeToRfc3339TransformerTest extends BaseDateTimeTransformerTest
+class DateTimeToRfc3339TransformerTest extends BaseDateTimeTransformerTestCase
 {
     use DateTimeEqualsTrait;
 
@@ -37,7 +37,7 @@ class DateTimeToRfc3339TransformerTest extends BaseDateTimeTransformerTest
         $this->dateTimeWithoutSeconds = null;
     }
 
-    public function allProvider()
+    public static function allProvider()
     {
         return [
             ['UTC', 'UTC', '2010-02-03 04:05:06 UTC', '2010-02-03T04:05:06Z'],
@@ -49,14 +49,14 @@ class DateTimeToRfc3339TransformerTest extends BaseDateTimeTransformerTest
         ];
     }
 
-    public function transformProvider()
+    public static function transformProvider()
     {
-        return $this->allProvider();
+        return self::allProvider();
     }
 
-    public function reverseTransformProvider()
+    public static function reverseTransformProvider()
     {
-        return array_merge($this->allProvider(), [
+        return array_merge(self::allProvider(), [
             // format without seconds, as appears in some browsers
             ['UTC', 'UTC', '2010-02-03 04:05:00 UTC', '2010-02-03T04:05Z'],
             ['America/New_York', 'Asia/Hong_Kong', '2010-02-03 04:05:00 America/New_York', '2010-02-03T17:05+08:00'],
@@ -132,7 +132,7 @@ class DateTimeToRfc3339TransformerTest extends BaseDateTimeTransformerTest
         $transformer->reverseTransform($date);
     }
 
-    public function invalidDateStringProvider()
+    public static function invalidDateStringProvider()
     {
         return [
             'invalid month' => ['2010-2010-01'],

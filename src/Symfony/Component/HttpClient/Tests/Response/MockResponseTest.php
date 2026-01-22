@@ -75,7 +75,7 @@ class MockResponseTest extends TestCase
         $this->assertSame($url, $responseMock->getRequestUrl());
     }
 
-    public function toArrayErrors()
+    public static function toArrayErrors()
     {
         yield [
             'content' => '',
@@ -116,6 +116,14 @@ class MockResponseTest extends TestCase
         MockResponse::fromRequest('GET', 'https://symfony.com', [], new MockResponse('', [
             'error' => 'ccc error',
         ]))->getStatusCode();
+    }
+
+    public function testCancelingAMockResponseNotIssuedByMockHttpClient()
+    {
+        $mockResponse = new MockResponse();
+        $mockResponse->cancel();
+
+        $this->assertTrue($mockResponse->getInfo('canceled'));
     }
 
     public function testMustBeIssuedByMockHttpClient()

@@ -82,12 +82,18 @@ class FailedMessageEventTest extends TestCase
 
         $message = new DummyMessage();
 
+        $series = [
+            new MessageEvent($message),
+            new FailedMessageEvent($message, $transport->exception),
+        ];
+
         $eventDispatcherMock->expects($this->exactly(2))
             ->method('dispatch')
-            ->withConsecutive(
-                [new MessageEvent($message)],
-                [new FailedMessageEvent($message, $transport->exception)]
-            );
+            ->willReturnCallback(function (object $event) use (&$series) {
+                $this->assertEquals(array_shift($series), $event);
+
+                return $event;
+            });
         try {
             $transport->send($message);
         } catch (NullTransportException $exception) {
@@ -95,7 +101,7 @@ class FailedMessageEventTest extends TestCase
         }
     }
 
-    public function messagesProvider(): iterable
+    public static function messagesProvider(): iterable
     {
         yield [$message = new ChatMessage('subject'), $error = new \RuntimeException(), new FailedMessageEvent($message, $error)];
         yield [$message = new SmsMessage('+3312345678', 'subject'), $error = new \Exception(), new FailedMessageEvent($message, $error)];
