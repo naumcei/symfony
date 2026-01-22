@@ -11,8 +11,8 @@
 
 namespace Symfony\Component\Semaphore\Tests;
 
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 use Symfony\Component\Semaphore\Exception\SemaphoreAcquiringException;
 use Symfony\Component\Semaphore\Exception\SemaphoreExpiredException;
 use Symfony\Component\Semaphore\Exception\SemaphoreReleasingException;
@@ -72,7 +72,7 @@ class SemaphoreTest extends TestCase
             ->willThrowException(new \RuntimeException())
         ;
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Failed to acquire the "key" semaphore.');
 
         $semaphore->acquire();
@@ -142,7 +142,7 @@ class SemaphoreTest extends TestCase
             ->willThrowException(new \RuntimeException())
         ;
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Failed to define an expiration for the "key" semaphore.');
 
         $semaphore->refresh();
@@ -195,7 +195,7 @@ class SemaphoreTest extends TestCase
             ->willThrowException(new \RuntimeException())
         ;
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Failed to release the "key" semaphore.');
 
         $semaphore->release();
@@ -241,7 +241,7 @@ class SemaphoreTest extends TestCase
 
     public function testExpiration()
     {
-        $store = $this->createMock(PersistingStoreInterface::class);
+        $store = $this->createStub(PersistingStoreInterface::class);
 
         $key = new Key('key', 1);
         $semaphore = new Semaphore($key, $store);
@@ -253,12 +253,10 @@ class SemaphoreTest extends TestCase
         $this->assertTrue($semaphore->isExpired());
     }
 
-    /**
-     * @group time-sensitive
-     */
+    #[Group('time-sensitive')]
     public function testExpirationResetAfter()
     {
-        $store = $this->createMock(PersistingStoreInterface::class);
+        $store = $this->createStub(PersistingStoreInterface::class);
 
         $key = new Key('key', 1);
         $semaphore = new Semaphore($key, $store, 1);

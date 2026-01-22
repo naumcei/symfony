@@ -28,22 +28,19 @@ final class FortySixElksTransport extends AbstractTransport
 {
     protected const HOST = 'api.46elks.com';
 
-    private string $apiUsername;
-    private string $apiPassword;
-    private string $from;
-
-    public function __construct(string $apiUsername, #[\SensitiveParameter] string $apiPassword, string $from, HttpClientInterface $client = null, EventDispatcherInterface $dispatcher = null)
-    {
-        $this->apiUsername = $apiUsername;
-        $this->apiPassword = $apiPassword;
-        $this->from = $from;
-
+    public function __construct(
+        private string $apiUsername,
+        #[\SensitiveParameter] private string $apiPassword,
+        private string $from,
+        ?HttpClientInterface $client = null,
+        ?EventDispatcherInterface $dispatcher = null,
+    ) {
         parent::__construct($client, $dispatcher);
     }
 
     public function __toString(): string
     {
-        return sprintf('forty-six-elks://%s?from=%s', $this->getEndpoint(), $this->from);
+        return \sprintf('forty-six-elks://%s?from=%s', $this->getEndpoint(), $this->from);
     }
 
     public function supports(MessageInterface $message): bool
@@ -57,16 +54,15 @@ final class FortySixElksTransport extends AbstractTransport
             throw new UnsupportedMessageTypeException(__CLASS__, SmsMessage::class, $message);
         }
 
-        $from = $message->getFrom() ?: $this->from;
+        $options = [];
+        $options['from'] = $message->getFrom() ?: $this->from;
+        $options['to'] = $message->getPhone();
+        $options['message'] = $message->getSubject();
 
-        $endpoint = sprintf('https://%s/a1/sms', self::HOST);
+        $endpoint = \sprintf('https://%s/a1/sms', $this->getEndpoint());
         $response = $this->client->request('POST', $endpoint, [
-            'body' => [
-                'from' => $from,
-                'to' => $message->getPhone(),
-                'message' => $message->getSubject(),
-            ],
             'auth_basic' => [$this->apiUsername, $this->apiPassword],
+            'body' => array_filter($options),
         ]);
 
         try {

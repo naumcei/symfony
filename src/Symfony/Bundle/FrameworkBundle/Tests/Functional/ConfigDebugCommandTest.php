@@ -11,48 +11,103 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Tests\Functional;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\TestWith;
 use Symfony\Bundle\FrameworkBundle\Command\ConfigDebugCommand;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\Console\Tester\CommandTester;
 
-/**
- * @group functional
- */
+#[Group('functional')]
 class ConfigDebugCommandTest extends AbstractWebTestCase
 {
-    private $application;
-
-    protected function setUp(): void
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testShowList(bool $debug)
     {
-        $kernel = static::createKernel(['test_case' => 'ConfigDump', 'root_config' => 'config.yml']);
-        $this->application = new Application($kernel);
-        $this->application->doRun(new ArrayInput([]), new NullOutput());
+        $tester = $this->createCommandTester($debug);
+        $ret = $tester->execute([]);
+
+        $this->assertSame(0, $ret, 'Returns 0 in case of success');
+        $this->assertStringContainsString('Available registered bundles with their extension alias if available', $tester->getDisplay());
+        $this->assertStringContainsString('  DefaultConfigTestBundle            default_config_test', $tester->getDisplay());
+        $this->assertStringContainsString('  ExtensionWithoutConfigTestBundle   extension_without_config_test', $tester->getDisplay());
+        $this->assertStringContainsString('  FrameworkBundle                    framework', $tester->getDisplay());
+        $this->assertStringContainsString('  TestBundle                         test', $tester->getDisplay());
+        $this->assertStringContainsString('Available registered non-bundle extension aliases', $tester->getDisplay());
+        $this->assertStringContainsString('  foo', $tester->getDisplay());
+        $this->assertStringContainsString('  test_dump', $tester->getDisplay());
     }
 
-    public function testDumpBundleName()
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testDumpKernelExtension(bool $debug)
     {
-        $tester = $this->createCommandTester();
+        $tester = $this->createCommandTester($debug);
+        $ret = $tester->execute(['name' => 'foo']);
+
+        $this->assertSame(0, $ret, 'Returns 0 in case of success');
+        $this->assertStringContainsString('foo:', $tester->getDisplay());
+        $this->assertStringContainsString('    foo: bar', $tester->getDisplay());
+    }
+
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testDumpBundleName(bool $debug)
+    {
+        $tester = $this->createCommandTester($debug);
         $ret = $tester->execute(['name' => 'TestBundle']);
 
         $this->assertSame(0, $ret, 'Returns 0 in case of success');
         $this->assertStringContainsString('custom: foo', $tester->getDisplay());
     }
 
-    public function testDumpBundleOption()
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testDumpBundleOption(bool $debug)
     {
-        $tester = $this->createCommandTester();
+        $tester = $this->createCommandTester($debug);
         $ret = $tester->execute(['name' => 'TestBundle', 'path' => 'custom']);
 
         $this->assertSame(0, $ret, 'Returns 0 in case of success');
         $this->assertStringContainsString('foo', $tester->getDisplay());
     }
 
-    public function testParametersValuesAreResolved()
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testDumpWithoutTitleIsValidJson(bool $debug)
     {
-        $tester = $this->createCommandTester();
+        $tester = $this->createCommandTester($debug);
+        $ret = $tester->execute(['name' => 'TestBundle', '--format' => 'json']);
+
+        $this->assertSame(0, $ret, 'Returns 0 in case of success');
+        $this->assertJson($tester->getDisplay());
+    }
+
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testDumpWithUnsupportedFormat(bool $debug)
+    {
+        $tester = $this->createCommandTester($debug);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Supported formats are "txt", "yaml", "json"');
+
+        $tester->execute([
+            'name' => 'test',
+            '--format' => 'xml',
+        ]);
+    }
+
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testParametersValuesAreResolved(bool $debug)
+    {
+        $tester = $this->createCommandTester($debug);
         $ret = $tester->execute(['name' => 'framework']);
 
         $this->assertSame(0, $ret, 'Returns 0 in case of success');
@@ -60,89 +115,103 @@ class ConfigDebugCommandTest extends AbstractWebTestCase
         $this->assertStringContainsString('secret: test', $tester->getDisplay());
     }
 
-    public function testParametersValuesAreFullyResolved()
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testParametersValuesAreFullyResolved(bool $debug)
     {
-        $tester = $this->createCommandTester();
+        $tester = $this->createCommandTester($debug);
         $ret = $tester->execute(['name' => 'framework', '--resolve-env' => true]);
 
         $this->assertSame(0, $ret, 'Returns 0 in case of success');
         $this->assertStringContainsString('locale: en', $tester->getDisplay());
         $this->assertStringContainsString('secret: test', $tester->getDisplay());
         $this->assertStringContainsString('cookie_httponly: true', $tester->getDisplay());
-        $this->assertStringContainsString('ide: null', $tester->getDisplay());
+        $this->assertStringContainsString('ide: '.($debug ? ($_ENV['SYMFONY_IDE'] ?? $_SERVER['SYMFONY_IDE'] ?? 'null') : 'null'), $tester->getDisplay());
     }
 
-    public function testDefaultParameterValueIsResolvedIfConfigIsExisting()
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testDefaultParameterValueIsResolvedIfConfigIsExisting(bool $debug)
     {
-        $tester = $this->createCommandTester();
+        $tester = $this->createCommandTester($debug);
         $ret = $tester->execute(['name' => 'framework']);
 
         $this->assertSame(0, $ret, 'Returns 0 in case of success');
-        $kernelCacheDir = $this->application->getKernel()->getContainer()->getParameter('kernel.cache_dir');
-        $this->assertStringContainsString(sprintf("dsn: 'file:%s/profiler'", $kernelCacheDir), $tester->getDisplay());
+        $kernelCacheDir = self::$kernel->getContainer()->getParameter('kernel.cache_dir');
+        $this->assertStringContainsString(\sprintf("dsn: 'file:%s/profiler'", $kernelCacheDir), $tester->getDisplay());
     }
 
-    public function testDumpExtensionConfigWithoutBundle()
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testDumpExtensionConfigWithoutBundle(bool $debug)
     {
-        $tester = $this->createCommandTester();
+        $tester = $this->createCommandTester($debug);
         $ret = $tester->execute(['name' => 'test_dump']);
 
         $this->assertSame(0, $ret, 'Returns 0 in case of success');
         $this->assertStringContainsString('enabled: true', $tester->getDisplay());
     }
 
-    public function testDumpUndefinedBundleOption()
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testDumpUndefinedBundleOption(bool $debug)
     {
-        $tester = $this->createCommandTester();
+        $tester = $this->createCommandTester($debug);
         $tester->execute(['name' => 'TestBundle', 'path' => 'foo']);
 
         $this->assertStringContainsString('Unable to find configuration for "test.foo"', $tester->getDisplay());
     }
 
-    public function testDumpWithPrefixedEnv()
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testDumpWithPrefixedEnv(bool $debug)
     {
-        $tester = $this->createCommandTester();
+        $tester = $this->createCommandTester($debug);
         $tester->execute(['name' => 'FrameworkBundle']);
 
         $this->assertStringContainsString("cookie_httponly: '%env(bool:COOKIE_HTTPONLY)%'", $tester->getDisplay());
     }
 
-    public function testDumpFallsBackToDefaultConfigAndResolvesParameterValue()
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testDumpFallsBackToDefaultConfigAndResolvesParameterValue(bool $debug)
     {
-        $tester = $this->createCommandTester();
+        $tester = $this->createCommandTester($debug);
         $ret = $tester->execute(['name' => 'DefaultConfigTestBundle']);
 
         $this->assertSame(0, $ret, 'Returns 0 in case of success');
         $this->assertStringContainsString('foo: bar', $tester->getDisplay());
     }
 
-    public function testDumpFallsBackToDefaultConfigAndResolvesEnvPlaceholder()
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testDumpFallsBackToDefaultConfigAndResolvesEnvPlaceholder(bool $debug)
     {
-        $tester = $this->createCommandTester();
+        $tester = $this->createCommandTester($debug);
         $ret = $tester->execute(['name' => 'DefaultConfigTestBundle']);
 
         $this->assertSame(0, $ret, 'Returns 0 in case of success');
         $this->assertStringContainsString("baz: '%env(BAZ)%'", $tester->getDisplay());
     }
 
-    public function testDumpThrowsExceptionWhenDefaultConfigFallbackIsImpossible()
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testDumpThrowsExceptionWhenDefaultConfigFallbackIsImpossible(bool $debug)
     {
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessage('The extension with alias "extension_without_config_test" does not have configuration.');
 
-        $tester = $this->createCommandTester();
+        $tester = $this->createCommandTester($debug);
         $tester->execute(['name' => 'ExtensionWithoutConfigTestBundle']);
     }
 
-    /**
-     * @dataProvider provideCompletionSuggestions
-     */
-    public function testComplete(array $input, array $expectedSuggestions)
+    #[DataProvider('provideCompletionSuggestions')]
+    public function testComplete(bool $debug, array $input, array $expectedSuggestions)
     {
-        $this->application->add(new ConfigDebugCommand());
+        $application = $this->createApplication($debug);
 
-        $tester = new CommandCompletionTester($this->application->get('debug:config'));
-
+        $application->addCommand(new ConfigDebugCommand());
+        $tester = new CommandCompletionTester($application->get('debug:config'));
         $suggestions = $tester->complete($input);
 
         foreach ($expectedSuggestions as $expectedSuggestion) {
@@ -150,19 +219,43 @@ class ConfigDebugCommandTest extends AbstractWebTestCase
         }
     }
 
-    public function provideCompletionSuggestions(): \Generator
+    public static function provideCompletionSuggestions(): \Generator
     {
-        yield 'name' => [[''], ['default_config_test', 'extension_without_config_test', 'framework', 'test']];
+        $name = ['default_config_test', 'extension_without_config_test', 'framework', 'test', 'foo', 'test_dump'];
+        yield 'name, no debug' => [false, [''], $name];
+        yield 'name, debug' => [true, [''], $name];
 
-        yield 'name (started CamelCase)' => [['Fra'], ['DefaultConfigTestBundle', 'ExtensionWithoutConfigTestBundle', 'FrameworkBundle', 'TestBundle']];
+        $nameWithPath = ['secret', 'router.resource', 'router.utf8', 'router.enabled', 'validation.enabled', 'default_locale'];
+        yield 'name with existing path, no debug' => [false, ['framework', ''], $nameWithPath];
+        yield 'name with existing path, debug' => [true, ['framework', ''], $nameWithPath];
 
-        yield 'name with existing path' => [['framework', ''], ['secret', 'router.resource', 'router.utf8', 'router.enabled', 'validation.enabled', 'default_locale']];
+        yield 'option --format, no debug' => [false, ['--format', ''], ['yaml', 'json']];
+        yield 'option --format, debug' => [true, ['--format', ''], ['yaml', 'json']];
     }
 
-    private function createCommandTester(): CommandTester
+    public function testDumpPathDeepIntoScalar()
     {
-        $command = $this->application->find('debug:config');
+        $tester = $this->createCommandTester(true);
+
+        $tester->execute(['name' => 'framework', 'path' => 'secret.foo']);
+
+        $this->assertSame(1, $tester->getStatusCode());
+        $this->assertStringContainsString('Unable to find configuration for "framework.secret.foo"', $tester->getDisplay());
+    }
+
+    private function createCommandTester(bool $debug): CommandTester
+    {
+        $command = $this->createApplication($debug)->find('debug:config');
 
         return new CommandTester($command);
+    }
+
+    private function createApplication(bool $debug): Application
+    {
+        $kernel = static::bootKernel(['debug' => $debug, 'test_case' => 'ConfigDump', 'root_config' => 'config.yml']);
+        $application = new Application($kernel);
+        $application->doRun(new ArrayInput([]), new NullOutput());
+
+        return $application;
     }
 }

@@ -21,8 +21,8 @@ use Symfony\Component\HttpKernel\Profiler\Profiler;
 
 class ProfilerTest extends TestCase
 {
-    private $tmp;
-    private $storage;
+    private string $tmp;
+    private ?FileProfilerStorage $storage = null;
 
     public function testCollect()
     {
@@ -45,7 +45,7 @@ class ProfilerTest extends TestCase
     public function testReset()
     {
         $collector = $this->getMockBuilder(DataCollectorInterface::class)
-            ->setMethods(['collect', 'getName', 'reset'])
+            ->onlyMethods(['collect', 'getName', 'reset'])
             ->getMock();
         $collector->expects($this->any())->method('getName')->willReturn('mock');
         $collector->expects($this->once())->method('reset');

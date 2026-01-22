@@ -20,19 +20,22 @@ use Symfony\Component\Messenger\Transport\TransportInterface;
 
 /**
  * @author Vincent Touzet <vincent.touzet@gmail.com>
+ *
+ * @implements TransportFactoryInterface<DoctrineTransport>
  */
 class DoctrineTransportFactory implements TransportFactoryInterface
 {
-    private ConnectionRegistry $registry;
-
-    public function __construct(ConnectionRegistry $registry)
-    {
-        $this->registry = $registry;
+    public function __construct(
+        private ConnectionRegistry $registry,
+    ) {
     }
 
-    public function createTransport(string $dsn, array $options, SerializerInterface $serializer): TransportInterface
+    /**
+     * @param array $options You can set 'use_notify' to false to not use LISTEN/NOTIFY with postgresql
+     */
+    public function createTransport(#[\SensitiveParameter] string $dsn, array $options, SerializerInterface $serializer): TransportInterface
     {
-        $useNotify = ($options['use_notify'] ?? true);
+        $useNotify = $options['use_notify'] ?? true;
         unset($options['transport_name'], $options['use_notify']);
         // Always allow PostgreSQL-specific keys, to be able to transparently fallback to the native driver when LISTEN/NOTIFY isn't available
         $configuration = PostgreSqlConnection::buildConfiguration($dsn, $options);
@@ -40,7 +43,7 @@ class DoctrineTransportFactory implements TransportFactoryInterface
         try {
             $driverConnection = $this->registry->getConnection($configuration['connection']);
         } catch (\InvalidArgumentException $e) {
-            throw new TransportException(sprintf('Could not find Doctrine connection from Messenger DSN "%s".', $dsn), 0, $e);
+            throw new TransportException('Could not find Doctrine connection from Messenger DSN.', 0, $e);
         }
 
         if ($useNotify && $driverConnection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
@@ -52,7 +55,7 @@ class DoctrineTransportFactory implements TransportFactoryInterface
         return new DoctrineTransport($connection, $serializer);
     }
 
-    public function supports(string $dsn, array $options): bool
+    public function supports(#[\SensitiveParameter] string $dsn, array $options): bool
     {
         return str_starts_with($dsn, 'doctrine://');
     }

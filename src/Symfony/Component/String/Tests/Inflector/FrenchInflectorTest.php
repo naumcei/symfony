@@ -11,12 +11,13 @@
 
 namespace Symfony\Component\String\Tests\Inflector;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\String\Inflector\FrenchInflector;
 
 class FrenchInflectorTest extends TestCase
 {
-    public function pluralizeProvider()
+    public static function pluralizeProvider()
     {
         return [
             // Le pluriel par défaut
@@ -127,9 +128,7 @@ class FrenchInflectorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider pluralizeProvider
-     */
+    #[DataProvider('pluralizeProvider')]
     public function testSingularize(string $singular, string $plural)
     {
         $this->assertSame([$singular], (new FrenchInflector())->singularize($plural));
@@ -137,9 +136,7 @@ class FrenchInflectorTest extends TestCase
         $this->assertSame([ucfirst($singular)], (new FrenchInflector())->singularize(ucfirst($plural)));
     }
 
-    /**
-     * @dataProvider pluralizeProvider
-     */
+    #[DataProvider('pluralizeProvider')]
     public function testPluralize(string $singular, string $plural)
     {
         $this->assertSame([$plural], (new FrenchInflector())->pluralize($singular));

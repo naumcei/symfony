@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Routing\Tests\Requirement;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Routing\Exception\InvalidArgumentException;
 use Symfony\Component\Routing\Requirement\EnumRequirement;
@@ -46,15 +47,13 @@ class EnumRequirementTest extends TestCase
         new EnumRequirement([TestStringBackedEnum::Diamonds, TestStringBackedEnum2::Spades]);
     }
 
-    /**
-     * @dataProvider provideToString
-     */
+    #[DataProvider('provideToString')]
     public function testToString(string $expected, string|array $cases = [])
     {
         $this->assertSame($expected, (string) new EnumRequirement($cases));
     }
 
-    public function provideToString()
+    public static function provideToString()
     {
         return [
             ['hearts|diamonds|clubs|spades', TestStringBackedEnum::class],

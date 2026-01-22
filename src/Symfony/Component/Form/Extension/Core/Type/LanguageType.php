@@ -23,18 +23,18 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class LanguageType extends AbstractType
 {
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'choice_loader' => function (Options $options) {
                 if (!class_exists(Intl::class)) {
-                    throw new LogicException(sprintf('The "symfony/intl" component is required to use "%s". Try running "composer require symfony/intl".', static::class));
+                    throw new LogicException(\sprintf('The "symfony/intl" component is required to use "%s". Try running "composer require symfony/intl".', static::class));
                 }
                 $choiceTranslationLocale = $options['choice_translation_locale'];
                 $useAlpha3Codes = $options['alpha3'];
                 $choiceSelfTranslation = $options['choice_self_translation'];
 
-                return ChoiceList::loader($this, new IntlCallbackChoiceLoader(function () use ($choiceTranslationLocale, $useAlpha3Codes, $choiceSelfTranslation) {
+                return ChoiceList::loader($this, new IntlCallbackChoiceLoader(static function () use ($choiceTranslationLocale, $useAlpha3Codes, $choiceSelfTranslation) {
                     if (true === $choiceSelfTranslation) {
                         foreach (Languages::getLanguageCodes() as $alpha2Code) {
                             try {
@@ -62,7 +62,7 @@ class LanguageType extends AbstractType
         $resolver->setAllowedTypes('choice_translation_locale', ['null', 'string']);
         $resolver->setAllowedTypes('alpha3', 'bool');
 
-        $resolver->setNormalizer('choice_self_translation', function (Options $options, $value) {
+        $resolver->setNormalizer('choice_self_translation', static function (Options $options, $value) {
             if (true === $value && $options['choice_translation_locale']) {
                 throw new LogicException('Cannot use the "choice_self_translation" and "choice_translation_locale" options at the same time. Remove one of them.');
             }

@@ -11,17 +11,20 @@
 
 namespace Symfony\Component\Lock\Tests\Store;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\Store\StoreFactory;
 use Symfony\Component\Lock\Store\ZookeeperStore;
+use Symfony\Component\Lock\Test\AbstractStoreTestCase;
 
 /**
  * @author Ganesh Chandrasekaran <gchandrasekaran@wayfair.com>
- *
- * @requires extension zookeeper
- * @group integration
  */
-class ZookeeperStoreTest extends AbstractStoreTest
+#[RequiresPhpExtension('zookeeper')]
+#[Group('integration')]
+class ZookeeperStoreTest extends AbstractStoreTestCase
 {
     use UnserializableTestTrait;
 
@@ -34,15 +37,13 @@ class ZookeeperStoreTest extends AbstractStoreTest
         return StoreFactory::createStore($zookeeper);
     }
 
-    /**
-     * @dataProvider provideValidConnectionString
-     */
+    #[DataProvider('provideValidConnectionString')]
     public function testCreateConnection(string $connectionString)
     {
         $this->assertInstanceOf(\Zookeeper::class, ZookeeperStore::createConnection($connectionString));
     }
 
-    public function provideValidConnectionString(): iterable
+    public static function provideValidConnectionString(): iterable
     {
         yield 'single host' => ['zookeeper://localhost:2181'];
         yield 'single multiple host' => ['zookeeper://localhost:2181,localhost:2181'];

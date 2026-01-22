@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\VarDumper\Tests\Dumper;
 
+use PHPUnit\Framework\Attributes\BackupGlobals;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\CliDumper;
@@ -20,15 +21,17 @@ use Symfony\Component\VarDumper\Dumper\ContextualizedDumper;
 /**
  * @author Kévin Thérage <therage.kevin@gmail.com>
  */
+#[BackupGlobals(true)]
 class ContextualizedDumperTest extends TestCase
 {
     public function testContextualizedCliDumper()
     {
+        $_ENV['SYMFONY_IDE'] = $_SERVER['SYMFONY_IDE'] = '';
         $wrappedDumper = new CliDumper('php://output');
         $wrappedDumper->setColors(true);
 
         $var = 'example';
-        $href = sprintf('file://%s#L%s', __FILE__, 37);
+        $href = \sprintf('file://%s#L%s', __FILE__, 40);
         $dumper = new ContextualizedDumper($wrappedDumper, [new SourceContextProvider()]);
         $cloner = new VarCloner();
         $data = $cloner->cloneVar($var);
@@ -37,7 +40,7 @@ class ContextualizedDumperTest extends TestCase
         $dumper->dump($data);
         $out = ob_get_clean();
 
-        $this->assertStringContainsString("\e]8;;{$href}\e\\\e[", $out);
+        $this->assertStringContainsString("\e]8;;{$href}\e\\^\e]", $out);
         $this->assertStringContainsString("m{$var}\e[", $out);
     }
 }

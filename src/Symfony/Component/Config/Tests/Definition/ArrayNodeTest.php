@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Config\Tests\Definition;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\ArrayNode;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -21,41 +22,49 @@ class ArrayNodeTest extends TestCase
 {
     public function testNormalizeThrowsExceptionWhenFalseIsNotAllowed()
     {
-        $this->expectException(InvalidTypeException::class);
         $node = new ArrayNode('root');
+
+        $this->expectException(InvalidTypeException::class);
+
         $node->normalize(false);
     }
 
     public function testExceptionThrownOnUnrecognizedChild()
     {
+        $node = new ArrayNode('root');
+
         $this->expectException(InvalidConfigurationException::class);
         $this->expectExceptionMessage('Unrecognized option "foo" under "root"');
-        $node = new ArrayNode('root');
+
         $node->normalize(['foo' => 'bar']);
     }
 
     public function testNormalizeWithProposals()
     {
-        $this->expectException(InvalidConfigurationException::class);
-        $this->expectExceptionMessage('Did you mean "alpha1", "alpha2"?');
         $node = new ArrayNode('root');
         $node->addChild(new ArrayNode('alpha1'));
         $node->addChild(new ArrayNode('alpha2'));
         $node->addChild(new ArrayNode('beta'));
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('Did you mean "alpha1", "alpha2"?');
+
         $node->normalize(['alpha3' => 'foo']);
     }
 
     public function testNormalizeWithoutProposals()
     {
-        $this->expectException(InvalidConfigurationException::class);
-        $this->expectExceptionMessage('Available options are "alpha1", "alpha2".');
         $node = new ArrayNode('root');
         $node->addChild(new ArrayNode('alpha1'));
         $node->addChild(new ArrayNode('alpha2'));
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('Available options are "alpha1", "alpha2".');
+
         $node->normalize(['beta' => 'foo']);
     }
 
-    public function ignoreAndRemoveMatrixProvider(): array
+    public static function ignoreAndRemoveMatrixProvider(): array
     {
         $unrecognizedOptionException = new InvalidConfigurationException('Unrecognized option "foo" under "root"');
 
@@ -67,9 +76,7 @@ class ArrayNodeTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider ignoreAndRemoveMatrixProvider
-     */
+    #[DataProvider('ignoreAndRemoveMatrixProvider')]
     public function testIgnoreAndRemoveBehaviors(bool $ignore, bool $remove, array|\Exception $expected, string $message = '')
     {
         if ($expected instanceof \Exception) {
@@ -82,9 +89,7 @@ class ArrayNodeTest extends TestCase
         $this->assertSame($expected, $result, $message);
     }
 
-    /**
-     * @dataProvider getPreNormalizationTests
-     */
+    #[DataProvider('getPreNormalizationTests')]
     public function testPreNormalize(array $denormalized, array $normalized)
     {
         $node = new ArrayNode('foo');
@@ -94,7 +99,7 @@ class ArrayNodeTest extends TestCase
         $this->assertSame($normalized, $r->invoke($node, $denormalized));
     }
 
-    public function getPreNormalizationTests(): array
+    public static function getPreNormalizationTests(): array
     {
         return [
             [
@@ -116,9 +121,7 @@ class ArrayNodeTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider getZeroNamedNodeExamplesData
-     */
+    #[DataProvider('getZeroNamedNodeExamplesData')]
     public function testNodeNameCanBeZero(array $denormalized, array $normalized)
     {
         $zeroNode = new ArrayNode(0);
@@ -135,7 +138,7 @@ class ArrayNodeTest extends TestCase
         $this->assertSame($normalized, $r->invoke($rootNode, $denormalized));
     }
 
-    public function getZeroNamedNodeExamplesData(): array
+    public static function getZeroNamedNodeExamplesData(): array
     {
         return [
             [
@@ -163,9 +166,7 @@ class ArrayNodeTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider getPreNormalizedNormalizedOrderedData
-     */
+    #[DataProvider('getPreNormalizedNormalizedOrderedData')]
     public function testChildrenOrderIsMaintainedOnNormalizeValue(array $prenormalized, array $normalized)
     {
         $scalar1 = new ScalarNode('1');
@@ -181,7 +182,7 @@ class ArrayNodeTest extends TestCase
         $this->assertSame($normalized, $r->invoke($node, $prenormalized));
     }
 
-    public function getPreNormalizedNormalizedOrderedData(): array
+    public static function getPreNormalizedNormalizedOrderedData(): array
     {
         return [
             [
@@ -193,32 +194,38 @@ class ArrayNodeTest extends TestCase
 
     public function testAddChildEmptyName()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Child nodes must be named.');
         $node = new ArrayNode('root');
 
         $childNode = new ArrayNode('');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Child nodes must be named.');
+
         $node->addChild($childNode);
     }
 
     public function testAddChildNameAlreadyExists()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('A child node named "foo" already exists.');
         $node = new ArrayNode('root');
 
         $childNode = new ArrayNode('foo');
         $node->addChild($childNode);
 
         $childNodeWithSameName = new ArrayNode('foo');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('A child node named "foo" already exists.');
+
         $node->addChild($childNodeWithSameName);
     }
 
     public function testGetDefaultValueWithoutDefaultValue()
     {
+        $node = new ArrayNode('foo');
+
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('The node at path "foo" has no default value.');
-        $node = new ArrayNode('foo');
+
         $node->getDefaultValue();
     }
 
@@ -232,12 +239,13 @@ class ArrayNodeTest extends TestCase
         $this->assertSame('"foo" is deprecated', $deprecation['message']);
         $this->assertSame('vendor/package', $deprecation['package']);
         $this->assertSame('1.1', $deprecation['version']);
+        $this->assertSame('Since vendor/package 1.1: "foo" is deprecated', $childNode->getDeprecationMessage());
 
         $node = new ArrayNode('root');
         $node->addChild($childNode);
 
         $deprecationTriggered = false;
-        $deprecationHandler = function ($level, $message, $file, $line) use (&$prevErrorHandler, &$deprecationTriggered) {
+        $deprecationHandler = static function ($level, $message, $file, $line) use (&$prevErrorHandler, &$deprecationTriggered) {
             if (\E_USER_DEPRECATED === $level) {
                 return $deprecationTriggered = true;
             }
@@ -262,13 +270,9 @@ class ArrayNodeTest extends TestCase
         $this->assertTrue($deprecationTriggered, '->finalize() should trigger if the deprecated node is set');
     }
 
-    /**
-     * @dataProvider getDataWithIncludedExtraKeys
-     */
-    public function testMergeWithoutIgnoringExtraKeys(array $prenormalizeds)
+    #[DataProvider('getDataWithIncludedExtraKeys')]
+    public function testMergeWithoutIgnoringExtraKeys(array $prenormalizeds, array $merged)
     {
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('merge() expects a normalized config array.');
         $node = new ArrayNode('root');
         $node->addChild(new ScalarNode('foo'));
         $node->addChild(new ScalarNode('bar'));
@@ -276,16 +280,15 @@ class ArrayNodeTest extends TestCase
 
         $r = new \ReflectionMethod($node, 'mergeValues');
 
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('merge() expects a normalized config array.');
+
         $r->invoke($node, ...$prenormalizeds);
     }
 
-    /**
-     * @dataProvider getDataWithIncludedExtraKeys
-     */
-    public function testMergeWithIgnoringAndRemovingExtraKeys(array $prenormalizeds)
+    #[DataProvider('getDataWithIncludedExtraKeys')]
+    public function testMergeWithIgnoringAndRemovingExtraKeys(array $prenormalizeds, array $merged)
     {
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('merge() expects a normalized config array.');
         $node = new ArrayNode('root');
         $node->addChild(new ScalarNode('foo'));
         $node->addChild(new ScalarNode('bar'));
@@ -293,12 +296,13 @@ class ArrayNodeTest extends TestCase
 
         $r = new \ReflectionMethod($node, 'mergeValues');
 
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('merge() expects a normalized config array.');
+
         $r->invoke($node, ...$prenormalizeds);
     }
 
-    /**
-     * @dataProvider getDataWithIncludedExtraKeys
-     */
+    #[DataProvider('getDataWithIncludedExtraKeys')]
     public function testMergeWithIgnoringExtraKeys(array $prenormalizeds, array $merged)
     {
         $node = new ArrayNode('root');
@@ -311,7 +315,7 @@ class ArrayNodeTest extends TestCase
         $this->assertEquals($merged, $r->invoke($node, ...$prenormalizeds));
     }
 
-    public function getDataWithIncludedExtraKeys(): array
+    public static function getDataWithIncludedExtraKeys(): array
     {
         return [
             [

@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Validator\Tests\Constraints;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Validator\Constraints\Json;
 use Symfony\Component\Validator\Constraints\JsonValidator;
 use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
@@ -22,9 +23,7 @@ class JsonValidatorTest extends ConstraintValidatorTestCase
         return new JsonValidator();
     }
 
-    /**
-     * @dataProvider getValidValues
-     */
+    #[DataProvider('getValidValues')]
     public function testJsonIsValid($value)
     {
         $this->validator->validate($value, new Json());
@@ -32,14 +31,10 @@ class JsonValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    /**
-     * @dataProvider getInvalidValues
-     */
+    #[DataProvider('getInvalidValues')]
     public function testInvalidValues($value)
     {
-        $constraint = new Json([
-            'message' => 'myMessageTest',
-        ]);
+        $constraint = new Json(message: 'myMessageTest');
 
         $this->validator->validate($value, $constraint);
 
@@ -49,7 +44,7 @@ class JsonValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    public function getValidValues()
+    public static function getValidValues()
     {
         return [
             ['{"planet":"earth", "country": "Morocco","city": "Rabat" ,"postcode" : 10160, "is_great": true,
@@ -65,7 +60,7 @@ class JsonValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    public function getInvalidValues()
+    public static function getInvalidValues()
     {
         return [
             ['{"foo": 3 "bar": 4}'],

@@ -21,13 +21,59 @@ use Symfony\Component\Security\Csrf\TokenStorage\TokenStorageInterface;
 
 /**
  * @author Bernhard Schussek <bschussek@gmail.com>
+ * @author Alexandre Daubois <alex.daubois@gmail.com>
  */
 class CsrfTokenManagerTest extends TestCase
 {
-    /**
-     * @dataProvider getManagerGeneratorAndStorage
-     */
-    public function testGetNonExistingToken($namespace, $manager, $storage, $generator)
+    public function testGetNonExistingTokenEmptyNamespace()
+    {
+        $generator = $this->createMock(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertGetNonExistingToken('', $this->getEmptyNamespaceMocks($generator, $storage), $storage, $generator);
+    }
+
+    public function testGetNonExistingTokenHttpsNamespace()
+    {
+        $generator = $this->createMock(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertGetNonExistingToken('https-', $this->getHttpsNamespaceMocks($generator, $storage), $storage, $generator);
+    }
+
+    public function testGetNonExistingTokenCustomNamespace()
+    {
+        $generator = $this->createMock(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertGetNonExistingToken('aNamespace-', $this->getCustomNamespaceMocks($generator, $storage), $storage, $generator);
+    }
+
+    public function testGetNonExistingTokenRequestStack()
+    {
+        $generator = $this->createMock(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertGetNonExistingToken('https-', $this->getRequestStackMocks($generator, $storage), $storage, $generator);
+    }
+
+    public function testGetNonExistingTokenClosure()
+    {
+        $generator = $this->createMock(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertGetNonExistingToken('generated-', $this->getClosureMocks($generator, $storage), $storage, $generator);
+    }
+
+    public function testGetNonExistingTokenRequestStackEmptyNamespace()
+    {
+        $generator = $this->createMock(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertGetNonExistingToken('', $this->getRequestStackWithEmptyNamespaceMocks($generator, $storage), $storage, $generator);
+    }
+
+    private function assertGetNonExistingToken($namespace, $manager, $storage, $generator): void
     {
         $storage->expects($this->once())
             ->method('hasToken')
@@ -49,10 +95,55 @@ class CsrfTokenManagerTest extends TestCase
         $this->assertNotSame('TOKEN', $token->getValue());
     }
 
-    /**
-     * @dataProvider getManagerGeneratorAndStorage
-     */
-    public function testUseExistingTokenIfAvailable($namespace, $manager, $storage)
+    public function testUseExistingTokenIfAvailableEmptyNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertUseExistingTokenIfAvailable('', $this->getEmptyNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testUseExistingTokenIfAvailableHttpsNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertUseExistingTokenIfAvailable('https-', $this->getHttpsNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testUseExistingTokenIfAvailableCustomNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertUseExistingTokenIfAvailable('aNamespace-', $this->getCustomNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testUseExistingTokenIfAvailableRequestStack()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertUseExistingTokenIfAvailable('https-', $this->getRequestStackMocks($generator, $storage), $storage);
+    }
+
+    public function testUseExistingTokenIfAvailableClosure()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertUseExistingTokenIfAvailable('generated-', $this->getClosureMocks($generator, $storage), $storage);
+    }
+
+    public function testUseExistingTokenIfAvailableRequestStackEmptyNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertUseExistingTokenIfAvailable('', $this->getRequestStackWithEmptyNamespaceMocks($generator, $storage), $storage);
+    }
+
+    private function assertUseExistingTokenIfAvailable($namespace, $manager, $storage): void
     {
         $storage->expects($this->once())
             ->method('hasToken')
@@ -71,17 +162,62 @@ class CsrfTokenManagerTest extends TestCase
         $this->assertNotSame('TOKEN', $token->getValue());
     }
 
-    /**
-     * @dataProvider getManagerGeneratorAndStorage
-     */
-    public function testRandomizeTheToken($namespace, $manager, $storage)
+    public function testRandomizeTheTokenEmptyNamespace()
     {
-        $storage->expects($this->any())
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createStub(TokenStorageInterface::class);
+
+        $this->assertRandomizeTheToken('', $this->getEmptyNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testRandomizeTheTokenHttpsNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createStub(TokenStorageInterface::class);
+
+        $this->assertRandomizeTheToken('https-', $this->getHttpsNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testRandomizeTheTokenCustomNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createStub(TokenStorageInterface::class);
+
+        $this->assertRandomizeTheToken('aNamespace-', $this->getCustomNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testRandomizeTheTokenRequestStack()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createStub(TokenStorageInterface::class);
+
+        $this->assertRandomizeTheToken('https-', $this->getRequestStackMocks($generator, $storage), $storage);
+    }
+
+    public function testRandomizeTheTokenClosure()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createStub(TokenStorageInterface::class);
+
+        $this->assertRandomizeTheToken('generated-', $this->getClosureMocks($generator, $storage), $storage);
+    }
+
+    public function testRandomizeTheTokenRequestStackEmptyNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createStub(TokenStorageInterface::class);
+
+        $this->assertRandomizeTheToken('', $this->getRequestStackWithEmptyNamespaceMocks($generator, $storage), $storage);
+    }
+
+    private function assertRandomizeTheToken($namespace, $manager, $storage): void
+    {
+        $storage
             ->method('hasToken')
             ->with($namespace.'token_id')
             ->willReturn(true);
 
-        $storage->expects($this->any())
+        $storage
             ->method('getToken')
             ->with($namespace.'token_id')
             ->willReturn('TOKEN');
@@ -98,10 +234,55 @@ class CsrfTokenManagerTest extends TestCase
         $this->assertGreaterThan(2, \count(array_unique($lengths)));
     }
 
-    /**
-     * @dataProvider getManagerGeneratorAndStorage
-     */
-    public function testRefreshTokenAlwaysReturnsNewToken($namespace, $manager, $storage, $generator)
+    public function testRefreshTokenAlwaysReturnsNewTokenEmptyNamespace()
+    {
+        $generator = $this->createMock(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertRefreshTokenAlwaysReturnsNewToken('', $this->getEmptyNamespaceMocks($generator, $storage), $storage, $generator);
+    }
+
+    public function testRefreshTokenAlwaysReturnsNewTokenHttpsNamespace()
+    {
+        $generator = $this->createMock(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertRefreshTokenAlwaysReturnsNewToken('https-', $this->getHttpsNamespaceMocks($generator, $storage), $storage, $generator);
+    }
+
+    public function testRefreshTokenAlwaysReturnsNewTokenCustomNamespace()
+    {
+        $generator = $this->createMock(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertRefreshTokenAlwaysReturnsNewToken('aNamespace-', $this->getCustomNamespaceMocks($generator, $storage), $storage, $generator);
+    }
+
+    public function testRefreshTokenAlwaysReturnsNewTokenRequestStack()
+    {
+        $generator = $this->createMock(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertRefreshTokenAlwaysReturnsNewToken('https-', $this->getRequestStackMocks($generator, $storage), $storage, $generator);
+    }
+
+    public function testRefreshTokenAlwaysReturnsNewTokenClosure()
+    {
+        $generator = $this->createMock(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertRefreshTokenAlwaysReturnsNewToken('generated-', $this->getClosureMocks($generator, $storage), $storage, $generator);
+    }
+
+    public function testRefreshTokenAlwaysReturnsNewTokenRequestStackEmptyNamespace()
+    {
+        $generator = $this->createMock(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertRefreshTokenAlwaysReturnsNewToken('', $this->getRequestStackWithEmptyNamespaceMocks($generator, $storage), $storage, $generator);
+    }
+
+    private function assertRefreshTokenAlwaysReturnsNewToken($namespace, $manager, $storage, $generator): void
     {
         $storage->expects($this->never())
             ->method('hasToken');
@@ -121,10 +302,55 @@ class CsrfTokenManagerTest extends TestCase
         $this->assertNotSame('TOKEN', $token->getValue());
     }
 
-    /**
-     * @dataProvider getManagerGeneratorAndStorage
-     */
-    public function testMatchingTokenIsValid($namespace, $manager, $storage)
+    public function testMatchingTokenIsValidEmptyNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertMatchingTokenIsValid('', $this->getEmptyNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testMatchingTokenIsValidHttpsNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertMatchingTokenIsValid('https-', $this->getHttpsNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testMatchingTokenIsValidCustomNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertMatchingTokenIsValid('aNamespace-', $this->getCustomNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testMatchingTokenIsValidRequestStack()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertMatchingTokenIsValid('https-', $this->getRequestStackMocks($generator, $storage), $storage);
+    }
+
+    public function testMatchingTokenIsValidClosure()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertMatchingTokenIsValid('generated-', $this->getClosureMocks($generator, $storage), $storage);
+    }
+
+    public function testMatchingTokenIsValidRequestStackEmptyNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertMatchingTokenIsValid('', $this->getRequestStackWithEmptyNamespaceMocks($generator, $storage), $storage);
+    }
+
+    private function assertMatchingTokenIsValid($namespace, $manager, $storage)
     {
         $storage->expects($this->exactly(2))
             ->method('hasToken')
@@ -141,10 +367,55 @@ class CsrfTokenManagerTest extends TestCase
         $this->assertTrue($manager->isTokenValid($token));
     }
 
-    /**
-     * @dataProvider getManagerGeneratorAndStorage
-     */
-    public function testMatchingTokenIsValidWithLegacyToken($namespace, $manager, $storage)
+    public function testMatchingTokenIsValidWithLegacyTokenEmptyNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertMatchingTokenIsValidWithLegacyToken('', $this->getEmptyNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testMatchingTokenIsValidWithLegacyTokenHttpsNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertMatchingTokenIsValidWithLegacyToken('https-', $this->getHttpsNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testMatchingTokenIsValidWithLegacyTokenCustomNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertMatchingTokenIsValidWithLegacyToken('aNamespace-', $this->getCustomNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testMatchingTokenIsValidWithLegacyTokenRequestStack()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertMatchingTokenIsValidWithLegacyToken('https-', $this->getRequestStackMocks($generator, $storage), $storage);
+    }
+
+    public function testMatchingTokenIsValidWithLegacyTokenClosure()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertMatchingTokenIsValidWithLegacyToken('generated-', $this->getClosureMocks($generator, $storage), $storage);
+    }
+
+    public function testMatchingTokenIsValidWithLegacyTokenRequestStackEmptyNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertMatchingTokenIsValidWithLegacyToken('', $this->getRequestStackWithEmptyNamespaceMocks($generator, $storage), $storage);
+    }
+
+    private function assertMatchingTokenIsValidWithLegacyToken($namespace, $manager, $storage): void
     {
         $storage->expects($this->once())
             ->method('hasToken')
@@ -159,10 +430,55 @@ class CsrfTokenManagerTest extends TestCase
         $this->assertTrue($manager->isTokenValid(new CsrfToken('token_id', 'TOKEN')));
     }
 
-    /**
-     * @dataProvider getManagerGeneratorAndStorage
-     */
-    public function testNonMatchingTokenIsNotValid($namespace, $manager, $storage)
+    public function testNonMatchingTokenIsNotValidEmptyNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertNonMatchingTokenIsNotValid('', $this->getEmptyNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testNonMatchingTokenIsNotValidHttpsNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertNonMatchingTokenIsNotValid('https-', $this->getHttpsNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testNonMatchingTokenIsNotValidCustomNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertNonMatchingTokenIsNotValid('aNamespace-', $this->getCustomNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testNonMatchingTokenIsNotValidRequestStack()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertNonMatchingTokenIsNotValid('https-', $this->getRequestStackMocks($generator, $storage), $storage);
+    }
+
+    public function testNonMatchingTokenIsNotValidClosure()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertNonMatchingTokenIsNotValid('generated-', $this->getClosureMocks($generator, $storage), $storage);
+    }
+
+    public function testNonMatchingTokenIsNotValidRequestStackEmptyNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertNonMatchingTokenIsNotValid('', $this->getRequestStackWithEmptyNamespaceMocks($generator, $storage), $storage);
+    }
+
+    private function assertNonMatchingTokenIsNotValid($namespace, $manager, $storage): void
     {
         $storage->expects($this->once())
             ->method('hasToken')
@@ -177,10 +493,55 @@ class CsrfTokenManagerTest extends TestCase
         $this->assertFalse($manager->isTokenValid(new CsrfToken('token_id', 'FOOBAR')));
     }
 
-    /**
-     * @dataProvider getManagerGeneratorAndStorage
-     */
-    public function testNonExistingTokenIsNotValid($namespace, $manager, $storage)
+    public function testNonExistingTokenIsNotValidEmptyNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertNonExistingTokenIsNotValid('', $this->getEmptyNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testNonExistingTokenIsNotValidHttpsNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertNonExistingTokenIsNotValid('https-', $this->getHttpsNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testNonExistingTokenIsNotValidCustomNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertNonExistingTokenIsNotValid('aNamespace-', $this->getCustomNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testNonExistingTokenIsNotValidRequestStack()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertNonExistingTokenIsNotValid('https-', $this->getRequestStackMocks($generator, $storage), $storage);
+    }
+
+    public function testNonExistingTokenIsNotValidClosure()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertNonExistingTokenIsNotValid('generated-', $this->getClosureMocks($generator, $storage), $storage);
+    }
+
+    public function testNonExistingTokenIsNotValidRequestStackEmptyNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertNonExistingTokenIsNotValid('', $this->getRequestStackWithEmptyNamespaceMocks($generator, $storage), $storage);
+    }
+
+    private function assertNonExistingTokenIsNotValid($namespace, $manager, $storage): void
     {
         $storage->expects($this->once())
             ->method('hasToken')
@@ -195,8 +556,8 @@ class CsrfTokenManagerTest extends TestCase
 
     public function testTokenShouldNotTriggerDivisionByZero()
     {
-        [$generator, $storage] = $this->getGeneratorAndStorage();
-        $manager = new CsrfTokenManager($generator, $storage);
+        $storage = $this->createMock(TokenStorageInterface::class);
+        $manager = new CsrfTokenManager($this->createStub(TokenGeneratorInterface::class), $storage);
 
         // Scenario: the token that was returned is abc.def.ghi, and gets modified in the browser to abc..ghi
 
@@ -213,10 +574,55 @@ class CsrfTokenManagerTest extends TestCase
         $this->assertFalse($manager->isTokenValid(new CsrfToken('token_id', 'abc..ghi')));
     }
 
-    /**
-     * @dataProvider getManagerGeneratorAndStorage
-     */
-    public function testRemoveToken($namespace, $manager, $storage)
+    public function testRemoveTokenEmptyNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertRemoveToken('', $this->getEmptyNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testRemoveTokenHttpsNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertRemoveToken('https-', $this->getHttpsNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testRemoveTokenCustomNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertRemoveToken('aNamespace-', $this->getCustomNamespaceMocks($generator, $storage), $storage);
+    }
+
+    public function testRemoveTokenRequestStack()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertRemoveToken('https-', $this->getRequestStackMocks($generator, $storage), $storage);
+    }
+
+    public function testRemoveTokenClosure()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertRemoveToken('generated-', $this->getClosureMocks($generator, $storage), $storage);
+    }
+
+    public function testRemoveTokenRequestStackEmptyNamespace()
+    {
+        $generator = $this->createStub(TokenGeneratorInterface::class);
+        $storage = $this->createMock(TokenStorageInterface::class);
+
+        $this->assertRemoveToken('', $this->getRequestStackWithEmptyNamespaceMocks($generator, $storage), $storage);
+    }
+
+    private function assertRemoveToken($namespace, $manager, $storage): void
     {
         $storage->expects($this->once())
             ->method('removeToken')
@@ -230,54 +636,50 @@ class CsrfTokenManagerTest extends TestCase
     {
         $generator = $this->createMock(TokenGeneratorInterface::class);
         $generator->expects($this->once())->method('generateToken')->willReturn('random');
-        $storage = $this->createMock(TokenStorageInterface::class);
 
         $requestStack = new RequestStack();
         $requestStack->push(new Request([], [], [], [], [], ['HTTPS' => 'on']));
 
-        $manager = new CsrfTokenManager($generator, $storage);
+        $manager = new CsrfTokenManager($generator, $this->createStub(TokenStorageInterface::class));
 
         $token = $manager->getToken('foo');
         $this->assertSame('foo', $token->getId());
     }
 
-    public function getManagerGeneratorAndStorage()
+    private function getEmptyNamespaceMocks(TokenGeneratorInterface $generator, TokenStorageInterface $storage): CsrfTokenManager
     {
-        $data = [];
-
-        [$generator, $storage] = $this->getGeneratorAndStorage();
-        $data[] = ['', new CsrfTokenManager($generator, $storage, ''), $storage, $generator];
-
-        [$generator, $storage] = $this->getGeneratorAndStorage();
-        $data[] = ['https-', new CsrfTokenManager($generator, $storage), $storage, $generator];
-
-        [$generator, $storage] = $this->getGeneratorAndStorage();
-        $data[] = ['aNamespace-', new CsrfTokenManager($generator, $storage, 'aNamespace-'), $storage, $generator];
-
-        $requestStack = new RequestStack();
-        $requestStack->push(new Request([], [], [], [], [], ['HTTPS' => 'on']));
-        [$generator, $storage] = $this->getGeneratorAndStorage();
-        $data[] = ['https-', new CsrfTokenManager($generator, $storage, $requestStack), $storage, $generator];
-
-        [$generator, $storage] = $this->getGeneratorAndStorage();
-        $data[] = ['generated-', new CsrfTokenManager($generator, $storage, function () {
-            return 'generated-';
-        }), $storage, $generator];
-
-        $requestStack = new RequestStack();
-        $requestStack->push(new Request());
-        [$generator, $storage] = $this->getGeneratorAndStorage();
-        $data[] = ['', new CsrfTokenManager($generator, $storage, $requestStack), $storage, $generator];
-
-        return $data;
+        return new CsrfTokenManager($generator, $storage, '');
     }
 
-    private function getGeneratorAndStorage(): array
+    private function getHttpsNamespaceMocks(TokenGeneratorInterface $generator, TokenStorageInterface $storage): CsrfTokenManager
     {
-        return [
-            $this->createMock(TokenGeneratorInterface::class),
-            $this->createMock(TokenStorageInterface::class),
-        ];
+        return new CsrfTokenManager($generator, $storage);
+    }
+
+    private function getCustomNamespaceMocks(TokenGeneratorInterface $generator, TokenStorageInterface $storage): CsrfTokenManager
+    {
+        return new CsrfTokenManager($generator, $storage, 'aNamespace-');
+    }
+
+    private function getRequestStackMocks(TokenGeneratorInterface $generator, TokenStorageInterface $storage): CsrfTokenManager
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push(new Request([], [], [], [], [], ['HTTPS' => 'on']));
+
+        return new CsrfTokenManager($generator, $storage, $requestStack);
+    }
+
+    private function getClosureMocks(TokenGeneratorInterface $generator, TokenStorageInterface $storage): CsrfTokenManager
+    {
+        return new CsrfTokenManager($generator, $storage, static fn () => 'generated-');
+    }
+
+    private function getRequestStackWithEmptyNamespaceMocks(TokenGeneratorInterface $generator, TokenStorageInterface $storage): CsrfTokenManager
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push(new Request());
+
+        return new CsrfTokenManager($generator, $storage, $requestStack);
     }
 
     protected function setUp(): void
@@ -287,8 +689,6 @@ class CsrfTokenManagerTest extends TestCase
 
     protected function tearDown(): void
     {
-        parent::tearDown();
-
         unset($_SERVER['HTTPS']);
     }
 }

@@ -11,14 +11,13 @@
 
 namespace Symfony\Component\Console\Tests\Question;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 
 class ChoiceQuestionTest extends TestCase
 {
-    /**
-     * @dataProvider selectUseCases
-     */
+    #[DataProvider('selectUseCases')]
     public function testSelectUseCases($multiSelect, $answers, $expected, $message, $default = null)
     {
         $question = new ChoiceQuestion('A question', [
@@ -39,7 +38,7 @@ class ChoiceQuestionTest extends TestCase
         }
     }
 
-    public function selectUseCases()
+    public static function selectUseCases()
     {
         return [
             [
@@ -104,9 +103,7 @@ class ChoiceQuestionTest extends TestCase
         $this->assertSame(['First response ', ' Second response'], $question->getValidator()('First response , Second response'));
     }
 
-    /**
-     * @dataProvider selectAssociativeChoicesProvider
-     */
+    #[DataProvider('selectAssociativeChoicesProvider')]
     public function testSelectAssociativeChoices($providedAnswer, $expectedValue)
     {
         $question = new ChoiceQuestion('A question', [
@@ -119,7 +116,7 @@ class ChoiceQuestionTest extends TestCase
         $this->assertSame($expectedValue, $question->getValidator()($providedAnswer));
     }
 
-    public function selectAssociativeChoicesProvider()
+    public static function selectAssociativeChoicesProvider()
     {
         return [
             'select "0" choice by key' => ['0', '0'],
@@ -152,7 +149,7 @@ class ChoiceQuestionTest extends TestCase
 
 class StringChoice
 {
-    private $string;
+    private string $string;
 
     public function __construct(string $string)
     {

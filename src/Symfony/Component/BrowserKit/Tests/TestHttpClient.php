@@ -20,10 +20,10 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 
 class TestHttpClient extends HttpBrowser
 {
-    protected $nextResponse = null;
-    protected $nextScript = null;
+    protected ?Response $nextResponse = null;
+    protected string $nextScript;
 
-    public function __construct(array $server = [], History $history = null, CookieJar $cookieJar = null)
+    public function __construct(array $server = [], ?History $history = null, ?CookieJar $cookieJar = null)
     {
         $client = new MockHttpClient(function (string $method, string $url, array $options) {
             if (null === $this->nextResponse) {
@@ -64,17 +64,17 @@ class TestHttpClient extends HttpBrowser
         return $response;
     }
 
-    protected function getScript(object $request)
+    protected function getScript(object $request): string
     {
         $r = new \ReflectionClass(Response::class);
         $path = $r->getFileName();
 
         return <<<EOF
-<?php
+            <?php
 
-require_once('$path');
+            require_once('$path');
 
-echo serialize($this->nextScript);
-EOF;
+            echo serialize($this->nextScript);
+            EOF;
     }
 }

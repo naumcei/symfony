@@ -19,6 +19,19 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 interface FormTypeInterface
 {
     /**
+     * Returns the name of the parent type.
+     *
+     * The parent type and its extensions will configure the form with the
+     * following methods before the current implementation.
+     */
+    public function getParent(): ?string;
+
+    /**
+     * Configures the options for this type.
+     */
+    public function configureOptions(OptionsResolver $resolver): void;
+
+    /**
      * Builds the form.
      *
      * This method is called for each type in the hierarchy starting from the
@@ -28,7 +41,7 @@ interface FormTypeInterface
      *
      * @see FormTypeExtensionInterface::buildForm()
      */
-    public function buildForm(FormBuilderInterface $builder, array $options);
+    public function buildForm(FormBuilderInterface $builder, array $options): void;
 
     /**
      * Builds the form view.
@@ -44,7 +57,7 @@ interface FormTypeInterface
      *
      * @see FormTypeExtensionInterface::buildView()
      */
-    public function buildView(FormView $view, FormInterface $form, array $options);
+    public function buildView(FormView $view, FormInterface $form, array $options): void;
 
     /**
      * Finishes the form view.
@@ -61,27 +74,13 @@ interface FormTypeInterface
      *
      * @see FormTypeExtensionInterface::finishView()
      */
-    public function finishView(FormView $view, FormInterface $form, array $options);
-
-    /**
-     * Configures the options for this type.
-     */
-    public function configureOptions(OptionsResolver $resolver);
+    public function finishView(FormView $view, FormInterface $form, array $options): void;
 
     /**
      * Returns the prefix of the template block name for this type.
      *
      * The block prefix defaults to the underscored short class name with
      * the "Type" suffix removed (e.g. "UserProfileType" => "user_profile").
-     *
-     * @return string
      */
-    public function getBlockPrefix();
-
-    /**
-     * Returns the name of the parent type.
-     *
-     * @return string|null
-     */
-    public function getParent();
+    public function getBlockPrefix(): string;
 }

@@ -35,24 +35,22 @@ class YamlLintCommand extends BaseLintCommand
             return $default($directory);
         };
 
-        $isReadableProvider = function ($fileOrDirectory, $default) {
-            return str_starts_with($fileOrDirectory, '@') || $default($fileOrDirectory);
-        };
+        $isReadableProvider = static fn ($fileOrDirectory, $default) => str_starts_with($fileOrDirectory, '@') || $default($fileOrDirectory);
 
         parent::__construct(null, $directoryIteratorProvider, $isReadableProvider);
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 
         $this->setHelp($this->getHelp().<<<'EOF'
 
-Or find all files in a bundle:
+            Or find all files in a bundle:
 
-  <info>php %command.full_name% @AcmeDemoBundle</info>
+              <info>php %command.full_name% @AcmeDemoBundle</info>
 
-EOF
+            EOF
         );
     }
 }

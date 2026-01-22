@@ -14,35 +14,38 @@ namespace Symfony\Component\ExpressionLanguage\Tests\Node;
 use Symfony\Component\ExpressionLanguage\Node\ConstantNode;
 use Symfony\Component\ExpressionLanguage\Node\UnaryNode;
 
-class UnaryNodeTest extends AbstractNodeTest
+class UnaryNodeTest extends AbstractNodeTestCase
 {
-    public function getEvaluateData()
+    public static function getEvaluateData(): array
     {
         return [
             [-1, new UnaryNode('-', new ConstantNode(1))],
             [3, new UnaryNode('+', new ConstantNode(3))],
             [false, new UnaryNode('!', new ConstantNode(true))],
             [false, new UnaryNode('not', new ConstantNode(true))],
+            [-6, new UnaryNode('~', new ConstantNode(5))],
         ];
     }
 
-    public function getCompileData()
+    public static function getCompileData(): array
     {
         return [
             ['(-1)', new UnaryNode('-', new ConstantNode(1))],
             ['(+3)', new UnaryNode('+', new ConstantNode(3))],
             ['(!true)', new UnaryNode('!', new ConstantNode(true))],
             ['(!true)', new UnaryNode('not', new ConstantNode(true))],
+            ['(~5)', new UnaryNode('~', new ConstantNode(5))],
         ];
     }
 
-    public function getDumpData()
+    public static function getDumpData(): array
     {
         return [
             ['(- 1)', new UnaryNode('-', new ConstantNode(1))],
             ['(+ 3)', new UnaryNode('+', new ConstantNode(3))],
             ['(! true)', new UnaryNode('!', new ConstantNode(true))],
             ['(not true)', new UnaryNode('not', new ConstantNode(true))],
+            ['(~ 5)', new UnaryNode('~', new ConstantNode(5))],
         ];
     }
 }

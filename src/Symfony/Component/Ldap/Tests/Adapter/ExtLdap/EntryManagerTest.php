@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Ldap\Tests\Adapter\ExtLdap;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Ldap\Adapter\ExtLdap\Connection;
 use Symfony\Component\Ldap\Adapter\ExtLdap\EntryManager;
@@ -25,9 +26,6 @@ class EntryManagerTest extends TestCase
         $this->expectException(LdapException::class);
         $this->expectExceptionMessage('Entry "$$$$$$" malformed, could not parse RDN.');
         $connection = $this->createMock(Connection::class);
-        $connection
-            ->expects($this->once())
-            ->method('isBound')->willReturn(true);
 
         $entry = new Entry('$$$$$$');
         $entryManager = new EntryManager($connection);
@@ -50,9 +48,8 @@ class EntryManagerTest extends TestCase
 
     /**
      * @see https://tools.ietf.org/html/rfc4514#section-3
-     *
-     * @dataProvider moveWithRFC4514DistinguishedNameProvider
      */
+    #[DataProvider('moveWithRFC4514DistinguishedNameProvider')]
     public function testMoveWithRFC4514DistinguishedName(string $dn, string $expectedRdn)
     {
         $connection = $this->createMock(Connection::class);
@@ -67,7 +64,7 @@ class EntryManagerTest extends TestCase
         $this->assertSame($expectedRdn, $cn);
     }
 
-    public function moveWithRFC4514DistinguishedNameProvider(): array
+    public static function moveWithRFC4514DistinguishedNameProvider(): array
     {
         return [
             ['CN=Simple,DC=example,DC=net', 'CN=Simple'],

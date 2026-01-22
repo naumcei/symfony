@@ -14,14 +14,11 @@ namespace Symfony\Bridge\Doctrine\Tests\Form\ChoiceList;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Persistence\ObjectRepository;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\Form\ChoiceList\DoctrineChoiceLoader;
 use Symfony\Bridge\Doctrine\Form\ChoiceList\EntityLoaderInterface;
 use Symfony\Bridge\Doctrine\Form\ChoiceList\IdReader;
-use Symfony\Bridge\PhpUnit\ExpectDeprecationTrait;
 use Symfony\Component\Form\ChoiceList\ArrayChoiceList;
-use Symfony\Component\Form\ChoiceList\Factory\ChoiceListFactoryInterface;
 use Symfony\Component\Form\Exception\LogicException;
 
 /**
@@ -29,80 +26,41 @@ use Symfony\Component\Form\Exception\LogicException;
  */
 class DoctrineChoiceLoaderTest extends TestCase
 {
-    use ExpectDeprecationTrait;
-
-    /**
-     * @var MockObject&ChoiceListFactoryInterface
-     */
-    private $factory;
-
-    /**
-     * @var MockObject&ObjectManager
-     */
-    private $om;
-
-    /**
-     * @var MockObject&ObjectRepository
-     */
-    private $repository;
-
-    /**
-     * @var string
-     */
-    private $class;
-
-    /**
-     * @var MockObject&IdReader
-     */
-    private $idReader;
-
-    /**
-     * @var MockObject&EntityLoaderInterface
-     */
-    private $objectLoader;
-
-    /**
-     * @var \stdClass
-     */
-    private $obj1;
-
-    /**
-     * @var \stdClass
-     */
-    private $obj2;
-
-    /**
-     * @var \stdClass
-     */
-    private $obj3;
+    private ObjectManager $om;
+    private ObjectRepository $repository;
+    private string $class;
+    private IdReader $idReader;
+    private EntityLoaderInterface $objectLoader;
+    private \stdClass $obj1;
+    private \stdClass $obj2;
+    private \stdClass $obj3;
 
     protected function setUp(): void
     {
-        $this->factory = $this->createMock(ChoiceListFactoryInterface::class);
-        $this->om = $this->createMock(ObjectManager::class);
+        $this->om = $this->createStub(ObjectManager::class);
         $this->repository = $this->createMock(ObjectRepository::class);
         $this->class = 'stdClass';
-        $this->idReader = $this->createMock(IdReader::class);
-        $this->idReader->expects($this->any())
+        $this->idReader = $this->createStub(IdReader::class);
+        $this->idReader
             ->method('isSingleId')
             ->willReturn(true)
         ;
 
-        $this->objectLoader = $this->createMock(EntityLoaderInterface::class);
+        $this->objectLoader = $this->createStub(EntityLoaderInterface::class);
         $this->obj1 = (object) ['name' => 'A'];
         $this->obj2 = (object) ['name' => 'B'];
         $this->obj3 = (object) ['name' => 'C'];
 
-        $this->om->expects($this->any())
+        $this->om
             ->method('getRepository')
             ->with($this->class)
             ->willReturn($this->repository);
 
-        $this->om->expects($this->any())
+        $this->om
             ->method('getClassMetadata')
             ->with($this->class)
             ->willReturn(new ClassMetadata($this->class));
-        $this->repository->expects($this->any())
+        $this->repository
             ->method('findAll')
             ->willReturn([$this->obj1, $this->obj2, $this->obj3])
         ;
@@ -117,7 +75,7 @@ class DoctrineChoiceLoaderTest extends TestCase
         );
 
         $choices = [$this->obj1, $this->obj2, $this->obj3];
-        $value = function () {};
+        $value = static function () {};
         $choiceList = new ArrayChoiceList($choices, $value);
 
         $this->repository->expects($this->once())
@@ -133,6 +91,7 @@ class DoctrineChoiceLoaderTest extends TestCase
 
     public function testLoadChoiceListUsesObjectLoaderIfAvailable()
     {
+        $this->objectLoader = $this->createMock(EntityLoaderInterface::class);
         $loader = new DoctrineChoiceLoader(
             $this->om,
             $this->class,
@@ -193,9 +152,6 @@ class DoctrineChoiceLoaderTest extends TestCase
 
     public function testLoadValuesForChoicesDoesNotLoadIfSingleIntId()
     {
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Not defining the IdReader explicitly as a value callback when the query can be optimized is not supported.');
-
         $loader = new DoctrineChoiceLoader(
             $this->om,
             $this->class,
@@ -205,12 +161,15 @@ class DoctrineChoiceLoaderTest extends TestCase
         $this->repository->expects($this->never())
             ->method('findAll');
 
-        $this->idReader->expects($this->any())
+        $this->idReader
             ->method('getIdValue')
             ->with($this->obj2)
             ->willReturn('2');
 
-        $this->assertSame(['2'], $loader->loadValuesForChoices([$this->obj2]));
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Not defining the IdReader explicitly as a value callback when the query can be optimized is not supported.');
+
+        $loader->loadValuesForChoices([$this->obj2]);
     }
 
     public function testLoadValuesForChoicesDoesNotLoadIfSingleIntIdAndValueGiven()
@@ -222,7 +181,7 @@ class DoctrineChoiceLoaderTest extends TestCase
         );
 
         $choices = [$this->obj1, $this->obj2, $this->obj3];
-        $value = function (\stdClass $object) { return $object->name; };
+        $value = static fn (\stdClass $object) => $object->name;
 
         $this->repository->expects($this->never())
             ->method('findAll')
@@ -247,7 +206,7 @@ class DoctrineChoiceLoaderTest extends TestCase
         $this->repository->expects($this->never())
             ->method('findAll');
 
-        $this->idReader->expects($this->any())
+        $this->idReader
             ->method('getIdValue')
             ->with($this->obj2)
             ->willReturn('2');
@@ -294,9 +253,7 @@ class DoctrineChoiceLoaderTest extends TestCase
 
     public function testLegacyLoadChoicesForValuesLoadsOnlyChoicesIfValueUseIdReader()
     {
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Not defining the IdReader explicitly as a value callback when the query can be optimized is not supported.');
-
+        $this->objectLoader = $this->createMock(EntityLoaderInterface::class);
         $loader = new DoctrineChoiceLoader(
             $this->om,
             $this->class,
@@ -304,9 +261,7 @@ class DoctrineChoiceLoaderTest extends TestCase
             $this->objectLoader
         );
 
-        $choices = [$this->obj2, $this->obj3];
-
-        $this->idReader->expects($this->any())
+        $this->idReader
             ->method('getIdField')
             ->willReturn('idField');
 
@@ -316,14 +271,15 @@ class DoctrineChoiceLoaderTest extends TestCase
         $this->objectLoader->expects($this->never())
             ->method('getEntitiesByIds');
 
-        $this->assertSame(
-            [4 => $this->obj3, 7 => $this->obj2],
-            $loader->loadChoicesForValues([4 => '3', 7 => '2'])
-        );
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Not defining the IdReader explicitly as a value callback when the query can be optimized is not supported.');
+
+        $loader->loadChoicesForValues([4 => '3', 7 => '2']);
     }
 
     public function testLoadChoicesForValuesLoadsOnlyChoicesIfValueUseIdReader()
     {
+        $this->objectLoader = $this->createMock(EntityLoaderInterface::class);
         $loader = new DoctrineChoiceLoader(
             $this->om,
             $this->class,
@@ -333,7 +289,7 @@ class DoctrineChoiceLoaderTest extends TestCase
 
         $choices = [$this->obj2, $this->obj3];
 
-        $this->idReader->expects($this->any())
+        $this->idReader
             ->method('getIdField')
             ->willReturn('idField');
 
@@ -345,7 +301,7 @@ class DoctrineChoiceLoaderTest extends TestCase
             ->with('idField', [4 => '3', 7 => '2'])
             ->willReturn($choices);
 
-        $this->idReader->expects($this->any())
+        $this->idReader
             ->method('getIdValue')
             ->willReturnMap([
                 [$this->obj2, '2'],
@@ -367,7 +323,7 @@ class DoctrineChoiceLoaderTest extends TestCase
         );
 
         $choices = [$this->obj1, $this->obj2, $this->obj3];
-        $value = function (\stdClass $object) { return $object->name; };
+        $value = static fn (\stdClass $object) => $object->name;
 
         $this->repository->expects($this->once())
             ->method('findAll')
@@ -381,6 +337,7 @@ class DoctrineChoiceLoaderTest extends TestCase
 
     public function testLoadChoicesForValuesLoadsOnlyChoicesIfValueIsIdReader()
     {
+        $this->objectLoader = $this->createMock(EntityLoaderInterface::class);
         $loader = new DoctrineChoiceLoader(
             $this->om,
             $this->class,
@@ -391,7 +348,7 @@ class DoctrineChoiceLoaderTest extends TestCase
         $choices = [$this->obj2, $this->obj3];
         $value = [$this->idReader, 'getIdValue'];
 
-        $this->idReader->expects($this->any())
+        $this->idReader
             ->method('getIdField')
             ->willReturn('idField');
 
@@ -403,7 +360,7 @@ class DoctrineChoiceLoaderTest extends TestCase
             ->with('idField', ['2'])
             ->willReturn($choices);
 
-        $this->idReader->expects($this->any())
+        $this->idReader
             ->method('getIdValue')
             ->willReturnMap([
                 [$this->obj2, '2'],
@@ -415,14 +372,16 @@ class DoctrineChoiceLoaderTest extends TestCase
 
     public function testPassingIdReaderWithoutSingleIdEntity()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('The second argument `$idReader` of "Symfony\\Bridge\\Doctrine\\Form\\ChoiceList\\DoctrineChoiceLoader::__construct" must be null when the query cannot be optimized because of composite id fields.');
-
         $idReader = $this->createMock(IdReader::class);
         $idReader->expects($this->once())
             ->method('isSingleId')
             ->willReturn(false)
         ;
+        $this->repository->expects($this->never())
+            ->method('findAll');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "$idReader" argument of "Symfony\\Bridge\\Doctrine\\Form\\ChoiceList\\DoctrineChoiceLoader::__construct" must be null when the query cannot be optimized because of composite id fields.');
 
         new DoctrineChoiceLoader($this->om, $this->class, $idReader, $this->objectLoader);
     }

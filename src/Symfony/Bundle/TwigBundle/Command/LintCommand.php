@@ -23,7 +23,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 #[AsCommand(name: 'lint:twig', description: 'Lint a Twig template and outputs encountered errors')]
 final class LintCommand extends BaseLintCommand
 {
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 
@@ -31,11 +31,11 @@ final class LintCommand extends BaseLintCommand
             ->setHelp(
                 $this->getHelp().<<<'EOF'
 
-Or all template files in a bundle:
+                    Or all template files in a bundle:
 
-  <info>php %command.full_name% @AcmeDemoBundle</info>
+                      <info>php %command.full_name% @AcmeDemoBundle</info>
 
-EOF
+                    EOF
             )
         ;
     }

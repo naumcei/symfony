@@ -27,29 +27,28 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class FormTypeValidatorExtension extends BaseValidatorExtension
 {
-    private ValidatorInterface $validator;
     private ViolationMapper $violationMapper;
-    private bool $legacyErrorMessages;
 
-    public function __construct(ValidatorInterface $validator, bool $legacyErrorMessages = true, FormRendererInterface $formRenderer = null, TranslatorInterface $translator = null)
-    {
-        $this->validator = $validator;
+    public function __construct(
+        private ValidatorInterface $validator,
+        private bool $legacyErrorMessages = true,
+        ?FormRendererInterface $formRenderer = null,
+        ?TranslatorInterface $translator = null,
+    ) {
         $this->violationMapper = new ViolationMapper($formRenderer, $translator);
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addEventSubscriber(new ValidationListener($this->validator, $this->violationMapper));
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
 
         // Constraint should always be converted to an array
-        $constraintsNormalizer = function (Options $options, $constraints) {
-            return \is_object($constraints) ? [$constraints] : (array) $constraints;
-        };
+        $constraintsNormalizer = static fn (Options $options, $constraints) => \is_object($constraints) ? [$constraints] : (array) $constraints;
 
         $resolver->setDefaults([
             'error_mapping' => [],

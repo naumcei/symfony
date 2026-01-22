@@ -9,9 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Component\Form\Tests\Extension\Csrf\Type;
+namespace Symfony\Component\Form\Tests\Extension\HtmlSanitizer\Type;
 
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\HtmlSanitizer\HtmlSanitizerExtension;
@@ -20,7 +21,14 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 class TextTypeHtmlSanitizerExtensionTest extends TypeTestCase
 {
-    protected function getExtensions()
+    protected function setUp(): void
+    {
+        $this->dispatcher = new EventDispatcher();
+
+        parent::setUp();
+    }
+
+    protected function getExtensions(): array
     {
         $fooSanitizer = $this->createMock(HtmlSanitizerInterface::class);
         $fooSanitizer->expects($this->once())
@@ -36,8 +44,8 @@ class TextTypeHtmlSanitizerExtensionTest extends TypeTestCase
 
         return array_merge(parent::getExtensions(), [
             new HtmlSanitizerExtension(new ServiceLocator([
-                'foo' => fn () => $fooSanitizer,
-                'bar' => fn () => $barSanitizer,
+                'foo' => static fn () => $fooSanitizer,
+                'bar' => static fn () => $barSanitizer,
             ]), 'foo'),
         ]);
     }

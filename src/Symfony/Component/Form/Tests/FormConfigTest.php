@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Form\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Form\FormConfigBuilder;
@@ -21,7 +22,7 @@ use Symfony\Component\Form\NativeRequestHandler;
  */
 class FormConfigTest extends TestCase
 {
-    public function getHtml4Ids()
+    public static function getHtml4Ids()
     {
         return [
             ['z0'],
@@ -62,9 +63,7 @@ class FormConfigTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider getHtml4Ids
-     */
+    #[DataProvider('getHtml4Ids')]
     public function testNameAcceptsOnlyNamesValidAsIdsInHtml4($name, $expectedException = null)
     {
         if (null !== $expectedException) {

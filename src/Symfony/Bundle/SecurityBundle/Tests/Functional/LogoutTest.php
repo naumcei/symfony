@@ -24,18 +24,14 @@ class LogoutTest extends AbstractWebTestCase
     {
         $client = $this->createClient(['test_case' => 'LogoutWithoutSessionInvalidation', 'root_config' => 'config.yml']);
         $client->disableReboot();
-        $this->callInRequestContext($client, function () {
-            static::getContainer()->get('security.csrf.token_storage')->setToken('foo', 'bar');
-        });
 
         $client->request('POST', '/login', [
             '_username' => 'johannes',
             '_password' => 'test',
         ]);
 
-        $this->callInRequestContext($client, function () {
-            $this->assertTrue(static::getContainer()->get('security.csrf.token_storage')->hasToken('foo'));
-            $this->assertSame('bar', static::getContainer()->get('security.csrf.token_storage')->getToken('foo'));
+        $this->callInRequestContext($client, static function () {
+            static::getContainer()->get('security.csrf.token_storage')->setToken('foo', 'bar');
         });
 
         $client->request('GET', '/logout');
@@ -86,7 +82,7 @@ class LogoutTest extends AbstractWebTestCase
     {
         /** @var EventDispatcherInterface $eventDispatcher */
         $eventDispatcher = static::getContainer()->get(EventDispatcherInterface::class);
-        $wrappedCallable = function (RequestEvent $event) use (&$callable) {
+        $wrappedCallable = static function (RequestEvent $event) use (&$callable) {
             $callable();
             $event->setResponse(new Response(''));
             $event->stopPropagation();
@@ -94,7 +90,7 @@ class LogoutTest extends AbstractWebTestCase
 
         $eventDispatcher->addListener(KernelEvents::REQUEST, $wrappedCallable);
         try {
-            $client->request('GET', '/'.uniqid('', true));
+            $client->request('GET', '/not-existent');
         } finally {
             $eventDispatcher->removeListener(KernelEvents::REQUEST, $wrappedCallable);
         }

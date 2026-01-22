@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\HttpClient\Tests\Retry;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -21,9 +22,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class GenericRetryStrategyTest extends TestCase
 {
-    /**
-     * @dataProvider provideRetryable
-     */
+    #[DataProvider('provideRetryable')]
     public function testShouldRetry(string $method, int $code, ?TransportExceptionInterface $exception)
     {
         $strategy = new GenericRetryStrategy();
@@ -31,9 +30,7 @@ class GenericRetryStrategyTest extends TestCase
         self::assertTrue($strategy->shouldRetry($this->getContext(0, $method, 'http://example.com/', $code), null, $exception));
     }
 
-    /**
-     * @dataProvider provideNotRetryable
-     */
+    #[DataProvider('provideNotRetryable')]
     public function testShouldNotRetry(string $method, int $code, ?TransportExceptionInterface $exception)
     {
         $strategy = new GenericRetryStrategy();
@@ -41,23 +38,21 @@ class GenericRetryStrategyTest extends TestCase
         self::assertFalse($strategy->shouldRetry($this->getContext(0, $method, 'http://example.com/', $code), null, $exception));
     }
 
-    public function provideRetryable(): iterable
+    public static function provideRetryable(): iterable
     {
         yield ['GET', 200, new TransportException()];
         yield ['GET', 500, null];
         yield ['POST', 429, null];
     }
 
-    public function provideNotRetryable(): iterable
+    public static function provideNotRetryable(): iterable
     {
         yield ['POST', 200, null];
         yield ['POST', 200, new TransportException()];
         yield ['POST', 500, null];
     }
 
-    /**
-     * @dataProvider provideDelay
-     */
+    #[DataProvider('provideDelay')]
     public function testGetDelay(int $delay, int $multiplier, int $maxDelay, int $previousRetries, int $expectedDelay)
     {
         $strategy = new GenericRetryStrategy([], $delay, $multiplier, $maxDelay, 0);
@@ -65,9 +60,9 @@ class GenericRetryStrategyTest extends TestCase
         self::assertSame($expectedDelay, $strategy->getDelay($this->getContext($previousRetries, 'GET', 'http://example.com/', 200), null, null));
     }
 
-    public function provideDelay(): iterable
+    public static function provideDelay(): iterable
     {
-        // delay, multiplier, maxDelay, retries, expectedDelay
+        // delay, multiplier, maxDelay, previousRetries, expectedDelay
         yield [1000, 1, 5000, 0, 1000];
         yield [1000, 1, 5000, 1, 1000];
         yield [1000, 1, 5000, 2, 1000];
@@ -90,19 +85,27 @@ class GenericRetryStrategyTest extends TestCase
         yield [0, 2, 10000, 1, 0];
     }
 
-    public function testJitter()
+    #[DataProvider('provideJitter')]
+    public function testJitter(float $multiplier, int $previousRetries)
     {
-        $strategy = new GenericRetryStrategy([], 1000, 1, 0, 1);
+        $strategy = new GenericRetryStrategy([], 1000, $multiplier, 0, 1);
         $min = 2000;
         $max = 0;
         for ($i = 0; $i < 50; ++$i) {
-            $delay = $strategy->getDelay($this->getContext(0, 'GET', 'http://example.com/', 200), null, null);
+            $delay = $strategy->getDelay($this->getContext($previousRetries, 'GET', 'http://example.com/', 200), null, null);
             $min = min($min, $delay);
             $max = max($max, $delay);
         }
         $this->assertGreaterThanOrEqual(1000, $max - $min);
         $this->assertGreaterThanOrEqual(1000, $max);
         $this->assertLessThanOrEqual(1000, $min);
+    }
+
+    public static function provideJitter(): iterable
+    {
+        // multiplier, previousRetries
+        yield [1, 0];
+        yield [1.1, 2];
     }
 
     private function getContext($retryCount, $method, $url, $statusCode): AsyncContext

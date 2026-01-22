@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Notifier\Bridge\MicrosoftTeams\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Notifier\Bridge\MicrosoftTeams\Action\OpenUriAction;
 use Symfony\Component\Notifier\Bridge\MicrosoftTeams\MicrosoftTeamsOptions;
@@ -67,7 +68,7 @@ final class MicrosoftTeamsOptionsTest extends TestCase
         $recipient = 'foo';
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(sprintf('"%s" require recipient id format to be "/webhookb2/{uuid}@{uuid}/IncomingWebhook/{id}/{uuid}", "%s" given.', MicrosoftTeamsOptions::class, $recipient));
+        $this->expectExceptionMessage(\sprintf('"%s" require recipient id format to be "/webhookb2/{uuid}@{uuid}/IncomingWebhook/{id}/{uuid}", "%s" given.', MicrosoftTeamsOptions::class, $recipient));
 
         $options->recipient($recipient);
     }
@@ -123,9 +124,7 @@ final class MicrosoftTeamsOptionsTest extends TestCase
         $this->assertSame($text, $options->toArray()['text']);
     }
 
-    /**
-     * @dataProvider validThemeColors
-     */
+    #[DataProvider('validThemeColors')]
     public function testThemeColorViaConstructor(string $themeColor)
     {
         $options = new MicrosoftTeamsOptions([
@@ -135,9 +134,7 @@ final class MicrosoftTeamsOptionsTest extends TestCase
         $this->assertSame($themeColor, $options->toArray()['themeColor']);
     }
 
-    /**
-     * @dataProvider validThemeColors
-     */
+    #[DataProvider('validThemeColors')]
     public function testThemeColorViaSetter(string $themeColor)
     {
         $options = (new MicrosoftTeamsOptions())
@@ -146,7 +143,7 @@ final class MicrosoftTeamsOptionsTest extends TestCase
         $this->assertSame($themeColor, $options->toArray()['themeColor']);
     }
 
-    public function validThemeColors(): \Generator
+    public static function validThemeColors(): \Generator
     {
         yield ['#333'];
         yield ['#333333'];
@@ -156,9 +153,7 @@ final class MicrosoftTeamsOptionsTest extends TestCase
         yield ['#FF0000'];
     }
 
-    /**
-     * @dataProvider invalidThemeColors
-     */
+    #[DataProvider('invalidThemeColors')]
     public function testThemeColorViaConstructorThrowsInvalidArgumentException(string $themeColor)
     {
         $this->expectException(InvalidArgumentException::class);
@@ -169,9 +164,7 @@ final class MicrosoftTeamsOptionsTest extends TestCase
         ]);
     }
 
-    /**
-     * @dataProvider invalidThemeColors
-     */
+    #[DataProvider('invalidThemeColors')]
     public function testThemeColorViaSetterThrowsInvalidArgumentException(string $themeColor)
     {
         $this->expectException(InvalidArgumentException::class);
@@ -181,7 +174,7 @@ final class MicrosoftTeamsOptionsTest extends TestCase
             ->themeColor($themeColor);
     }
 
-    public function invalidThemeColors(): \Generator
+    public static function invalidThemeColors(): \Generator
     {
         yield [''];
         yield [' '];

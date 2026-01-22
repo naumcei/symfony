@@ -12,13 +12,16 @@
 namespace Symfony\Bundle\FrameworkBundle\Tests\Test;
 
 use PHPUnit\Framework\AssertionFailedError;
+use PHPUnit\Framework\Attributes\RequiresMethod;
 use PHPUnit\Framework\ExpectationFailedException;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestAssertionsTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\BrowserKit\CookieJar;
+use Symfony\Component\BrowserKit\History;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Cookie as HttpFoundationCookie;
 use Symfony\Component\HttpFoundation\Request;
@@ -55,8 +58,24 @@ class WebTestCaseTest extends TestCase
     {
         $this->getResponseTester(new Response('', 301, ['Location' => 'https://example.com/']))->assertResponseRedirects('https://example.com/');
         $this->expectException(AssertionFailedError::class);
-        $this->expectExceptionMessage('is redirected and has header "Location" with value "https://example.com/".');
+        $this->expectExceptionMessageMatches('#is redirected and has header "Location" (with value|matching) "https://example\.com/"\.#');
         $this->getResponseTester(new Response('', 301))->assertResponseRedirects('https://example.com/');
+    }
+
+    public function testAssertResponseRedirectsWithLocationWithoutHost()
+    {
+        $this->getResponseTester(new Response('', 301, ['Location' => 'https://example.com/']))->assertResponseRedirects('/');
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessage('is redirected and has header "Location" matching "/".');
+        $this->getResponseTester(new Response('', 301))->assertResponseRedirects('/');
+    }
+
+    public function testAssertResponseRedirectsWithLocationWithoutScheme()
+    {
+        $this->getResponseTester(new Response('', 301, ['Location' => 'https://example.com/']))->assertResponseRedirects('//example.com/');
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessage('is redirected and has header "Location" matching "//example.com/".');
+        $this->getResponseTester(new Response('', 301))->assertResponseRedirects('//example.com/');
     }
 
     public function testAssertResponseRedirectsWithStatusCode()
@@ -71,7 +90,7 @@ class WebTestCaseTest extends TestCase
     {
         $this->getResponseTester(new Response('', 302, ['Location' => 'https://example.com/']))->assertResponseRedirects('https://example.com/', 302);
         $this->expectException(AssertionFailedError::class);
-        $this->expectExceptionMessageMatches('#(:?\( )?is redirected and has header "Location" with value "https://example\.com/" (:?\) )?and status code is 301\.#');
+        $this->expectExceptionMessageMatches('#(:?\( )?is redirected and has header "Location" (with value|matching) "https://example\.com/" (:?\) )?and status code is 301\.#');
         $this->getResponseTester(new Response('', 302))->assertResponseRedirects('https://example.com/', 301);
     }
 
@@ -174,6 +193,42 @@ class WebTestCaseTest extends TestCase
         $this->getClientTester()->assertBrowserCookieValueSame('foo', 'babar', false, '/path');
     }
 
+    #[RequiresMethod(History::class, 'isFirstPage')]
+    public function testAssertBrowserHistoryIsOnFirstPage()
+    {
+        $this->createHistoryTester('isFirstPage', true)->assertBrowserHistoryIsOnFirstPage();
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessage('Failed asserting that the Browser history is on the first page.');
+        $this->createHistoryTester('isFirstPage', false)->assertBrowserHistoryIsOnFirstPage();
+    }
+
+    #[RequiresMethod(History::class, 'isFirstPage')]
+    public function testAssertBrowserHistoryIsNotOnFirstPage()
+    {
+        $this->createHistoryTester('isFirstPage', false)->assertBrowserHistoryIsNotOnFirstPage();
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessage('Failed asserting that the Browser history is not on the first page.');
+        $this->createHistoryTester('isFirstPage', true)->assertBrowserHistoryIsNotOnFirstPage();
+    }
+
+    #[RequiresMethod(History::class, 'isLastPage')]
+    public function testAssertBrowserHistoryIsOnLastPage()
+    {
+        $this->createHistoryTester('isLastPage', true)->assertBrowserHistoryIsOnLastPage();
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessage('Failed asserting that the Browser history is on the last page.');
+        $this->createHistoryTester('isLastPage', false)->assertBrowserHistoryIsOnLastPage();
+    }
+
+    #[RequiresMethod(History::class, 'isLastPage')]
+    public function testAssertBrowserHistoryIsNotOnLastPage()
+    {
+        $this->createHistoryTester('isLastPage', false)->assertBrowserHistoryIsNotOnLastPage();
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessage('Failed asserting that the Browser history is not on the last page.');
+        $this->createHistoryTester('isLastPage', true)->assertBrowserHistoryIsNotOnLastPage();
+    }
+
     public function testAssertSelectorExists()
     {
         $this->getCrawlerTester(new Crawler('<html><body><h1>'))->assertSelectorExists('body > h1');
@@ -190,12 +245,46 @@ class WebTestCaseTest extends TestCase
         $this->getCrawlerTester(new Crawler('<html><body><h1>'))->assertSelectorNotExists('body > h1');
     }
 
+    public function testAssertSelectorCount()
+    {
+        $this->getCrawlerTester(new Crawler('<html><body><p>Hello</p></body></html>'))->assertSelectorCount(1, 'p');
+        $this->getCrawlerTester(new Crawler('<html><body><p>Hello</p><p>Foo</p></body></html>'))->assertSelectorCount(2, 'p');
+        $this->getCrawlerTester(new Crawler('<html><body><h1>This is not a paragraph.</h1></body></html>'))->assertSelectorCount(0, 'p');
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessage('Failed asserting that the Crawler selector "p" was expected to be found 0 time(s) but was found 1 time(s).');
+        $this->getCrawlerTester(new Crawler('<html><body><p>Hello</p></body></html>'))->assertSelectorCount(0, 'p');
+    }
+
     public function testAssertSelectorTextNotContains()
     {
         $this->getCrawlerTester(new Crawler('<html><body><h1>Foo'))->assertSelectorTextNotContains('body > h1', 'Bar');
         $this->expectException(AssertionFailedError::class);
         $this->expectExceptionMessage('matches selector "body > h1" and the text "Foo" of the node matching selector "body > h1" does not contain "Foo".');
         $this->getCrawlerTester(new Crawler('<html><body><h1>Foo'))->assertSelectorTextNotContains('body > h1', 'Foo');
+    }
+
+    public function testAssertAnySelectorTextContains()
+    {
+        $this->getCrawlerTester(new Crawler('<ul><li>Bar</li><li>Foo Baz'))->assertAnySelectorTextContains('ul li', 'Foo');
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessage('matches selector "ul li" and the text of any node matching selector "ul li" contains "Foo".');
+        $this->getCrawlerTester(new Crawler('<ul><li>Bar</li><li>Baz'))->assertAnySelectorTextContains('ul li', 'Foo');
+    }
+
+    public function testAssertAnySelectorTextSame()
+    {
+        $this->getCrawlerTester(new Crawler('<ul><li>Bar</li><li>Foo'))->assertAnySelectorTextSame('ul li', 'Foo');
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessage('matches selector "ul li" and has at least a node matching selector "ul li" with content "Foo".');
+        $this->getCrawlerTester(new Crawler('<ul><li>Bar</li><li>Baz'))->assertAnySelectorTextSame('ul li', 'Foo');
+    }
+
+    public function testAssertAnySelectorTextNotContains()
+    {
+        $this->getCrawlerTester(new Crawler('<ul><li>Bar</li><li>Baz'))->assertAnySelectorTextNotContains('ul li', 'Foo');
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessage('matches selector "ul li" and the text of any node matching selector "ul li" does not contain "Foo".');
+        $this->getCrawlerTester(new Crawler('<ul><li>Bar</li><li>Foo'))->assertAnySelectorTextNotContains('ul li', 'Foo');
     }
 
     public function testAssertPageTitleSame()
@@ -233,16 +322,18 @@ class WebTestCaseTest extends TestCase
     public function testAssertCheckboxChecked()
     {
         $this->getCrawlerTester(new Crawler('<html><body><form><input type="checkbox" name="rememberMe" checked>'))->assertCheckboxChecked('rememberMe');
+        $this->getCrawlerTester(new Crawler('<!DOCTYPE html><body><form><input type="checkbox" name="rememberMe" checked>'))->assertCheckboxChecked('rememberMe');
         $this->expectException(AssertionFailedError::class);
-        $this->expectExceptionMessage('matches selector "input[name="rememberMe"]" and has a node matching selector "input[name="rememberMe"]" with attribute "checked" of value "checked".');
+        $this->expectExceptionMessage('matches selector "input[name="rememberMe"]:checked".');
         $this->getCrawlerTester(new Crawler('<html><body><form><input type="checkbox" name="rememberMe">'))->assertCheckboxChecked('rememberMe');
     }
 
     public function testAssertCheckboxNotChecked()
     {
         $this->getCrawlerTester(new Crawler('<html><body><form><input type="checkbox" name="rememberMe">'))->assertCheckboxNotChecked('rememberMe');
+        $this->getCrawlerTester(new Crawler('<!DOCTYPE html><body><form><input type="checkbox" name="rememberMe">'))->assertCheckboxNotChecked('rememberMe');
         $this->expectException(AssertionFailedError::class);
-        $this->expectExceptionMessage('matches selector "input[name="rememberMe"]" and does not have a node matching selector "input[name="rememberMe"]" with attribute "checked" of value "checked".');
+        $this->expectExceptionMessage('does not match selector "input[name="rememberMe"]:checked".');
         $this->getCrawlerTester(new Crawler('<html><body><form><input type="checkbox" name="rememberMe" checked>'))->assertCheckboxNotChecked('rememberMe');
     }
 
@@ -291,48 +382,65 @@ class WebTestCaseTest extends TestCase
 
     private function getResponseTester(Response $response): WebTestCase
     {
-        $client = $this->createMock(KernelBrowser::class);
-        $client->expects($this->any())->method('getResponse')->willReturn($response);
+        $client = $this->createStub(KernelBrowser::class);
+        $client->method('getResponse')->willReturn($response);
 
-        $request = new Request();
+        $request = new Request([], [], [], [], [], [
+            'HTTPS' => 'on',
+            'SERVER_PORT' => 443,
+            'SERVER_NAME' => 'example.com',
+        ]);
         $request->setFormat('custom', ['application/vnd.myformat']);
-        $client->expects($this->any())->method('getRequest')->willReturn($request);
+        $client->method('getRequest')->willReturn($request);
 
         return $this->getTester($client);
     }
 
     private function getCrawlerTester(Crawler $crawler): WebTestCase
     {
-        $client = $this->createMock(KernelBrowser::class);
-        $client->expects($this->any())->method('getCrawler')->willReturn($crawler);
+        $client = $this->createStub(KernelBrowser::class);
+        $client->method('getCrawler')->willReturn($crawler);
 
         return $this->getTester($client);
     }
 
     private function getClientTester(): WebTestCase
     {
-        $client = $this->createMock(KernelBrowser::class);
+        $client = $this->createStub(KernelBrowser::class);
         $jar = new CookieJar();
         $jar->set(new Cookie('foo', 'bar', null, '/path', 'example.com'));
-        $client->expects($this->any())->method('getCookieJar')->willReturn($jar);
+        $client->method('getCookieJar')->willReturn($jar);
 
         return $this->getTester($client);
     }
 
     private function getRequestTester(): WebTestCase
     {
-        $client = $this->createMock(KernelBrowser::class);
+        $client = $this->createStub(KernelBrowser::class);
         $request = new Request();
         $request->attributes->set('foo', 'bar');
         $request->attributes->set('_route', 'homepage');
-        $client->expects($this->any())->method('getRequest')->willReturn($request);
+        $client->method('getRequest')->willReturn($request);
+
+        return $this->getTester($client);
+    }
+
+    private function createHistoryTester(string $method, bool $returnValue): WebTestCase
+    {
+        /** @var KernelBrowser&MockObject $client */
+        $client = $this->createStub(KernelBrowser::class);
+        /** @var History&MockObject $history */
+        $history = $this->createStub(History::class);
+
+        $history->method($method)->willReturn($returnValue);
+        $client->method('getHistory')->willReturn($history);
 
         return $this->getTester($client);
     }
 
     private function getTester(KernelBrowser $client): WebTestCase
     {
-        $tester = new class() extends WebTestCase {
+        $tester = new class(method_exists($this, 'name') ? $this->name() : $this->getName()) extends WebTestCase {
             use WebTestAssertionsTrait {
                 getClient as public;
             }

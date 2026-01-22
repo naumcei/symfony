@@ -15,33 +15,21 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * an entity that has two objects (class without toString methods) as primary key.
- *
- * @ORM\Entity
  */
+#[ORM\Entity]
 class CompositeObjectNoToStringIdEntity
 {
-    /**
-     * @var SingleIntIdNoToStringEntity
-     *
-     * @ORM\Id
-     * @ORM\ManyToOne(targetEntity="SingleIntIdNoToStringEntity", cascade={"persist"})
-     * @ORM\JoinColumn(name="object_one_id")
-     */
-    protected $objectOne;
+    public function __construct(
+        #[ORM\Id]
+        #[ORM\ManyToOne(cascade: ['persist'])]
+        #[ORM\JoinColumn(name: 'object_one_id')]
+        protected SingleIntIdNoToStringEntity $objectOne,
 
-    /**
-     * @var SingleIntIdNoToStringEntity
-     *
-     * @ORM\Id
-     * @ORM\ManyToOne(targetEntity="SingleIntIdNoToStringEntity", cascade={"persist"})
-     * @ORM\JoinColumn(name="object_two_id")
-     */
-    protected $objectTwo;
-
-    public function __construct(SingleIntIdNoToStringEntity $objectOne, SingleIntIdNoToStringEntity $objectTwo)
-    {
-        $this->objectOne = $objectOne;
-        $this->objectTwo = $objectTwo;
+        #[ORM\Id]
+        #[ORM\ManyToOne(cascade: ['persist'])]
+        #[ORM\JoinColumn(name: 'object_two_id')]
+        protected SingleIntIdNoToStringEntity $objectTwo,
+    ) {
     }
 
     public function getObjectOne(): SingleIntIdNoToStringEntity

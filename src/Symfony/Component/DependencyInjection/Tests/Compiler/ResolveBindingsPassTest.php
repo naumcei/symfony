@@ -12,9 +12,11 @@
 namespace Symfony\Component\DependencyInjection\Tests\Compiler;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\DependencyInjection\Argument\AbstractArgument;
 use Symfony\Component\DependencyInjection\Argument\BoundArgument;
 use Symfony\Component\DependencyInjection\Argument\ServiceLocatorArgument;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\DependencyInjection\Compiler\AutowireRequiredMethodsPass;
 use Symfony\Component\DependencyInjection\Compiler\DefinitionErrorExceptionPass;
 use Symfony\Component\DependencyInjection\Compiler\ResolveBindingsPass;
@@ -143,7 +145,7 @@ class ResolveBindingsPassTest extends TestCase
         $this->assertEquals([new Reference('bar')], $container->getDefinition('def3')->getArguments());
     }
 
-    public function testScalarSetter()
+    public function testScalarSetterAttribute()
     {
         $container = new ContainerBuilder();
 
@@ -242,5 +244,77 @@ class ResolveBindingsPassTest extends TestCase
         (new ResolveBindingsPass())->process($container);
 
         $this->assertSame('bar', (string) $container->getDefinition('with_target')->getArgument(0));
+    }
+
+    public function testBindWithNamedArgs()
+    {
+        $container = new ContainerBuilder();
+
+        $bindings = [
+            '$apiKey' => new BoundArgument('K'),
+        ];
+
+        $definition = $container->register(NamedArgumentsDummy::class, NamedArgumentsDummy::class);
+        $definition->setArguments(['c' => 'C', 'hostName' => 'H']);
+        $definition->setBindings($bindings);
+
+        $pass = new ResolveBindingsPass();
+        $pass->process($container);
+
+        $this->assertEquals(['C', 'K', 'H'], $definition->getArguments());
+    }
+
+    public function testAbstractArg()
+    {
+        $container = new ContainerBuilder();
+
+        $definition = $container->register(NamedArgumentsDummy::class, NamedArgumentsDummy::class);
+        $definition->setArguments([new AbstractArgument(), 'apiKey' => new AbstractArgument()]);
+        $definition->setBindings(['$c' => new BoundArgument('C'), '$apiKey' => new BoundArgument('K')]);
+
+        $pass = new ResolveBindingsPass();
+        $pass->process($container);
+
+        $this->assertEquals(['C', 'K'], $definition->getArguments());
+    }
+
+    public function testBindingsOnTargetedArguments()
+    {
+        $container = new ContainerBuilder();
+        $container->register('service', TargetedBindingsService::class)
+            ->setAutowired(true)
+            ->setBindings([
+                '$targetName' => 'bound_via_target',
+                '$variableName' => 'bound_via_variable',
+                '$commonName' => 'bound_via_common_name',
+            ]);
+
+        (new ResolveBindingsPass())->process($container);
+
+        $definition = $container->getDefinition('service');
+
+        // 1. Priority: Binding matches the #[Target] name
+        $this->assertSame('bound_via_target', $definition->getArgument(0));
+
+        // 2. Fallback: Binding matches the variable name (Target name 'unusedTarget' has no binding)
+        $this->assertSame('bound_via_variable', $definition->getArgument(1));
+
+        // 3. Equality: Target name and variable name are identical
+        $this->assertSame('bound_via_common_name', $definition->getArgument(2));
+    }
+}
+
+class TargetedBindingsService
+{
+    public function __construct(
+        #[Target('targetName')]
+        public $arg1,
+
+        #[Target('unusedTarget')]
+        public $variableName,
+
+        #[Target('commonName')]
+        public $commonName,
+    ) {
     }
 }

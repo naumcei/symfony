@@ -15,9 +15,11 @@ use Doctrine\DBAL\Driver\Middleware\AbstractStatementMiddleware;
 use Doctrine\DBAL\Driver\Result as ResultInterface;
 use Doctrine\DBAL\Driver\Statement as StatementInterface;
 use Doctrine\DBAL\ParameterType;
+use Symfony\Component\Stopwatch\Stopwatch;
 
 /**
  * @author Laurent VOULLEMIER <laurent.voullemier@gmail.com>
+ * @author Alexander M. Turek <me@derrabus.de>
  *
  * @internal
  */
@@ -27,46 +29,36 @@ final class Statement extends AbstractStatementMiddleware
 
     public function __construct(
         StatementInterface $statement,
-        private DebugDataHolder $debugDataHolder,
-        private string $connectionName,
+        private readonly DebugDataHolder $debugDataHolder,
+        private readonly string $connectionName,
         string $sql,
+        private readonly ?Stopwatch $stopwatch = null,
     ) {
         parent::__construct($statement);
 
         $this->query = new Query($sql);
     }
 
-    public function bindParam($param, &$variable, $type = ParameterType::STRING, $length = null): bool
-    {
-        $this->query->setParam($param, $variable, $type);
-
-        return parent::bindParam($param, $variable, $type, ...\array_slice(\func_get_args(), 3));
-    }
-
-    public function bindValue($param, $value, $type = ParameterType::STRING): bool
+    public function bindValue(int|string $param, mixed $value, ParameterType $type): void
     {
         $this->query->setValue($param, $value, $type);
 
-        return parent::bindValue($param, $value, $type);
+        parent::bindValue($param, $value, $type);
     }
 
-    public function execute($params = null): ResultInterface
+    public function execute(): ResultInterface
     {
-        if (null !== $params) {
-            $this->query->setValues($params);
-        }
-
         // clone to prevent variables by reference to change
         $this->debugDataHolder->addQuery($this->connectionName, $query = clone $this->query);
 
+        $this->stopwatch?->start('doctrine', 'doctrine');
         $query->start();
 
         try {
-            $result = parent::execute($params);
+            return parent::execute();
         } finally {
             $query->stop();
+            $this->stopwatch?->stop('doctrine');
         }
-
-        return $result;
     }
 }

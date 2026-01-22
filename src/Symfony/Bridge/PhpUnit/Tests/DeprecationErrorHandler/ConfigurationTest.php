@@ -11,11 +11,15 @@
 
 namespace Symfony\Bridge\PhpUnit\Tests\DeprecationErrorHandler;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhpunit;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\PhpUnit\DeprecationErrorHandler\Configuration;
 use Symfony\Bridge\PhpUnit\DeprecationErrorHandler\Deprecation;
 use Symfony\Bridge\PhpUnit\DeprecationErrorHandler\DeprecationGroup;
+use Symfony\Component\ErrorHandler\DebugClassLoader;
 
+#[RequiresPhpunit('<10')]
 class ConfigurationTest extends TestCase
 {
     private $files;
@@ -179,7 +183,7 @@ class ConfigurationTest extends TestCase
         $this->assertTrue($configuration->shouldDisplayStackTrace('interesting'));
     }
 
-    public function provideItCanBeDisabled(): array
+    public static function provideItCanBeDisabled(): array
     {
         return [
             ['disabled', false],
@@ -191,6 +195,7 @@ class ConfigurationTest extends TestCase
     /**
      * @dataProvider provideItCanBeDisabled
      */
+    #[DataProvider('provideItCanBeDisabled')]
     public function testItCanBeDisabled(string $encodedString, bool $expectedEnabled)
     {
         $configuration = Configuration::fromUrlEncodedString($encodedString);
@@ -234,6 +239,104 @@ class ConfigurationTest extends TestCase
         $this->assertFalse($configuration->verboseOutput('other'));
     }
 
+    /**
+     * @dataProvider provideDataForToleratesForGroup
+     */
+    #[DataProvider('provideDataForToleratesForGroup')]
+    public function testToleratesForIndividualGroups(string $deprecationsHelper, array $deprecationsPerType, array $expected)
+    {
+        $configuration = Configuration::fromUrlEncodedString($deprecationsHelper);
+
+        $groups = $this->buildGroups($deprecationsPerType);
+
+        foreach ($expected as $groupName => $tolerates) {
+            $this->assertSame($tolerates, $configuration->toleratesForGroup($groupName, $groups), \sprintf('Deprecation type "%s" is %s', $groupName, $tolerates ? 'tolerated' : 'not tolerated'));
+        }
+    }
+
+    public static function provideDataForToleratesForGroup(): iterable
+    {
+        yield 'total threshold not reached' => ['max[total]=1', [
+            'unsilenced' => 0,
+            'self' => 0,
+            'legacy' => 1, // Legacy group is ignored in total threshold
+            'other' => 0,
+            'direct' => 1,
+            'indirect' => 0,
+        ], [
+            'unsilenced' => true,
+            'self' => true,
+            'legacy' => true,
+            'other' => true,
+            'direct' => true,
+            'indirect' => true,
+        ]];
+
+        yield 'total threshold reached' => ['max[total]=1', [
+            'unsilenced' => 0,
+            'self' => 0,
+            'legacy' => 1,
+            'other' => 0,
+            'direct' => 1,
+            'indirect' => 1,
+        ], [
+            'unsilenced' => false,
+            'self' => false,
+            'legacy' => false,
+            'other' => false,
+            'direct' => false,
+            'indirect' => false,
+        ]];
+
+        yield 'direct threshold reached' => ['max[total]=99&max[direct]=0', [
+            'unsilenced' => 0,
+            'self' => 0,
+            'legacy' => 1,
+            'other' => 0,
+            'direct' => 1,
+            'indirect' => 1,
+        ], [
+            'unsilenced' => true,
+            'self' => true,
+            'legacy' => true,
+            'other' => true,
+            'direct' => false,
+            'indirect' => true,
+        ]];
+
+        yield 'indirect & self threshold reached' => ['max[total]=99&max[direct]=0&max[self]=0', [
+            'unsilenced' => 0,
+            'self' => 1,
+            'legacy' => 1,
+            'other' => 1,
+            'direct' => 1,
+            'indirect' => 1,
+        ], [
+            'unsilenced' => true,
+            'self' => false,
+            'legacy' => true,
+            'other' => true,
+            'direct' => false,
+            'indirect' => true,
+        ]];
+
+        yield 'indirect & self threshold not reached' => ['max[total]=99&max[direct]=2&max[self]=2', [
+            'unsilenced' => 0,
+            'self' => 1,
+            'legacy' => 1,
+            'other' => 1,
+            'direct' => 1,
+            'indirect' => 1,
+        ], [
+            'unsilenced' => true,
+            'self' => true,
+            'legacy' => true,
+            'other' => true,
+            'direct' => true,
+            'indirect' => true,
+        ]];
+    }
+
     private function buildGroups($counts)
     {
         $groups = [];
@@ -259,7 +362,7 @@ class ConfigurationTest extends TestCase
         $this->assertTrue($configuration->isBaselineDeprecation(new Deprecation('Test message 1', $trace, '')));
         $configuration->writeBaseline();
         $this->assertEquals($filename, $configuration->getBaselineFile());
-        $expected_baseline = [
+        $expected = [
             [
                 'location' => 'Symfony\Bridge\PhpUnit\Tests\DeprecationErrorHandler\ConfigurationTest::runTest',
                 'message' => 'Test message 1',
@@ -271,7 +374,7 @@ class ConfigurationTest extends TestCase
                 'count' => 1,
             ],
         ];
-        $this->assertEquals(json_encode($expected_baseline, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES), file_get_contents($filename));
+        $this->assertEquals(json_encode($expected, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES), file_get_contents($filename));
     }
 
     public function testBaselineGenerationNoFile()
@@ -286,7 +389,7 @@ class ConfigurationTest extends TestCase
         $this->assertTrue($configuration->isBaselineDeprecation(new Deprecation('Test message 1', $trace, '')));
         $configuration->writeBaseline();
         $this->assertEquals($filename, $configuration->getBaselineFile());
-        $expected_baseline = [
+        $expected = [
             [
                 'location' => 'Symfony\Bridge\PhpUnit\Tests\DeprecationErrorHandler\ConfigurationTest::runTest',
                 'message' => 'Test message 1',
@@ -298,7 +401,7 @@ class ConfigurationTest extends TestCase
                 'count' => 2,
             ],
         ];
-        $this->assertEquals(json_encode($expected_baseline, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES), file_get_contents($filename));
+        $this->assertEquals(json_encode($expected, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES), file_get_contents($filename));
     }
 
     public function testExistingBaseline()
@@ -350,7 +453,7 @@ class ConfigurationTest extends TestCase
         $this->assertTrue($configuration->isBaselineDeprecation(new Deprecation('Test message 3', $trace, '')));
         $configuration->writeBaseline();
         $this->assertEquals($filename, $configuration->getBaselineFile());
-        $expected_baseline = [
+        $expected = [
             [
                 'location' => 'Symfony\Bridge\PhpUnit\Tests\DeprecationErrorHandler\ConfigurationTest::runTest',
                 'message' => 'Test message 2',
@@ -362,7 +465,44 @@ class ConfigurationTest extends TestCase
                 'count' => 1,
             ],
         ];
-        $this->assertEquals(json_encode($expected_baseline, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES), file_get_contents($filename));
+        $this->assertEquals(json_encode($expected, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES), file_get_contents($filename));
+    }
+
+    public function testBaselineGenerationWithDeprecationTriggeredByDebugClassLoader()
+    {
+        $filename = $this->createFile();
+        $configuration = Configuration::fromUrlEncodedString('generateBaseline=true&baselineFile='.urlencode($filename));
+
+        $trace = debug_backtrace();
+        $this->assertTrue($configuration->isBaselineDeprecation(new Deprecation('Regular deprecation', $trace, '')));
+
+        $trace[2] = [
+            'class' => DebugClassLoader::class,
+            'function' => 'testBaselineGenerationWithDeprecationTriggeredByDebugClassLoader',
+            'args' => [self::class],
+        ];
+
+        $deprecation = new Deprecation('Deprecation by debug class loader', $trace, '');
+
+        $this->assertTrue($deprecation->originatesFromDebugClassLoader());
+
+        $this->assertTrue($configuration->isBaselineDeprecation($deprecation));
+
+        $configuration->writeBaseline();
+        $this->assertEquals($filename, $configuration->getBaselineFile());
+        $expected = [
+            [
+                'location' => 'Symfony\Bridge\PhpUnit\Tests\DeprecationErrorHandler\ConfigurationTest::runTest',
+                'message' => 'Regular deprecation',
+                'count' => 1,
+            ],
+            [
+                'location' => self::class,
+                'message' => 'Deprecation by debug class loader',
+                'count' => 1,
+            ],
+        ];
+        $this->assertEquals(json_encode($expected, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES), file_get_contents($filename));
     }
 
     public function testBaselineArgumentException()
@@ -377,7 +517,7 @@ class ConfigurationTest extends TestCase
         $filename = $this->createFile();
         unlink($filename);
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage(sprintf('The baselineFile "%s" does not exist.', $filename));
+        $this->expectExceptionMessage(\sprintf('The baselineFile "%s" does not exist.', $filename));
         Configuration::fromUrlEncodedString('baselineFile='.urlencode($filename));
     }
 
@@ -385,10 +525,24 @@ class ConfigurationTest extends TestCase
     {
         $filename = $this->createFile();
         chmod($filename, 0444);
-        $this->expectError();
-        $this->expectErrorMessageMatches('/[Ff]ailed to open stream: Permission denied/');
         $configuration = Configuration::fromUrlEncodedString('generateBaseline=true&baselineFile='.urlencode($filename));
-        $configuration->writeBaseline();
+
+        $this->expectException(\ErrorException::class);
+        $this->expectExceptionMessageMatches('/[Ff]ailed to open stream: Permission denied/');
+
+        set_error_handler(static function (int $errno, string $errstr, ?string $errfile = null, ?int $errline = null): bool {
+            if ($errno & (\E_WARNING | \E_WARNING)) {
+                throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+            }
+
+            return false;
+        });
+
+        try {
+            $configuration->writeBaseline();
+        } finally {
+            restore_error_handler();
+        }
     }
 
     public function testExistingIgnoreFile()
@@ -443,7 +597,7 @@ class ConfigurationTest extends TestCase
         $filename = $this->createFile();
         unlink($filename);
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage(sprintf('The ignoreFile "%s" does not exist.', $filename));
+        $this->expectExceptionMessage(\sprintf('The ignoreFile "%s" does not exist.', $filename));
         Configuration::fromUrlEncodedString('ignoreFile='.urlencode($filename));
     }
 

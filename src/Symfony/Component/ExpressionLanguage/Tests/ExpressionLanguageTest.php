@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\ExpressionLanguage\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -18,6 +19,8 @@ use Symfony\Component\ExpressionLanguage\ExpressionFunction;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\ExpressionLanguage\ParsedExpression;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
+use Symfony\Component\ExpressionLanguage\Tests\Fixtures\FooBackedEnum;
+use Symfony\Component\ExpressionLanguage\Tests\Fixtures\FooEnum;
 use Symfony\Component\ExpressionLanguage\Tests\Fixtures\TestProvider;
 
 class ExpressionLanguageTest extends TestCase
@@ -39,7 +42,7 @@ class ExpressionLanguageTest extends TestCase
         $cacheItemMock
             ->expects($this->exactly(2))
             ->method('get')
-            ->willReturnCallback(function () use (&$savedParsedExpression) {
+            ->willReturnCallback(static function () use (&$savedParsedExpression) {
                 return $savedParsedExpression;
             })
         ;
@@ -48,7 +51,7 @@ class ExpressionLanguageTest extends TestCase
             ->expects($this->exactly(1))
             ->method('set')
             ->with($this->isInstanceOf(ParsedExpression::class))
-            ->willReturnCallback(function ($parsedExpression) use (&$savedParsedExpression, $cacheItemMock) {
+            ->willReturnCallback(static function ($parsedExpression) use (&$savedParsedExpression, $cacheItemMock) {
                 $savedParsedExpression = $parsedExpression;
 
                 return $cacheItemMock;
@@ -69,45 +72,105 @@ class ExpressionLanguageTest extends TestCase
         $this->assertSame($savedParsedExpression, $parsedExpression);
     }
 
-    public function testConstantFunction()
+    #[DataProvider('basicPhpFunctionProvider')]
+    public function testBasicPhpFunction($expression, $expected, $compiled)
     {
         $expressionLanguage = new ExpressionLanguage();
-        $this->assertEquals(\PHP_VERSION, $expressionLanguage->evaluate('constant("PHP_VERSION")'));
-
-        $expressionLanguage = new ExpressionLanguage();
-        $this->assertEquals('\constant("PHP_VERSION")', $expressionLanguage->compile('constant("PHP_VERSION")'));
+        $this->assertSame($expected, $expressionLanguage->evaluate($expression));
+        $this->assertSame($compiled, $expressionLanguage->compile($expression));
     }
 
-    public function testProviders()
+    public static function basicPhpFunctionProvider()
     {
-        $expressionLanguage = new ExpressionLanguage(null, [new TestProvider()]);
-        $this->assertEquals('foo', $expressionLanguage->evaluate('identity("foo")'));
-        $this->assertEquals('"foo"', $expressionLanguage->compile('identity("foo")'));
-        $this->assertEquals('FOO', $expressionLanguage->evaluate('strtoupper("foo")'));
-        $this->assertEquals('\strtoupper("foo")', $expressionLanguage->compile('strtoupper("foo")'));
-        $this->assertEquals('foo', $expressionLanguage->evaluate('strtolower("FOO")'));
-        $this->assertEquals('\strtolower("FOO")', $expressionLanguage->compile('strtolower("FOO")'));
+        return [
+            ['constant("PHP_VERSION")', \PHP_VERSION, '\constant("PHP_VERSION")'],
+            ['min(1,2,3)', 1, '\min(1, 2, 3)'],
+            ['max(1,2,3)', 3, '\max(1, 2, 3)'],
+        ];
+    }
+
+    public function testEnumFunctionWithConstantThrows()
+    {
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('The string "PHP_VERSION" is not the name of a valid enum case.');
+        $expressionLanguage = new ExpressionLanguage();
+        $expressionLanguage->evaluate('enum("PHP_VERSION")');
+    }
+
+    public function testCompiledEnumFunctionWithConstantThrows()
+    {
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('The string "PHP_VERSION" is not the name of a valid enum case.');
+        $expressionLanguage = new ExpressionLanguage();
+        eval($expressionLanguage->compile('enum("PHP_VERSION")').';');
+    }
+
+    public function testEnumFunction()
+    {
+        $expressionLanguage = new ExpressionLanguage();
+        $this->assertSame(FooEnum::Foo, $expressionLanguage->evaluate('enum("Symfony\\\\Component\\\\ExpressionLanguage\\\\Tests\\\\Fixtures\\\\FooEnum::Foo")'));
+    }
+
+    public function testCompiledEnumFunction()
+    {
+        $result = null;
+        $expressionLanguage = new ExpressionLanguage();
+        eval(\sprintf('$result = %s;', $expressionLanguage->compile('enum("Symfony\\\\Component\\\\ExpressionLanguage\\\\Tests\\\\Fixtures\\\\FooEnum::Foo")')));
+
+        $this->assertSame(FooEnum::Foo, $result);
+    }
+
+    public function testBackedEnumFunction()
+    {
+        $expressionLanguage = new ExpressionLanguage();
+        $this->assertSame(FooBackedEnum::Bar, $expressionLanguage->evaluate('enum("Symfony\\\\Component\\\\ExpressionLanguage\\\\Tests\\\\Fixtures\\\\FooBackedEnum::Bar")'));
+        $this->assertSame('Foo', $expressionLanguage->evaluate('enum("Symfony\\\\Component\\\\ExpressionLanguage\\\\Tests\\\\Fixtures\\\\FooBackedEnum::Bar").value'));
+    }
+
+    public function testCompiledEnumFunctionWithBackedEnum()
+    {
+        $result = null;
+        $expressionLanguage = new ExpressionLanguage();
+        eval(\sprintf('$result = %s;', $expressionLanguage->compile('enum("Symfony\\\\Component\\\\ExpressionLanguage\\\\Tests\\\\Fixtures\\\\FooBackedEnum::Bar")')));
+
+        $this->assertSame(FooBackedEnum::Bar, $result);
+    }
+
+    #[DataProvider('providerTestCases')]
+    public function testProviders(iterable $providers)
+    {
+        $expressionLanguage = new ExpressionLanguage(null, $providers);
+        $this->assertSame('foo', $expressionLanguage->evaluate('identity("foo")'));
+        $this->assertSame('"foo"', $expressionLanguage->compile('identity("foo")'));
+        $this->assertSame('FOO', $expressionLanguage->evaluate('strtoupper("foo")'));
+        $this->assertSame('\strtoupper("foo")', $expressionLanguage->compile('strtoupper("foo")'));
+        $this->assertSame('foo', $expressionLanguage->evaluate('strtolower("FOO")'));
+        $this->assertSame('\strtolower("FOO")', $expressionLanguage->compile('strtolower("FOO")'));
         $this->assertTrue($expressionLanguage->evaluate('fn_namespaced()'));
-        $this->assertEquals('\Symfony\Component\ExpressionLanguage\Tests\Fixtures\fn_namespaced()', $expressionLanguage->compile('fn_namespaced()'));
+        $this->assertSame('\Symfony\Component\ExpressionLanguage\Tests\Fixtures\fn_namespaced()', $expressionLanguage->compile('fn_namespaced()'));
     }
 
-    /**
-     * @dataProvider shortCircuitProviderEvaluate
-     */
+    public static function providerTestCases(): iterable
+    {
+        yield 'array' => [[new TestProvider()]];
+        yield 'Traversable' => [(static function () {
+            yield new TestProvider();
+        })()];
+    }
+
+    #[DataProvider('shortCircuitProviderEvaluate')]
     public function testShortCircuitOperatorsEvaluate($expression, array $values, $expected)
     {
         $expressionLanguage = new ExpressionLanguage();
-        $this->assertEquals($expected, $expressionLanguage->evaluate($expression, $values));
+        $this->assertSame($expected, $expressionLanguage->evaluate($expression, $values));
     }
 
-    /**
-     * @dataProvider shortCircuitProviderCompile
-     */
+    #[DataProvider('shortCircuitProviderCompile')]
     public function testShortCircuitOperatorsCompile($expression, array $names, $expected)
     {
         $result = null;
         $expressionLanguage = new ExpressionLanguage();
-        eval(sprintf('$result = %s;', $expressionLanguage->compile($expression, $names)));
+        eval(\sprintf('$result = %s;', $expressionLanguage->compile($expression, $names)));
         $this->assertSame($expected, $result);
     }
 
@@ -119,10 +182,29 @@ class ExpressionLanguageTest extends TestCase
         $expressionLanguage->parse('node.', ['node']);
     }
 
-    public function shortCircuitProviderEvaluate()
+    public function testParseReturnsObjectOnAlreadyParsedExpression()
     {
-        $object = $this->getMockBuilder(\stdClass::class)->setMethods(['foo'])->getMock();
-        $object->expects($this->never())->method('foo');
+        $expressionLanguage = new ExpressionLanguage();
+        $expression = $expressionLanguage->parse('1 + 1', []);
+
+        $this->assertSame($expression, $expressionLanguage->parse($expression, []));
+    }
+
+    public static function shortCircuitProviderEvaluate()
+    {
+        $object = new class(static::fail(...)) {
+            private \Closure $fail;
+
+            public function __construct(\Closure $fail)
+            {
+                $this->fail = $fail;
+            }
+
+            public function foo()
+            {
+                ($this->fail)();
+            }
+        };
 
         return [
             ['false and object.foo()', ['object' => $object], false],
@@ -132,7 +214,7 @@ class ExpressionLanguageTest extends TestCase
         ];
     }
 
-    public function shortCircuitProviderCompile()
+    public static function shortCircuitProviderCompile()
     {
         return [
             ['false and foo', ['foo' => 'foo'], false],
@@ -176,7 +258,7 @@ class ExpressionLanguageTest extends TestCase
         $cacheItemMock
             ->expects($this->exactly(2))
             ->method('get')
-            ->willReturnCallback(function () use (&$savedParsedExpression) {
+            ->willReturnCallback(static function () use (&$savedParsedExpression) {
                 return $savedParsedExpression;
             })
         ;
@@ -185,7 +267,7 @@ class ExpressionLanguageTest extends TestCase
             ->expects($this->exactly(1))
             ->method('set')
             ->with($this->isInstanceOf(ParsedExpression::class))
-            ->willReturnCallback(function ($parsedExpression) use (&$savedParsedExpression, $cacheItemMock) {
+            ->willReturnCallback(static function ($parsedExpression) use (&$savedParsedExpression, $cacheItemMock) {
                 $savedParsedExpression = $parsedExpression;
 
                 return $cacheItemMock;
@@ -209,15 +291,13 @@ class ExpressionLanguageTest extends TestCase
         $expressionLanguage = new ExpressionLanguage();
         $expression = 'foo.not in [bar]';
         $compiled = $expressionLanguage->compile($expression, ['foo', 'bar']);
-        $this->assertSame('in_array($foo->not, [0 => $bar])', $compiled);
+        $this->assertSame('\in_array($foo->not, [0 => $bar], true)', $compiled);
 
         $result = $expressionLanguage->evaluate($expression, ['foo' => (object) ['not' => 'test'], 'bar' => 'test']);
         $this->assertTrue($result);
     }
 
-    /**
-     * @dataProvider getRegisterCallbacks
-     */
+    #[DataProvider('getRegisterCallbacks')]
     public function testRegisterAfterParse($registerCallback)
     {
         $this->expectException(\LogicException::class);
@@ -226,9 +306,7 @@ class ExpressionLanguageTest extends TestCase
         $registerCallback($el);
     }
 
-    /**
-     * @dataProvider getRegisterCallbacks
-     */
+    #[DataProvider('getRegisterCallbacks')]
     public function testRegisterAfterEval($registerCallback)
     {
         $this->expectException(\LogicException::class);
@@ -237,27 +315,23 @@ class ExpressionLanguageTest extends TestCase
         $registerCallback($el);
     }
 
-    /**
-     * @dataProvider provideNullSafe
-     */
+    #[DataProvider('provideNullSafe')]
     public function testNullSafeEvaluate($expression, $foo)
     {
         $expressionLanguage = new ExpressionLanguage();
         $this->assertNull($expressionLanguage->evaluate($expression, ['foo' => $foo]));
     }
 
-    /**
-     * @dataProvider provideNullSafe
-     */
+    #[DataProvider('provideNullSafe')]
     public function testNullSafeCompile($expression, $foo)
     {
         $expressionLanguage = new ExpressionLanguage();
-        $this->assertNull(eval(sprintf('return %s;', $expressionLanguage->compile($expression, ['foo' => 'foo']))));
+        $this->assertNull(eval(\sprintf('return %s;', $expressionLanguage->compile($expression, ['foo' => 'foo']))));
     }
 
-    public function provideNullSafe()
+    public static function provideNullSafe()
     {
-        $foo = new class() extends \stdClass {
+        $foo = new class extends \stdClass {
             public function bar()
             {
                 return null;
@@ -285,9 +359,7 @@ class ExpressionLanguageTest extends TestCase
         yield ['foo?.bar()["baz"]["qux"].quux()', null];
     }
 
-    /**
-     * @dataProvider provideInvalidNullSafe
-     */
+    #[DataProvider('provideInvalidNullSafe')]
     public function testNullSafeEvaluateFails($expression, $foo, $message)
     {
         $expressionLanguage = new ExpressionLanguage();
@@ -297,51 +369,59 @@ class ExpressionLanguageTest extends TestCase
         $expressionLanguage->evaluate($expression, ['foo' => $foo]);
     }
 
-    /**
-     * @dataProvider provideInvalidNullSafe
-     */
-    public function testNullSafeCompileFails($expression, $foo)
+    #[DataProvider('provideInvalidNullSafe')]
+    public function testNullSafeCompileFails($expression, $foo, $message)
     {
         $expressionLanguage = new ExpressionLanguage();
 
-        $this->expectWarning();
-        eval(sprintf('return %s;', $expressionLanguage->compile($expression, ['foo' => 'foo'])));
+        $this->expectException(\ErrorException::class);
+
+        set_error_handler(static function (int $errno, string $errstr, ?string $errfile = null, ?int $errline = null): bool {
+            if ($errno & (\E_WARNING | \E_USER_WARNING) && (str_contains($errstr, 'Attempt to read property') || str_contains($errstr, 'Trying to access'))) {
+                throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+            }
+
+            return false;
+        });
+
+        try {
+            eval(\sprintf('return %s;', $expressionLanguage->compile($expression, ['foo' => 'foo'])));
+        } finally {
+            restore_error_handler();
+        }
     }
 
-    public function provideInvalidNullSafe()
+    public static function provideInvalidNullSafe()
     {
-        yield ['foo?.bar.baz', (object) ['bar' => null], 'Unable to get property "baz" of non-object "foo.bar".'];
-        yield ['foo?.bar["baz"]', (object) ['bar' => null], 'Unable to get an item of non-array "foo.bar".'];
-        yield ['foo?.bar["baz"].qux.quux', (object) ['bar' => ['baz' => null]], 'Unable to get property "qux" of non-object "foo.bar["baz"]".'];
+        yield ['foo?.bar.baz', (object) ['bar' => null], 'Unable to get property "baz" of non-object "foo?.bar".'];
+        yield ['foo?.bar["baz"]', (object) ['bar' => null], 'Unable to get an item of non-array "foo?.bar".'];
+        yield ['foo?.bar["baz"].qux.quux', (object) ['bar' => ['baz' => null]], 'Unable to get property "qux" of non-object "foo?.bar["baz"]".'];
     }
 
-    /**
-     * @dataProvider provideNullCoalescing
-     */
+    #[DataProvider('provideNullCoalescing')]
     public function testNullCoalescingEvaluate($expression, $foo)
     {
         $expressionLanguage = new ExpressionLanguage();
         $this->assertSame($expressionLanguage->evaluate($expression, ['foo' => $foo]), 'default');
     }
 
-    /**
-     * @dataProvider provideNullCoalescing
-     */
+    #[DataProvider('provideNullCoalescing')]
     public function testNullCoalescingCompile($expression, $foo)
     {
         $expressionLanguage = new ExpressionLanguage();
-        $this->assertSame(eval(sprintf('return %s;', $expressionLanguage->compile($expression, ['foo' => 'foo']))), 'default');
+        $this->assertSame(eval(\sprintf('return %s;', $expressionLanguage->compile($expression, ['foo' => 'foo']))), 'default');
     }
 
-    public function provideNullCoalescing()
+    public static function provideNullCoalescing()
     {
-        $foo = new class() extends \stdClass {
+        $foo = new class extends \stdClass {
             public function bar()
             {
                 return null;
             }
         };
 
+        yield ['bar ?? "default"', null];
         yield ['foo.bar ?? "default"', null];
         yield ['foo.bar.baz ?? "default"', (object) ['bar' => null]];
         yield ['foo.bar ?? foo.baz ?? "default"', null];
@@ -351,11 +431,12 @@ class ExpressionLanguageTest extends TestCase
         yield ['foo["bar"]["baz"] ?? "default"', ['bar' => null]];
         yield ['foo["bar"].baz ?? "default"', ['bar' => null]];
         yield ['foo.bar().baz ?? "default"', $foo];
+        yield ['foo.bar.baz.bam ?? "default"', (object) ['bar' => null]];
+        yield ['foo?.bar?.baz?.qux ?? "default"', (object) ['bar' => null]];
+        yield ['foo[123][456][789] ?? "default"', [123 => []]];
     }
 
-    /**
-     * @dataProvider getRegisterCallbacks
-     */
+    #[DataProvider('getRegisterCallbacks')]
     public function testRegisterAfterCompile($registerCallback)
     {
         $this->expectException(\LogicException::class);
@@ -364,24 +445,89 @@ class ExpressionLanguageTest extends TestCase
         $registerCallback($el);
     }
 
-    public function getRegisterCallbacks()
+    public static function validCommentProvider()
+    {
+        yield ['1 /* comment */ + 1'];
+        yield ['1 /* /* comment with spaces */'];
+        yield ['1 /** extra stars **/ + 1'];
+        yield ["/* multi\nline */ 'foo'"];
+    }
+
+    #[DataProvider('validCommentProvider')]
+    public function testLintAllowsComments($expression)
+    {
+        $el = new ExpressionLanguage();
+        $el->lint($expression, []);
+
+        $this->expectNotToPerformAssertions();
+    }
+
+    public static function invalidCommentProvider()
+    {
+        yield ['1 + no start */'];
+        yield ['1 /* no closing'];
+        yield ['1 /* double closing */ */'];
+    }
+
+    #[DataProvider('invalidCommentProvider')]
+    public function testLintThrowsOnInvalidComments($expression)
+    {
+        $el = new ExpressionLanguage();
+
+        $this->expectException(SyntaxError::class);
+        $el->lint($expression, []);
+    }
+
+    public function testLintDoesntThrowOnValidExpression()
+    {
+        $el = new ExpressionLanguage();
+        $el->lint('1 + 1', []);
+
+        $this->expectNotToPerformAssertions();
+    }
+
+    public function testLintThrowsOnInvalidExpression()
+    {
+        $el = new ExpressionLanguage();
+
+        $this->expectException(SyntaxError::class);
+        $this->expectExceptionMessage('Unexpected end of expression around position 6 for expression `node.`.');
+
+        $el->lint('node.', ['node']);
+    }
+
+    public function testCommentsIgnored()
+    {
+        $expressionLanguage = new ExpressionLanguage();
+        $this->assertSame(3, $expressionLanguage->evaluate('1 /* foo */ + 2'));
+        $this->assertSame('(1 + 2)', $expressionLanguage->compile('1 /* foo */ + 2'));
+    }
+
+    public static function getRegisterCallbacks()
     {
         return [
             [
-                function (ExpressionLanguage $el) {
-                    $el->register('fn', function () {}, function () {});
+                static function (ExpressionLanguage $el) {
+                    $el->register('fn', static function () {}, static function () {});
                 },
             ],
             [
-                function (ExpressionLanguage $el) {
-                    $el->addFunction(new ExpressionFunction('fn', function () {}, function () {}));
+                static function (ExpressionLanguage $el) {
+                    $el->addFunction(new ExpressionFunction('fn', static function () {}, static function () {}));
                 },
             ],
             [
-                function (ExpressionLanguage $el) {
+                static function (ExpressionLanguage $el) {
                     $el->registerProvider(new TestProvider());
                 },
             ],
         ];
+    }
+
+    public function testParseAlreadyParsedExpressionReturnsSameObject()
+    {
+        $el = new ExpressionLanguage();
+        $parsed = $el->parse('1 + 1', []);
+        $this->assertSame($parsed, $el->parse($parsed, []));
     }
 }

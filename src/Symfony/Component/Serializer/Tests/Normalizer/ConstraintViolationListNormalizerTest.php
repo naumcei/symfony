@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Serializer\Tests\Normalizer;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 use Symfony\Component\Serializer\Normalizer\ConstraintViolationListNormalizer;
@@ -24,7 +25,7 @@ use Symfony\Component\Validator\ConstraintViolationList;
  */
 class ConstraintViolationListNormalizerTest extends TestCase
 {
-    private $normalizer;
+    private ConstraintViolationListNormalizer $normalizer;
 
     protected function setUp(): void
     {
@@ -50,21 +51,23 @@ class ConstraintViolationListNormalizerTest extends TestCase
             'detail' => 'd: a
 4: 1',
             'violations' => [
-                    [
-                        'propertyPath' => 'd',
-                        'title' => 'a',
-                        'type' => 'urn:uuid:f',
-                        'parameters' => [
-                            'value' => 'foo',
-                        ],
-                    ],
-                    [
-                        'propertyPath' => '4',
-                        'title' => '1',
-                        'type' => 'urn:uuid:6',
-                        'parameters' => [],
+                [
+                    'propertyPath' => 'd',
+                    'title' => 'a',
+                    'template' => 'b',
+                    'type' => 'urn:uuid:f',
+                    'parameters' => [
+                        'value' => 'foo',
                     ],
                 ],
+                [
+                    'propertyPath' => '4',
+                    'title' => '1',
+                    'template' => '2',
+                    'type' => 'urn:uuid:6',
+                    'parameters' => [],
+                ],
+            ],
         ];
 
         $this->assertEquals($expected, $this->normalizer->normalize($list));
@@ -75,9 +78,9 @@ class ConstraintViolationListNormalizerTest extends TestCase
         $normalizer = new ConstraintViolationListNormalizer([], new CamelCaseToSnakeCaseNameConverter());
 
         $list = new ConstraintViolationList([
-            new ConstraintViolation('too short', 'a', [], 'c', 'shortDescription', ''),
+            new ConstraintViolation('too short', 'a', [], '3', 'shortDescription', ''),
             new ConstraintViolation('too long', 'b', [], '3', 'product.shortDescription', 'Lorem ipsum dolor sit amet'),
-            new ConstraintViolation('error', 'b', [], '3', '', ''),
+            new ConstraintViolation('error', 'c', [], '3', '', ''),
         ]);
 
         $expected = [
@@ -90,16 +93,19 @@ error',
                 [
                     'propertyPath' => 'short_description',
                     'title' => 'too short',
+                    'template' => 'a',
                     'parameters' => [],
                 ],
                 [
                     'propertyPath' => 'product.short_description',
                     'title' => 'too long',
+                    'template' => 'b',
                     'parameters' => [],
                 ],
                 [
                     'propertyPath' => '',
                     'title' => 'error',
+                    'template' => 'c',
                     'parameters' => [],
                 ],
             ],
@@ -108,10 +114,8 @@ error',
         $this->assertEquals($expected, $normalizer->normalize($list));
     }
 
-    /**
-     * @dataProvider payloadFieldsProvider
-     */
-    public function testNormalizePayloadFields($fields, array $expected = null)
+    #[DataProvider('payloadFieldsProvider')]
+    public function testNormalizePayloadFields($fields, ?array $expected = null)
     {
         $constraint = new NotNull();
         $constraint->payload = ['severity' => 'warning', 'anotherField2' => 'aValue'];
@@ -128,7 +132,7 @@ error',
         $this->assertSame($expected, $violation['payload']);
     }
 
-    public function payloadFieldsProvider(): iterable
+    public static function payloadFieldsProvider(): iterable
     {
         yield [['severity', 'anotherField1'], ['severity' => 'warning']];
         yield [null, ['severity' => 'warning', 'anotherField2' => 'aValue']];

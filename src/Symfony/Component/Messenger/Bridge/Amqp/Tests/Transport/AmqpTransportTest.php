@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Messenger\Bridge\Amqp\Tests\Transport;
 
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Bridge\Amqp\Tests\Fixtures\DummyMessage;
 use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpTransport;
@@ -19,9 +20,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 
-/**
- * @requires extension amqp
- */
+#[RequiresPhpExtension('amqp')]
 class AmqpTransportTest extends TestCase
 {
     public function testItIsATransport()
@@ -34,13 +33,13 @@ class AmqpTransportTest extends TestCase
     public function testReceivesMessages()
     {
         $transport = $this->getTransport(
-            $serializer = $this->createMock(SerializerInterface::class),
-            $connection = $this->createMock(Connection::class)
+            $serializer = $this->createStub(SerializerInterface::class),
+            $connection = $this->createStub(Connection::class)
         );
 
         $decodedMessage = new DummyMessage('Decoded.');
 
-        $amqpEnvelope = $this->createMock(\AMQPEnvelope::class);
+        $amqpEnvelope = $this->createStub(\AMQPEnvelope::class);
         $amqpEnvelope->method('getBody')->willReturn('body');
         $amqpEnvelope->method('getHeaders')->willReturn(['my' => 'header']);
 
@@ -52,10 +51,10 @@ class AmqpTransportTest extends TestCase
         $this->assertSame($decodedMessage, $envelopes[0]->getMessage());
     }
 
-    private function getTransport(SerializerInterface $serializer = null, Connection $connection = null): AmqpTransport
+    private function getTransport(?SerializerInterface $serializer = null, ?Connection $connection = null): AmqpTransport
     {
-        $serializer ??= $this->createMock(SerializerInterface::class);
-        $connection ??= $this->createMock(Connection::class);
+        $serializer ??= $this->createStub(SerializerInterface::class);
+        $connection ??= $this->createStub(Connection::class);
 
         return new AmqpTransport($connection, $serializer);
     }

@@ -11,28 +11,33 @@
 
 namespace Symfony\Component\Form\Tests\Extension\Core\DataTransformer;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Component\Form\Extension\Core\DataTransformer\BaseDateTimeTransformer;
 use Symfony\Component\Form\Extension\Core\DataTransformer\DateTimeToHtml5LocalDateTimeTransformer;
 use Symfony\Component\Form\Tests\Extension\Core\DataTransformer\Traits\DateTimeEqualsTrait;
 
-class DateTimeToHtml5LocalDateTimeTransformerTest extends BaseDateTimeTransformerTest
+class DateTimeToHtml5LocalDateTimeTransformerTest extends BaseDateTimeTransformerTestCase
 {
     use DateTimeEqualsTrait;
 
-    public function transformProvider()
+    public static function transformProvider(): array
     {
         return [
-            ['UTC', 'UTC', '2010-02-03 04:05:06 UTC', '2010-02-03T04:05:06'],
-            ['UTC', 'UTC', null, ''],
-            ['America/New_York', 'Asia/Hong_Kong', '2010-02-03 04:05:06 America/New_York', '2010-02-03T17:05:06'],
-            ['America/New_York', 'Asia/Hong_Kong', null, ''],
-            ['UTC', 'Asia/Hong_Kong', '2010-02-03 04:05:06 UTC', '2010-02-03T12:05:06'],
-            ['America/New_York', 'UTC', '2010-02-03 04:05:06 America/New_York', '2010-02-03T09:05:06'],
+            ['UTC', 'UTC', '2010-02-03 04:05:06 UTC', '2010-02-03T04:05:06', true],
+            ['UTC', 'UTC', null, '', true],
+            ['America/New_York', 'Asia/Hong_Kong', '2010-02-03 04:05:06 America/New_York', '2010-02-03T17:05:06', true],
+            ['America/New_York', 'Asia/Hong_Kong', null, '', true],
+            ['UTC', 'Asia/Hong_Kong', '2010-02-03 04:05:06 UTC', '2010-02-03T12:05:06', true],
+            ['America/New_York', 'UTC', '2010-02-03 04:05:06 America/New_York', '2010-02-03T09:05:06', true],
+            ['UTC', 'UTC', '2010-02-03 04:05:06 UTC', '2010-02-03T04:05', false],
+            ['America/New_York', 'Asia/Hong_Kong', '2010-02-03 04:05:06 America/New_York', '2010-02-03T17:05', false],
+            ['UTC', 'Asia/Hong_Kong', '2010-02-03 04:05:06 UTC', '2010-02-03T12:05', false],
+            ['America/New_York', 'UTC', '2010-02-03 04:05:06 America/New_York', '2010-02-03T09:05', false],
         ];
     }
 
-    public function reverseTransformProvider()
+    public static function reverseTransformProvider(): array
     {
         return [
             // format without seconds, as appears in some browsers
@@ -52,22 +57,18 @@ class DateTimeToHtml5LocalDateTimeTransformerTest extends BaseDateTimeTransforme
         ];
     }
 
-    /**
-     * @dataProvider transformProvider
-     */
-    public function testTransform($fromTz, $toTz, $from, $to)
+    #[DataProvider('transformProvider')]
+    public function testTransform($fromTz, $toTz, $from, $to, bool $withSeconds)
     {
-        $transformer = new DateTimeToHtml5LocalDateTimeTransformer($fromTz, $toTz);
+        $transformer = new DateTimeToHtml5LocalDateTimeTransformer($fromTz, $toTz, $withSeconds);
 
         $this->assertSame($to, $transformer->transform(null !== $from ? new \DateTime($from) : null));
     }
 
-    /**
-     * @dataProvider transformProvider
-     */
-    public function testTransformDateTimeImmutable($fromTz, $toTz, $from, $to)
+    #[DataProvider('transformProvider')]
+    public function testTransformDateTimeImmutable($fromTz, $toTz, $from, $to, bool $withSeconds)
     {
-        $transformer = new DateTimeToHtml5LocalDateTimeTransformer($fromTz, $toTz);
+        $transformer = new DateTimeToHtml5LocalDateTimeTransformer($fromTz, $toTz, $withSeconds);
 
         $this->assertSame($to, $transformer->transform(null !== $from ? new \DateTimeImmutable($from) : null));
     }
@@ -79,9 +80,7 @@ class DateTimeToHtml5LocalDateTimeTransformerTest extends BaseDateTimeTransforme
         $transformer->transform('2010-01-01');
     }
 
-    /**
-     * @dataProvider reverseTransformProvider
-     */
+    #[DataProvider('reverseTransformProvider')]
     public function testReverseTransform($toTz, $fromTz, $to, $from)
     {
         $transformer = new DateTimeToHtml5LocalDateTimeTransformer($toTz, $fromTz);
@@ -116,7 +115,7 @@ class DateTimeToHtml5LocalDateTimeTransformerTest extends BaseDateTimeTransforme
         $transformer->reverseTransform('2010-2010-2010');
     }
 
-    protected function createDateTimeTransformer(string $inputTimezone = null, string $outputTimezone = null): BaseDateTimeTransformer
+    protected function createDateTimeTransformer(?string $inputTimezone = null, ?string $outputTimezone = null): BaseDateTimeTransformer
     {
         return new DateTimeToHtml5LocalDateTimeTransformer($inputTimezone, $outputTimezone);
     }

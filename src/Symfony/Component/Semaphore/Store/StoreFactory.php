@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Semaphore\Store;
 
+use Relay\Relay;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\Semaphore\Exception\InvalidArgumentException;
 use Symfony\Component\Semaphore\PersistingStoreInterface;
@@ -22,27 +23,30 @@ use Symfony\Component\Semaphore\PersistingStoreInterface;
  */
 class StoreFactory
 {
-    public static function createStore(object|string $connection): PersistingStoreInterface
+    public static function createStore(#[\SensitiveParameter] object|string $connection): PersistingStoreInterface
     {
         switch (true) {
             case $connection instanceof \Redis:
+            case $connection instanceof Relay:
             case $connection instanceof \RedisArray:
             case $connection instanceof \RedisCluster:
             case $connection instanceof \Predis\ClientInterface:
                 return new RedisStore($connection);
 
             case !\is_string($connection):
-                throw new InvalidArgumentException(sprintf('Unsupported Connection: "%s".', $connection::class));
-            case str_starts_with($connection, 'redis://'):
-            case str_starts_with($connection, 'rediss://'):
+                throw new InvalidArgumentException(\sprintf('Unsupported Connection: "%s".', $connection::class));
+            case str_starts_with($connection, 'redis:'):
+            case str_starts_with($connection, 'rediss:'):
+            case str_starts_with($connection, 'valkey:'):
+            case str_starts_with($connection, 'valkeys:'):
                 if (!class_exists(AbstractAdapter::class)) {
-                    throw new InvalidArgumentException(sprintf('Unsupported DSN "%s". Try running "composer require symfony/cache".', $connection));
+                    throw new InvalidArgumentException('Unsupported Redis DSN. Try running "composer require symfony/cache".');
                 }
                 $connection = AbstractAdapter::createConnection($connection, ['lazy' => true]);
 
                 return new RedisStore($connection);
         }
 
-        throw new InvalidArgumentException(sprintf('Unsupported Connection: "%s".', $connection));
+        throw new InvalidArgumentException(\sprintf('Unsupported Connection: "%s".', $connection));
     }
 }

@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Console\Tests\Output;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Output\Output;
@@ -94,9 +95,7 @@ class OutputTest extends TestCase
         yield 'bar';
     }
 
-    /**
-     * @dataProvider provideWriteArguments
-     */
+    #[DataProvider('provideWriteArguments')]
     public function testWriteRawMessage($message, $type, $expectedOutput)
     {
         $output = new TestOutput();
@@ -104,7 +103,7 @@ class OutputTest extends TestCase
         $this->assertEquals($expectedOutput, $output->output);
     }
 
-    public function provideWriteArguments()
+    public static function provideWriteArguments()
     {
         return [
             ['<info>foo</info>', Output::OUTPUT_RAW, "<info>foo</info>\n"],
@@ -143,9 +142,7 @@ class OutputTest extends TestCase
         $this->assertEquals("<bar>foo</bar>\n", $output->output, '->writeln() do nothing when a style does not exist');
     }
 
-    /**
-     * @dataProvider verbosityProvider
-     */
+    #[DataProvider('verbosityProvider')]
     public function testWriteWithVerbosityOption($verbosity, $expected, $msg)
     {
         $output = new TestOutput();
@@ -161,9 +158,10 @@ class OutputTest extends TestCase
         $this->assertEquals($expected, $output->output, $msg);
     }
 
-    public function verbosityProvider()
+    public static function verbosityProvider()
     {
         return [
+            [Output::VERBOSITY_SILENT, '', '->write() in SILENT mode never outputs'],
             [Output::VERBOSITY_QUIET, '2', '->write() in QUIET mode only outputs when an explicit QUIET verbosity is passed'],
             [Output::VERBOSITY_NORMAL, '123', '->write() in NORMAL mode outputs anything below an explicit VERBOSE verbosity'],
             [Output::VERBOSITY_VERBOSE, '1234', '->write() in VERBOSE mode outputs anything below an explicit VERY_VERBOSE verbosity'],
@@ -175,14 +173,14 @@ class OutputTest extends TestCase
 
 class TestOutput extends Output
 {
-    public $output = '';
+    public string $output = '';
 
     public function clear()
     {
         $this->output = '';
     }
 
-    protected function doWrite(string $message, bool $newline)
+    protected function doWrite(string $message, bool $newline): void
     {
         $this->output .= $message.($newline ? "\n" : '');
     }

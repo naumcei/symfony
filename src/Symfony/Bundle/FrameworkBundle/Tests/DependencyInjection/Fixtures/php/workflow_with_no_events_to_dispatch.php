@@ -1,9 +1,8 @@
 <?php
 
-use Symfony\Bundle\FrameworkBundle\Tests\DependencyInjection\FrameworkExtensionTest;
+use Symfony\Bundle\FrameworkBundle\Tests\DependencyInjection\FrameworkExtensionTestCase;
 
 $container->loadFromExtension('framework', [
-    'http_method_override' => false,
     'workflows' => [
         'my_workflow' => [
             'type' => 'state_machine',
@@ -12,7 +11,7 @@ $container->loadFromExtension('framework', [
                 'property' => 'state',
             ],
             'supports' => [
-                FrameworkExtensionTest::class,
+                FrameworkExtensionTestCase::class,
             ],
             'events_to_dispatch' => [],
             'places' => [

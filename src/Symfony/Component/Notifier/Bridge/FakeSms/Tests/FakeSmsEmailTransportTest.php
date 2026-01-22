@@ -11,21 +11,21 @@
 
 namespace Symfony\Component\Notifier\Bridge\FakeSms\Tests;
 
-use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Notifier\Bridge\FakeSms\FakeSmsEmailTransport;
+use Symfony\Component\Notifier\Bridge\FakeSms\Mailer\DummyMailer;
 use Symfony\Component\Notifier\Message\ChatMessage;
-use Symfony\Component\Notifier\Message\MessageInterface;
 use Symfony\Component\Notifier\Message\SmsMessage;
 use Symfony\Component\Notifier\Test\TransportTestCase;
-use Symfony\Component\Notifier\Tests\Mailer\DummyMailer;
+use Symfony\Component\Notifier\Tests\Transport\DummyMessage;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class FakeSmsEmailTransportTest extends TransportTestCase
 {
-    public function createTransport(HttpClientInterface $client = null, string $transportName = null): FakeSmsEmailTransport
+    public static function createTransport(?HttpClientInterface $client = null, ?string $transportName = null): FakeSmsEmailTransport
     {
-        $transport = (new FakeSmsEmailTransport($this->createMock(MailerInterface::class), 'recipient@email.net', 'sender@email.net', $client ?? $this->createMock(HttpClientInterface::class)));
+        $transport = (new FakeSmsEmailTransport(new DummyMailer(), 'recipient@email.net', 'sender@email.net', $client ?? new MockHttpClient()));
 
         if (null !== $transportName) {
             $transport->setHost($transportName);
@@ -34,22 +34,22 @@ final class FakeSmsEmailTransportTest extends TransportTestCase
         return $transport;
     }
 
-    public function toStringProvider(): iterable
+    public static function toStringProvider(): iterable
     {
-        yield ['fakesms+email://default?to=recipient@email.net&from=sender@email.net', $this->createTransport()];
-        yield ['fakesms+email://mailchimp?to=recipient@email.net&from=sender@email.net', $this->createTransport(null, 'mailchimp')];
+        yield ['fakesms+email://default?to=recipient@email.net&from=sender@email.net', self::createTransport()];
+        yield ['fakesms+email://mailchimp?to=recipient@email.net&from=sender@email.net', self::createTransport(null, 'mailchimp')];
     }
 
-    public function supportedMessagesProvider(): iterable
+    public static function supportedMessagesProvider(): iterable
     {
         yield [new SmsMessage('0611223344', 'Hello!')];
         yield [new SmsMessage('+33611223344', 'Hello!')];
     }
 
-    public function unsupportedMessagesProvider(): iterable
+    public static function unsupportedMessagesProvider(): iterable
     {
         yield [new ChatMessage('Hello!')];
-        yield [$this->createMock(MessageInterface::class)];
+        yield [new DummyMessage()];
     }
 
     public function testSendWithDefaultTransport()
@@ -66,11 +66,11 @@ final class FakeSmsEmailTransportTest extends TransportTestCase
         $transport->send($message);
 
         /** @var Email $sentEmail */
-        $sentEmail = $mailer->getSentEmail();
+        $sentEmail = $mailer->sentEmail;
         $this->assertInstanceOf(Email::class, $sentEmail);
         $this->assertSame($to, $sentEmail->getTo()[0]->getEncodedAddress());
         $this->assertSame($from, $sentEmail->getFrom()[0]->getEncodedAddress());
-        $this->assertSame(sprintf('New SMS on phone number: %s', $phone), $sentEmail->getSubject());
+        $this->assertSame(\sprintf('New SMS on phone number: %s', $phone), $sentEmail->getSubject());
         $this->assertSame($subject, $sentEmail->getTextBody());
         $this->assertFalse($sentEmail->getHeaders()->has('X-Transport'));
     }
@@ -89,13 +89,26 @@ final class FakeSmsEmailTransportTest extends TransportTestCase
         $transport->send($message);
 
         /** @var Email $sentEmail */
-        $sentEmail = $mailer->getSentEmail();
+        $sentEmail = $mailer->sentEmail;
         $this->assertInstanceOf(Email::class, $sentEmail);
         $this->assertSame($to, $sentEmail->getTo()[0]->getEncodedAddress());
         $this->assertSame($from, $sentEmail->getFrom()[0]->getEncodedAddress());
-        $this->assertSame(sprintf('New SMS on phone number: %s', $phone), $sentEmail->getSubject());
+        $this->assertSame(\sprintf('New SMS on phone number: %s', $phone), $sentEmail->getSubject());
         $this->assertSame($subject, $sentEmail->getTextBody());
         $this->assertTrue($sentEmail->getHeaders()->has('X-Transport'));
         $this->assertSame($transportName, $sentEmail->getHeaders()->get('X-Transport')->getBody());
+    }
+
+    public function testSendWithFromInSmsMessage()
+    {
+        $mailer = new DummyMailer();
+        $transport = new FakeSmsEmailTransport($mailer, 'recipient@example.com', 'sender@example.com');
+        $transport->send(new SmsMessage('0611223344', 'Hello!', '+33611223344'));
+
+        $sentEmail = $mailer->sentEmail;
+        $this->assertInstanceOf(Email::class, $sentEmail);
+        $this->assertSame('recipient@example.com', $sentEmail->getTo()[0]->getEncodedAddress());
+        $this->assertSame('sender@example.com', $sentEmail->getFrom()[0]->getEncodedAddress());
+        $this->assertSame('New SMS on phone number: 0611223344', $sentEmail->getSubject());
     }
 }

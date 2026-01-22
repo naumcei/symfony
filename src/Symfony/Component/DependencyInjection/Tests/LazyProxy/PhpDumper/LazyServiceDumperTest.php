@@ -16,6 +16,8 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\LazyProxy\PhpDumper\LazyServiceDumper;
+use Symfony\Component\DependencyInjection\Tests\Fixtures\AbstractSayClass;
+use Symfony\Component\DependencyInjection\Tests\Fixtures\ReadOnlyClass;
 
 class LazyServiceDumperTest extends TestCase
 {
@@ -39,6 +41,16 @@ class LazyServiceDumperTest extends TestCase
         $this->assertStringContainsString('function get(', $dumper->getProxyCode($definition));
     }
 
+    public function testAbstractClass()
+    {
+        $dumper = new LazyServiceDumper();
+        $definition = (new Definition(AbstractSayClass::class))
+            ->setLazy(true);
+
+        $this->assertTrue($dumper->isProxyCandidate($definition));
+        $this->assertNotSame(AbstractSayClass::class, $dumper->getProxyClass($definition, false));
+    }
+
     public function testInvalidClass()
     {
         $dumper = new LazyServiceDumper();
@@ -51,6 +63,15 @@ class LazyServiceDumperTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid "proxy" tag for service "stdClass": class "stdClass" doesn\'t implement "Psr\Container\ContainerInterface".');
         $dumper->getProxyCode($definition);
+    }
+
+    public function testReadonlyClass()
+    {
+        $dumper = new LazyServiceDumper();
+        $definition = (new Definition(ReadOnlyClass::class))->setLazy(true);
+
+        $this->assertTrue($dumper->isProxyCandidate($definition));
+        $this->assertStringContainsString('', $dumper->getProxyCode($definition));
     }
 }
 

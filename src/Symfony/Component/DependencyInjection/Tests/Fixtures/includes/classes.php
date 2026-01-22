@@ -1,8 +1,7 @@
 <?php
 
 use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\LazyProxy\PhpDumper\DumperInterface as ProxyDumper;
-use Symfony\Contracts\Service\ServiceSubscriberInterface;
+use Symfony\Component\DependencyInjection\LazyProxy\PhpDumper\DumperInterface;
 
 function sc_configure($instance)
 {
@@ -82,9 +81,9 @@ class MethodCallClass
     }
 }
 
-class DummyProxyDumper implements ProxyDumper
+class DummyProxyDumper implements DumperInterface
 {
-    public function isProxyCandidate(Definition $definition, bool &$asGhostObject = null, string $id = null): bool
+    public function isProxyCandidate(Definition $definition, ?bool &$asGhostObject = null, ?string $id = null): bool
     {
         $asGhostObject = false;
 

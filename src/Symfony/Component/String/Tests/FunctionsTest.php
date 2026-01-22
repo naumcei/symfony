@@ -11,27 +11,25 @@
 
 namespace Symfony\Component\String\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\String\AbstractString;
 use Symfony\Component\String\ByteString;
+use Symfony\Component\String\UnicodeString;
 
 use function Symfony\Component\String\b;
 use function Symfony\Component\String\s;
 use function Symfony\Component\String\u;
 
-use Symfony\Component\String\UnicodeString;
-
 final class FunctionsTest extends TestCase
 {
-    /**
-     * @dataProvider provideSStrings
-     */
+    #[DataProvider('provideSStrings')]
     public function testS(AbstractString $expected, ?string $input)
     {
         $this->assertEquals($expected, s($input));
     }
 
-    public function provideSStrings(): array
+    public static function provideSStrings(): array
     {
         return [
             [new UnicodeString(''), ''],
@@ -43,15 +41,13 @@ final class FunctionsTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideUStrings
-     */
+    #[DataProvider('provideUStrings')]
     public function testU(UnicodeString $expected, ?string $input)
     {
         $this->assertEquals($expected, u($input));
     }
 
-    public function provideUStrings(): array
+    public static function provideUStrings(): array
     {
         return [
             [new UnicodeString(''), ''],
@@ -61,15 +57,13 @@ final class FunctionsTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideBStrings
-     */
+    #[DataProvider('provideBStrings')]
     public function testB(ByteString $expected, ?string $input)
     {
         $this->assertEquals($expected, b($input));
     }
 
-    public function provideBStrings(): array
+    public static function provideBStrings(): array
     {
         return [
             [new ByteString(''), ''],

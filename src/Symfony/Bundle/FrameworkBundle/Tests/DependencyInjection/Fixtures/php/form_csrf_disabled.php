@@ -5,5 +5,4 @@ $container->loadFromExtension('framework', [
     'form' => [
         'csrf_protection' => true,
     ],
-    'http_method_override' => false,
 ]);

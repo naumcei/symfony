@@ -17,17 +17,19 @@ use Symfony\Component\Messenger\Transport\TransportInterface;
 
 /**
  * @author Antonio Pauletich <antonio.pauletich95@gmail.com>
+ *
+ * @implements TransportFactoryInterface<BeanstalkdTransport>
  */
 class BeanstalkdTransportFactory implements TransportFactoryInterface
 {
-    public function createTransport(string $dsn, array $options, SerializerInterface $serializer): TransportInterface
+    public function createTransport(#[\SensitiveParameter] string $dsn, array $options, SerializerInterface $serializer): TransportInterface
     {
         unset($options['transport_name']);
 
         return new BeanstalkdTransport(Connection::fromDsn($dsn, $options), $serializer);
     }
 
-    public function supports(string $dsn, array $options): bool
+    public function supports(#[\SensitiveParameter] string $dsn, array $options): bool
     {
         return str_starts_with($dsn, 'beanstalkd://');
     }

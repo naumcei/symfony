@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Validator\Tests\Constraints;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Validator\Constraints\Issn;
 use Symfony\Component\Validator\Constraints\IssnValidator;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
@@ -26,7 +27,7 @@ class IssnValidatorTest extends ConstraintValidatorTestCase
         return new IssnValidator();
     }
 
-    public function getValidLowerCasedIssn()
+    public static function getValidLowerCasedIssn()
     {
         return [
             ['2162-321x'],
@@ -39,7 +40,7 @@ class IssnValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    public function getValidNonHyphenatedIssn()
+    public static function getValidNonHyphenatedIssn()
     {
         return [
             ['2162321X'],
@@ -52,7 +53,7 @@ class IssnValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    public function getFullValidIssn()
+    public static function getFullValidIssn()
     {
         return [
             ['1550-7416'],
@@ -66,16 +67,16 @@ class IssnValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    public function getValidIssn()
+    public static function getValidIssn()
     {
         return array_merge(
-            $this->getValidLowerCasedIssn(),
-            $this->getValidNonHyphenatedIssn(),
-            $this->getFullValidIssn()
+            self::getValidLowerCasedIssn(),
+            self::getValidNonHyphenatedIssn(),
+            self::getFullValidIssn()
         );
     }
 
-    public function getInvalidIssn()
+    public static function getInvalidIssn()
     {
         return [
             [0, Issn::TOO_SHORT_ERROR],
@@ -114,15 +115,13 @@ class IssnValidatorTest extends ConstraintValidatorTestCase
         $this->validator->validate(new \stdClass(), $constraint);
     }
 
-    /**
-     * @dataProvider getValidLowerCasedIssn
-     */
+    #[DataProvider('getValidLowerCasedIssn')]
     public function testCaseSensitiveIssns($issn)
     {
-        $constraint = new Issn([
-            'caseSensitive' => true,
-            'message' => 'myMessage',
-        ]);
+        $constraint = new Issn(
+            caseSensitive: true,
+            message: 'myMessage',
+        );
 
         $this->validator->validate($issn, $constraint);
 
@@ -132,15 +131,13 @@ class IssnValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    /**
-     * @dataProvider getValidNonHyphenatedIssn
-     */
+    #[DataProvider('getValidNonHyphenatedIssn')]
     public function testRequireHyphenIssns($issn)
     {
-        $constraint = new Issn([
-            'requireHyphen' => true,
-            'message' => 'myMessage',
-        ]);
+        $constraint = new Issn(
+            requireHyphen: true,
+            message: 'myMessage',
+        );
 
         $this->validator->validate($issn, $constraint);
 
@@ -150,9 +147,7 @@ class IssnValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    /**
-     * @dataProvider getValidIssn
-     */
+    #[DataProvider('getValidIssn')]
     public function testValidIssn($issn)
     {
         $constraint = new Issn();
@@ -162,14 +157,10 @@ class IssnValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    /**
-     * @dataProvider getInvalidIssn
-     */
+    #[DataProvider('getInvalidIssn')]
     public function testInvalidIssn($issn, $code)
     {
-        $constraint = new Issn([
-            'message' => 'myMessage',
-        ]);
+        $constraint = new Issn(message: 'myMessage');
 
         $this->validator->validate($issn, $constraint);
 

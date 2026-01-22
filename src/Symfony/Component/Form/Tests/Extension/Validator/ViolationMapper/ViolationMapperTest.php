@@ -11,9 +11,9 @@
 
 namespace Symfony\Component\Form\Tests\Extension\Validator\ViolationMapper;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Component\Form\Extension\Core\DataMapper\DataMapper;
@@ -43,30 +43,11 @@ class ViolationMapperTest extends TestCase
     private const LEVEL_1B = 2;
     private const LEVEL_2 = 3;
 
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $dispatcher;
-
-    /**
-     * @var ViolationMapper
-     */
-    private $mapper;
-
-    /**
-     * @var string
-     */
-    private $message;
-
-    /**
-     * @var string
-     */
-    private $messageTemplate;
-
-    /**
-     * @var array
-     */
-    private $params;
+    private EventDispatcher $dispatcher;
+    private ViolationMapper $mapper;
+    private string $message;
+    private string $messageTemplate;
+    private array $params;
 
     protected function setUp(): void
     {
@@ -91,8 +72,8 @@ class ViolationMapperTest extends TestCase
 
         if (!$synchronized) {
             $config->addViewTransformer(new CallbackTransformer(
-                function ($normData) { return $normData; },
-                function () { throw new TransformationFailedException(); }
+                static fn ($normData) => $normData,
+                static fn () => throw new TransformationFailedException()
             ));
         }
 
@@ -280,7 +261,7 @@ class ViolationMapperTest extends TestCase
         $this->assertCount(1, $grandChild->getErrors(), $grandChild->getName().' should have one error');
     }
 
-    public function provideDefaultTests()
+    public static function provideDefaultTests()
     {
         // The mapping must be deterministic! If a child has the property path "[street]",
         // "data[street]" should be mapped, but "data.street" should not!
@@ -806,9 +787,7 @@ class ViolationMapperTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideDefaultTests
-     */
+    #[DataProvider('provideDefaultTests')]
     public function testDefaultErrorMapping($target, $childName, $childPath, $grandChildName, $grandChildPath, $violationPath)
     {
         $violation = $this->getConstraintViolation($violationPath);
@@ -838,7 +817,7 @@ class ViolationMapperTest extends TestCase
         }
     }
 
-    public function provideCustomDataErrorTests()
+    public static function provideCustomDataErrorTests()
     {
         return [
             // mapping target, error mapping, child name, its property path, grand child name, its property path, violation path
@@ -1261,9 +1240,7 @@ class ViolationMapperTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideCustomDataErrorTests
-     */
+    #[DataProvider('provideCustomDataErrorTests')]
     public function testCustomDataErrorMapping($target, $mapFrom, $mapTo, $childName, $childPath, $grandChildName, $grandChildPath, $violationPath)
     {
         $violation = $this->getConstraintViolation($violationPath);
@@ -1312,7 +1289,7 @@ class ViolationMapperTest extends TestCase
         }
     }
 
-    public function provideCustomFormErrorTests()
+    public static function provideCustomFormErrorTests()
     {
         // This case is different than the data errors, because here the
         // left side of the mapping refers to the property path of the actual
@@ -1461,9 +1438,7 @@ class ViolationMapperTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideCustomFormErrorTests
-     */
+    #[DataProvider('provideCustomFormErrorTests')]
     public function testCustomFormErrorMapping($target, $mapFrom, $mapTo, $errorName, $errorPath, $childName, $childPath, $grandChildName, $grandChildPath, $violationPath)
     {
         $violation = $this->getConstraintViolation($violationPath);
@@ -1503,7 +1478,7 @@ class ViolationMapperTest extends TestCase
         }
     }
 
-    public function provideErrorTestsForFormInheritingParentData()
+    public static function provideErrorTestsForFormInheritingParentData()
     {
         return [
             // mapping target, child name, its property path, grand child name, its property path, violation path
@@ -1528,9 +1503,7 @@ class ViolationMapperTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideErrorTestsForFormInheritingParentData
-     */
+    #[DataProvider('provideErrorTestsForFormInheritingParentData')]
     public function testErrorMappingForFormInheritingParentData($target, $childName, $childPath, $grandChildName, $grandChildPath, $violationPath)
     {
         $violation = $this->getConstraintViolation($violationPath);
@@ -1742,13 +1715,9 @@ class ViolationMapperTest extends TestCase
 
     public function testLabelPlaceholderTranslatedWithTranslationDomainDefinedByParentType()
     {
-        $translator = $this->createMock(TranslatorInterface::class);
-        $translator->expects($this->any())
-            ->method('trans')
-            ->with('foo', [], 'domain')
-            ->willReturn('translated foo label')
-        ;
-        $this->mapper = new ViolationMapper(null, $translator);
+        $this->mapper = new ViolationMapper(null, new FixedTranslator([
+            'foo' => 'translated foo label',
+        ]));
 
         $form = $this->getForm('', null, null, [], false, true, [
             'translation_domain' => 'domain',
@@ -1769,17 +1738,9 @@ class ViolationMapperTest extends TestCase
 
     public function testLabelPlaceholderTranslatedWithTranslationParametersMergedFromParentForm()
     {
-        $translator = $this->createMock(TranslatorInterface::class);
-        $translator->expects($this->any())
-            ->method('trans')
-            ->with('foo', [
-                '{{ param_defined_in_parent }}' => 'param defined in parent value',
-                '{{ param_defined_in_child }}' => 'param defined in child value',
-                '{{ param_defined_in_parent_overridden_in_child }}' => 'param defined in parent overridden in child child value',
-            ])
-            ->willReturn('translated foo label')
-        ;
-        $this->mapper = new ViolationMapper(null, $translator);
+        $this->mapper = new ViolationMapper(null, new FixedTranslator([
+            'foo' => 'translated foo label',
+        ]));
 
         $form = $this->getForm('', null, null, [], false, true, [
             'label_translation_parameters' => [

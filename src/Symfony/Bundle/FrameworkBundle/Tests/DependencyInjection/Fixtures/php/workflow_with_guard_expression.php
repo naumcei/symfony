@@ -1,14 +1,13 @@
 <?php
 
-use Symfony\Bundle\FrameworkBundle\Tests\DependencyInjection\FrameworkExtensionTest;
+use Symfony\Bundle\FrameworkBundle\Tests\DependencyInjection\FrameworkExtensionTestCase;
 
 $container->loadFromExtension('framework', [
-    'http_method_override' => false,
     'workflows' => [
         'article' => [
             'type' => 'workflow',
             'supports' => [
-                FrameworkExtensionTest::class,
+                FrameworkExtensionTestCase::class,
             ],
             'initial_marking' => ['draft'],
             'places' => [

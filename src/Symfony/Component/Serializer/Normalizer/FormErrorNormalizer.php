@@ -16,29 +16,36 @@ use Symfony\Component\Form\FormInterface;
 /**
  * Normalizes invalid Form instances.
  */
-final class FormErrorNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
+final class FormErrorNormalizer implements NormalizerInterface
 {
     public const TITLE = 'title';
     public const TYPE = 'type';
     public const CODE = 'status_code';
 
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, ?string $format = null, array $context = []): array
     {
-        $data = [
+        $error = [
             'title' => $context[self::TITLE] ?? 'Validation Failed',
             'type' => $context[self::TYPE] ?? 'https://symfony.com/errors/form',
             'code' => $context[self::CODE] ?? null,
-            'errors' => $this->convertFormErrorsToArray($object),
+            'errors' => $this->convertFormErrorsToArray($data),
         ];
 
-        if (0 !== \count($object->all())) {
-            $data['children'] = $this->convertFormChildrenToArray($object);
+        if (0 !== \count($data->all())) {
+            $error['children'] = $this->convertFormChildrenToArray($data);
         }
 
-        return $data;
+        return $error;
     }
 
-    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            FormInterface::class => false,
+        ];
+    }
+
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof FormInterface && $data->isSubmitted() && !$data->isValid();
     }
@@ -74,10 +81,5 @@ final class FormErrorNormalizer implements NormalizerInterface, CacheableSupport
         }
 
         return $children;
-    }
-
-    public function hasCacheableSupportsMethod(): bool
-    {
-        return __CLASS__ === static::class;
     }
 }

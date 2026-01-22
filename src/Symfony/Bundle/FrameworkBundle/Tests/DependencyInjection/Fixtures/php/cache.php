@@ -1,7 +1,6 @@
 <?php
 
 $container->loadFromExtension('framework', [
-    'http_method_override' => false,
     'cache' => [
         'pools' => [
             'cache.foo' => [

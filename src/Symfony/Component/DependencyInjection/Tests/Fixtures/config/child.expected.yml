@@ -7,9 +7,13 @@ services:
     foo:
         class: Class2
         public: true
+        tags:
+            - container.decorator: { id: bar, inner: b }
         file: file.php
         lazy: true
-        arguments: [!service { class: Class1 }]
+        arguments: ['@b']
+    b:
+        class: Class1
     bar:
         alias: foo
         public: true

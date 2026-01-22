@@ -13,10 +13,12 @@ namespace Symfony\Bridge\Twig;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 /**
  * Exposes some Symfony parameters and services as an "app" global variable.
@@ -29,25 +31,37 @@ class AppVariable
     private RequestStack $requestStack;
     private string $environment;
     private bool $debug;
+    private LocaleSwitcher $localeSwitcher;
+    private array $enabledLocales;
 
-    public function setTokenStorage(TokenStorageInterface $tokenStorage)
+    public function setTokenStorage(TokenStorageInterface $tokenStorage): void
     {
         $this->tokenStorage = $tokenStorage;
     }
 
-    public function setRequestStack(RequestStack $requestStack)
+    public function setRequestStack(RequestStack $requestStack): void
     {
         $this->requestStack = $requestStack;
     }
 
-    public function setEnvironment(string $environment)
+    public function setEnvironment(string $environment): void
     {
         $this->environment = $environment;
     }
 
-    public function setDebug(bool $debug)
+    public function setDebug(bool $debug): void
     {
         $this->debug = $debug;
+    }
+
+    public function setLocaleSwitcher(LocaleSwitcher $localeSwitcher): void
+    {
+        $this->localeSwitcher = $localeSwitcher;
+    }
+
+    public function setEnabledLocales(array $enabledLocales): void
+    {
+        $this->enabledLocales = array_filter($enabledLocales);
     }
 
     /**
@@ -93,7 +107,7 @@ class AppVariable
     /**
      * Returns the current session.
      */
-    public function getSession(): ?Session
+    public function getSession(): ?SessionInterface
     {
         if (!isset($this->requestStack)) {
             throw new \RuntimeException('The "app.session" variable is not available.');
@@ -127,19 +141,39 @@ class AppVariable
         return $this->debug;
     }
 
+    public function getLocale(): string
+    {
+        if (!isset($this->localeSwitcher)) {
+            throw new \RuntimeException('The "app.locale" variable is not available.');
+        }
+
+        return $this->localeSwitcher->getLocale();
+    }
+
+    public function getEnabled_locales(): array
+    {
+        if (!isset($this->enabledLocales)) {
+            throw new \RuntimeException('The "app.enabled_locales" variable is not available.');
+        }
+
+        return $this->enabledLocales;
+    }
+
     /**
      * Returns some or all the existing flash messages:
      *  * getFlashes() returns all the flash messages
      *  * getFlashes('notice') returns a simple array with flash messages of that type
      *  * getFlashes(['notice', 'error']) returns a nested array of type => messages.
      */
-    public function getFlashes(string|array $types = null): array
+    public function getFlashes(string|array|null $types = null): array
     {
         try {
-            if (null === $session = $this->getSession()) {
-                return [];
-            }
+            $session = $this->getSession();
         } catch (\RuntimeException) {
+            return [];
+        }
+
+        if (!$session instanceof FlashBagAwareSessionInterface) {
             return [];
         }
 

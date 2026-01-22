@@ -26,15 +26,13 @@ use Symfony\Component\PropertyAccess\PropertyPathInterface;
  */
 class FormConfigBuilder implements FormConfigBuilderInterface
 {
+    protected bool $locked = false;
+
     /**
      * Caches a globally unique {@link NativeRequestHandler} instance.
      */
     private static NativeRequestHandler $nativeRequestHandler;
 
-    /** @var bool */
-    protected $locked = false;
-
-    private EventDispatcherInterface $dispatcher;
     private string $name;
     private ?PropertyPathInterface $propertyPath = null;
     private bool $mapped = true;
@@ -58,7 +56,6 @@ class FormConfigBuilder implements FormConfigBuilderInterface
     private string $method = 'POST';
     private RequestHandlerInterface $requestHandler;
     private bool $autoInitialize = false;
-    private array $options;
     private ?\Closure $isEmptyCallback = null;
 
     /**
@@ -70,18 +67,20 @@ class FormConfigBuilder implements FormConfigBuilderInterface
      * @throws InvalidArgumentException if the data class is not a valid class or if
      *                                  the name contains invalid characters
      */
-    public function __construct(?string $name, ?string $dataClass, EventDispatcherInterface $dispatcher, array $options = [])
-    {
+    public function __construct(
+        ?string $name,
+        ?string $dataClass,
+        private EventDispatcherInterface $dispatcher,
+        private array $options = [],
+    ) {
         self::validateName($name);
 
         if (null !== $dataClass && !class_exists($dataClass) && !interface_exists($dataClass, false)) {
-            throw new InvalidArgumentException(sprintf('Class "%s" not found. Is the "data_class" form option set correctly?', $dataClass));
+            throw new InvalidArgumentException(\sprintf('Class "%s" not found. Is the "data_class" form option set correctly?', $dataClass));
         }
 
         $this->name = (string) $name;
         $this->dataClass = $dataClass;
-        $this->dispatcher = $dispatcher;
-        $this->options = $options;
     }
 
     public function addEventListener(string $eventName, callable $listener, int $priority = 0): static
@@ -316,6 +315,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this->isEmptyCallback;
     }
 
+    /**
+     * @return $this
+     */
     public function setAttribute(string $name, mixed $value): static
     {
         if ($this->locked) {
@@ -327,6 +329,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setAttributes(array $attributes): static
     {
         if ($this->locked) {
@@ -338,11 +343,11 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
-    public function setDataMapper(DataMapperInterface $dataMapper = null): static
+    /**
+     * @return $this
+     */
+    public function setDataMapper(?DataMapperInterface $dataMapper): static
     {
-        if (1 > \func_num_args()) {
-            trigger_deprecation('symfony/form', '6.2', 'Calling "%s()" without any arguments is deprecated, pass null explicitly instead.', __METHOD__);
-        }
         if ($this->locked) {
             throw new BadMethodCallException('FormConfigBuilder methods cannot be accessed anymore once the builder is turned into a FormConfigInterface instance.');
         }
@@ -352,6 +357,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setDisabled(bool $disabled): static
     {
         if ($this->locked) {
@@ -363,6 +371,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setEmptyData(mixed $emptyData): static
     {
         if ($this->locked) {
@@ -374,6 +385,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setErrorBubbling(bool $errorBubbling): static
     {
         if ($this->locked) {
@@ -385,6 +399,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setRequired(bool $required): static
     {
         if ($this->locked) {
@@ -396,6 +413,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setPropertyPath(string|PropertyPathInterface|null $propertyPath): static
     {
         if ($this->locked) {
@@ -411,6 +431,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setMapped(bool $mapped): static
     {
         if ($this->locked) {
@@ -422,6 +445,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setByReference(bool $byReference): static
     {
         if ($this->locked) {
@@ -433,6 +459,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setInheritData(bool $inheritData): static
     {
         if ($this->locked) {
@@ -444,6 +473,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setCompound(bool $compound): static
     {
         if ($this->locked) {
@@ -455,6 +487,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setType(ResolvedFormTypeInterface $type): static
     {
         if ($this->locked) {
@@ -466,6 +501,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setData(mixed $data): static
     {
         if ($this->locked) {
@@ -477,6 +515,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setDataLocked(bool $locked): static
     {
         if ($this->locked) {
@@ -488,7 +529,10 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
-    public function setFormFactory(FormFactoryInterface $formFactory)
+    /**
+     * @return $this
+     */
+    public function setFormFactory(FormFactoryInterface $formFactory): static
     {
         if ($this->locked) {
             throw new BadMethodCallException('FormConfigBuilder methods cannot be accessed anymore once the builder is turned into a FormConfigInterface instance.');
@@ -499,6 +543,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setAction(string $action): static
     {
         if ($this->locked) {
@@ -510,6 +557,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setMethod(string $method): static
     {
         if ($this->locked) {
@@ -521,6 +571,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setRequestHandler(RequestHandlerInterface $requestHandler): static
     {
         if ($this->locked) {
@@ -532,6 +585,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setAutoInitialize(bool $initialize): static
     {
         if ($this->locked) {
@@ -556,6 +612,9 @@ class FormConfigBuilder implements FormConfigBuilderInterface
         return $config;
     }
 
+    /**
+     * @return $this
+     */
     public function setIsEmptyCallback(?callable $isEmptyCallback): static
     {
         $this->isEmptyCallback = null === $isEmptyCallback ? null : $isEmptyCallback(...);
@@ -570,10 +629,10 @@ class FormConfigBuilder implements FormConfigBuilderInterface
      *
      * @internal
      */
-    final public static function validateName(?string $name)
+    final public static function validateName(?string $name): void
     {
         if (!self::isValidName($name)) {
-            throw new InvalidArgumentException(sprintf('The name "%s" contains illegal characters. Names should start with a letter, digit or underscore and only contain letters, digits, numbers, underscores ("_"), hyphens ("-") and colons (":").', $name));
+            throw new InvalidArgumentException(\sprintf('The name "%s" contains illegal characters. Names should start with a letter, digit or underscore and only contain letters, digits, numbers, underscores ("_"), hyphens ("-") and colons (":").', $name));
         }
     }
 

@@ -12,6 +12,7 @@
 namespace Symfony\Component\Form\Extension\Core\Type;
 
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Event\PreSubmitEvent;
 use Symfony\Component\Form\FileUploadError;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -34,17 +35,16 @@ class FileType extends AbstractType
         self::MIB_BYTES => 'MiB',
     ];
 
-    private ?TranslatorInterface $translator;
-
-    public function __construct(TranslatorInterface $translator = null)
-    {
-        $this->translator = $translator;
+    public function __construct(
+        private ?TranslatorInterface $translator = null,
+    ) {
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         // Ensure that submitted data is always an uploaded file or an array of some
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) use ($options) {
+            /** @var PreSubmitEvent $event */
             $form = $event->getForm();
             $requestHandler = $form->getConfig()->getRequestHandler();
 
@@ -82,7 +82,7 @@ class FileType extends AbstractType
         });
     }
 
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         if ($options['multiple']) {
             $view->vars['full_name'] .= '[]';
@@ -95,23 +95,19 @@ class FileType extends AbstractType
         ]);
     }
 
-    public function finishView(FormView $view, FormInterface $form, array $options)
+    public function finishView(FormView $view, FormInterface $form, array $options): void
     {
         $view->vars['multipart'] = true;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $dataClass = null;
         if (class_exists(File::class)) {
-            $dataClass = function (Options $options) {
-                return $options['multiple'] ? null : File::class;
-            };
+            $dataClass = static fn (Options $options) => $options['multiple'] ? null : File::class;
         }
 
-        $emptyData = function (Options $options) {
-            return $options['multiple'] ? [] : null;
-        };
+        $emptyData = static fn (Options $options) => $options['multiple'] ? [] : null;
 
         $resolver->setDefaults([
             'compound' => false,
@@ -128,7 +124,7 @@ class FileType extends AbstractType
         return 'file';
     }
 
-    private function getFileUploadError(int $errorCode)
+    private function getFileUploadError(int $errorCode): FileUploadError
     {
         $messageParameters = [];
 
@@ -195,7 +191,7 @@ class FileType extends AbstractType
      *
      * This method should be kept in sync with Symfony\Component\Validator\Constraints\FileValidator::factorizeSizes().
      */
-    private function factorizeSizes(int $size, int|float $limit)
+    private function factorizeSizes(int $size, int|float $limit): array
     {
         $coef = self::MIB_BYTES;
         $coefFactor = self::KIB_BYTES;

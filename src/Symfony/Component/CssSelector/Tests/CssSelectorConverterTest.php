@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\CssSelector\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\CssSelector\CssSelectorConverter;
 use Symfony\Component\CssSelector\Exception\ParseException;
@@ -48,11 +49,10 @@ class CssSelectorConverterTest extends TestCase
     {
         $this->expectException(ParseException::class);
         $this->expectExceptionMessage('Expected identifier, but <eof at 3> found.');
-        $converter = new CssSelectorConverter();
-        $converter->toXPath('h1:');
+        (new CssSelectorConverter())->toXPath('h1:');
     }
 
-    /** @dataProvider getCssToXPathWithoutPrefixTestData */
+    #[DataProvider('getCssToXPathWithoutPrefixTestData')]
     public function testCssToXPathWithoutPrefix($css, $xpath)
     {
         $converter = new CssSelectorConverter();
@@ -60,7 +60,7 @@ class CssSelectorConverterTest extends TestCase
         $this->assertEquals($xpath, $converter->toXPath($css, ''), '->parse() parses an input string and returns a node');
     }
 
-    public function getCssToXPathWithoutPrefixTestData()
+    public static function getCssToXPathWithoutPrefixTestData(): array
     {
         return [
             ['h1', 'h1'],

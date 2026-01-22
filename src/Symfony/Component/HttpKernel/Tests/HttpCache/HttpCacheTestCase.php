@@ -19,7 +19,7 @@ use Symfony\Component\HttpKernel\HttpCache\HttpCache;
 use Symfony\Component\HttpKernel\HttpCache\Store;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
-class HttpCacheTestCase extends TestCase
+abstract class HttpCacheTestCase extends TestCase
 {
     protected $kernel;
     protected $cache;
@@ -30,11 +30,7 @@ class HttpCacheTestCase extends TestCase
     protected $responses;
     protected $catch;
     protected $esi;
-
-    /**
-     * @var Store
-     */
-    protected $store;
+    protected ?Store $store = null;
 
     protected function setUp(): void
     {
@@ -119,7 +115,9 @@ class HttpCacheTestCase extends TestCase
 
         $this->kernel->reset();
 
-        $this->store = new Store(sys_get_temp_dir().'/http_cache');
+        if (!$this->store) {
+            $this->store = $this->createStore();
+        }
 
         if (!isset($this->cacheConfig['debug'])) {
             $this->cacheConfig['debug'] = true;
@@ -150,7 +148,7 @@ class HttpCacheTestCase extends TestCase
     }
 
     // A basic response with 200 status code and a tiny body.
-    public function setNextResponse($statusCode = 200, array $headers = [], $body = 'Hello World', \Closure $customizer = null, EventDispatcher $eventDispatcher = null)
+    public function setNextResponse($statusCode = 200, array $headers = [], $body = 'Hello World', ?\Closure $customizer = null, ?EventDispatcher $eventDispatcher = null)
     {
         $this->kernel = new TestHttpKernel($body, $statusCode, $headers, $customizer, $eventDispatcher);
     }
@@ -173,7 +171,7 @@ class HttpCacheTestCase extends TestCase
 
         $fp = opendir($directory);
         while (false !== $file = readdir($fp)) {
-            if (!\in_array($file, ['.', '..'])) {
+            if (!\in_array($file, ['.', '..'], true)) {
                 if (is_link($directory.'/'.$file)) {
                     unlink($directory.'/'.$file);
                 } elseif (is_dir($directory.'/'.$file)) {
@@ -186,5 +184,10 @@ class HttpCacheTestCase extends TestCase
         }
 
         closedir($fp);
+    }
+
+    protected function createStore(): Store
+    {
+        return new Store(sys_get_temp_dir().'/http_cache');
     }
 }

@@ -16,7 +16,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\Persistence\ManagerRegistry;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bridge\Doctrine\Form\DoctrineOrmExtension;
 use Symfony\Bridge\Doctrine\Form\DoctrineOrmTypeGuesser;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -35,38 +35,31 @@ use Symfony\Component\Form\ChoiceList\View\ChoiceView;
 use Symfony\Component\Form\Exception\RuntimeException;
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
 use Symfony\Component\Form\Forms;
-use Symfony\Component\Form\Tests\Extension\Core\Type\BaseTypeTest;
+use Symfony\Component\Form\Tests\Extension\Core\Type\BaseTypeTestCase;
 use Symfony\Component\Form\Tests\Extension\Core\Type\FormTypeTest;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 
-class EntityTypeTest extends BaseTypeTest
+class EntityTypeTest extends BaseTypeTestCase
 {
-    public const TESTED_TYPE = 'Symfony\Bridge\Doctrine\Form\Type\EntityType';
+    public const TESTED_TYPE = EntityType::class;
 
-    private const ITEM_GROUP_CLASS = 'Symfony\Bridge\Doctrine\Tests\Fixtures\GroupableEntity';
-    private const SINGLE_IDENT_CLASS = 'Symfony\Bridge\Doctrine\Tests\Fixtures\SingleIntIdEntity';
-    private const SINGLE_IDENT_NO_TO_STRING_CLASS = 'Symfony\Bridge\Doctrine\Tests\Fixtures\SingleIntIdNoToStringEntity';
-    private const SINGLE_STRING_IDENT_CLASS = 'Symfony\Bridge\Doctrine\Tests\Fixtures\SingleStringIdEntity';
-    private const SINGLE_ASSOC_IDENT_CLASS = 'Symfony\Bridge\Doctrine\Tests\Fixtures\SingleAssociationToIntIdEntity';
-    private const SINGLE_STRING_CASTABLE_IDENT_CLASS = 'Symfony\Bridge\Doctrine\Tests\Fixtures\SingleStringCastableIdEntity';
-    private const COMPOSITE_IDENT_CLASS = 'Symfony\Bridge\Doctrine\Tests\Fixtures\CompositeIntIdEntity';
-    private const COMPOSITE_STRING_IDENT_CLASS = 'Symfony\Bridge\Doctrine\Tests\Fixtures\CompositeStringIdEntity';
+    private const ITEM_GROUP_CLASS = GroupableEntity::class;
+    private const SINGLE_IDENT_CLASS = SingleIntIdEntity::class;
+    private const SINGLE_IDENT_NO_TO_STRING_CLASS = SingleIntIdNoToStringEntity::class;
+    private const SINGLE_STRING_IDENT_CLASS = SingleStringIdEntity::class;
+    private const SINGLE_ASSOC_IDENT_CLASS = SingleAssociationToIntIdEntity::class;
+    private const SINGLE_STRING_CASTABLE_IDENT_CLASS = SingleStringCastableIdEntity::class;
+    private const COMPOSITE_IDENT_CLASS = CompositeIntIdEntity::class;
+    private const COMPOSITE_STRING_IDENT_CLASS = CompositeStringIdEntity::class;
 
-    /**
-     * @var EntityManager
-     */
-    private $em;
-
-    /**
-     * @var MockObject&ManagerRegistry
-     */
-    private $emRegistry;
+    private EntityManager $em;
+    private ManagerRegistry $emRegistry;
 
     protected function setUp(): void
     {
         $this->em = DoctrineTestHelper::createTestEntityManager();
-        $this->emRegistry = $this->createRegistryMock('default', $this->em);
+        $this->emRegistry = $this->createRegistryMock($this->em);
 
         parent::setUp();
 
@@ -93,15 +86,7 @@ class EntityTypeTest extends BaseTypeTest
         }
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->em = null;
-        $this->emRegistry = null;
-    }
-
-    protected function getExtensions()
+    protected function getExtensions(): array
     {
         return array_merge(parent::getExtensions(), [
             new DoctrineOrmExtension($this->emRegistry),
@@ -133,9 +118,7 @@ class EntityTypeTest extends BaseTypeTest
         ]);
     }
 
-    /**
-     * @dataProvider choiceTranslationDomainProvider
-     */
+    #[DataProvider('choiceTranslationDomainProvider')]
     public function testChoiceTranslationDomainIsDisabledByDefault($expanded)
     {
         $entity1 = new SingleIntIdEntity(1, 'Foo');
@@ -158,7 +141,7 @@ class EntityTypeTest extends BaseTypeTest
         }
     }
 
-    public function choiceTranslationDomainProvider()
+    public static function choiceTranslationDomainProvider(): array
     {
         return [
             [false],
@@ -233,15 +216,11 @@ class EntityTypeTest extends BaseTypeTest
     public function testConfigureQueryBuilderWithClosureReturningNonQueryBuilder()
     {
         $this->expectException(UnexpectedTypeException::class);
-        $field = $this->factory->createNamed('name', static::TESTED_TYPE, null, [
+        $this->factory->createNamed('name', static::TESTED_TYPE, null, [
             'em' => 'default',
             'class' => self::SINGLE_IDENT_CLASS,
-            'query_builder' => function () {
-                return new \stdClass();
-            },
+            'query_builder' => static fn () => new \stdClass(),
         ]);
-
-        $field->submit('2');
     }
 
     public function testConfigureQueryBuilderWithClosureReturningNullUseDefault()
@@ -254,8 +233,7 @@ class EntityTypeTest extends BaseTypeTest
         $field = $this->factory->createNamed('name', static::TESTED_TYPE, null, [
             'em' => 'default',
             'class' => self::SINGLE_IDENT_CLASS,
-            'query_builder' => function () {
-                return;
+            'query_builder' => static function () {
             },
         ]);
 
@@ -785,7 +763,7 @@ class EntityTypeTest extends BaseTypeTest
             'em' => 'default',
             'class' => self::ITEM_GROUP_CLASS,
             'choice_label' => 'name',
-            'choice_value' => function (GroupableEntity $entity = null) {
+            'choice_value' => static function (?GroupableEntity $entity = null) {
                 if (null === $entity) {
                     return '';
                 }
@@ -799,7 +777,7 @@ class EntityTypeTest extends BaseTypeTest
         $this->assertEquals([
             'BazGroup/Foo' => new ChoiceView($entity1, 'BazGroup/Foo', 'Foo'),
             'BooGroup/Bar' => new ChoiceView($entity2, 'BooGroup/Bar', 'Bar'),
-            ], $field->createView()->vars['choices']);
+        ], $field->createView()->vars['choices']);
         $this->assertTrue($field->isSynchronized(), 'Field should be synchronized.');
         $this->assertSame($entity2, $field->getData(), 'Entity should be loaded by custom value.');
         $this->assertSame('BooGroup/Bar', $field->getViewData());
@@ -1078,10 +1056,8 @@ class EntityTypeTest extends BaseTypeTest
         $field = $this->factory->createNamed('name', static::TESTED_TYPE, null, [
             'em' => 'default',
             'class' => self::SINGLE_IDENT_CLASS,
-            'query_builder' => function (EntityRepository $repository) {
-                return $repository->createQueryBuilder('e')
-                    ->where('e.id IN (1, 2)');
-            },
+            'query_builder' => static fn (EntityRepository $repository) => $repository->createQueryBuilder('e')
+                ->where('e.id IN (1, 2)'),
             'choice_label' => 'name',
         ]);
 
@@ -1102,10 +1078,8 @@ class EntityTypeTest extends BaseTypeTest
         $field = $this->factory->createNamed('name', static::TESTED_TYPE, null, [
             'em' => 'default',
             'class' => self::COMPOSITE_IDENT_CLASS,
-            'query_builder' => function (EntityRepository $repository) {
-                return $repository->createQueryBuilder('e')
-                    ->where('e.id1 IN (10, 50)');
-            },
+            'query_builder' => static fn (EntityRepository $repository) => $repository->createQueryBuilder('e')
+                ->where('e.id1 IN (10, 50)'),
             'choice_label' => 'name',
         ]);
 
@@ -1160,6 +1134,7 @@ class EntityTypeTest extends BaseTypeTest
 
     public function testGetManagerForClassIfNoEm()
     {
+        $this->emRegistry = $this->createMock(ManagerRegistry::class);
         $this->emRegistry->expects($this->never())
             ->method('getManager');
 
@@ -1168,7 +1143,10 @@ class EntityTypeTest extends BaseTypeTest
             ->with(self::SINGLE_IDENT_CLASS)
             ->willReturn($this->em);
 
-        $this->factory->createNamed('name', static::TESTED_TYPE, null, [
+        $factory = Forms::createFormFactoryBuilder()
+            ->addExtensions($this->getExtensions())
+            ->getFormFactory();
+        $factory->createNamed('name', static::TESTED_TYPE, null, [
             'class' => self::SINGLE_IDENT_CLASS,
             'required' => false,
             'choice_label' => 'name',
@@ -1177,13 +1155,17 @@ class EntityTypeTest extends BaseTypeTest
 
     public function testExplicitEm()
     {
+        $this->emRegistry = $this->createMock(ManagerRegistry::class);
         $this->emRegistry->expects($this->never())
             ->method('getManager');
 
         $this->emRegistry->expects($this->never())
             ->method('getManagerForClass');
 
-        $this->factory->createNamed('name', static::TESTED_TYPE, null, [
+        $factory = Forms::createFormFactoryBuilder()
+            ->addExtensions($this->getExtensions())
+            ->getFormFactory();
+        $factory->createNamed('name', static::TESTED_TYPE, null, [
             'em' => $this->em,
             'class' => self::SINGLE_IDENT_CLASS,
             'choice_label' => 'name',
@@ -1220,17 +1202,13 @@ class EntityTypeTest extends BaseTypeTest
         $formBuilder->add('property2', static::TESTED_TYPE, [
             'em' => 'default',
             'class' => self::SINGLE_IDENT_CLASS,
-            'query_builder' => function (EntityRepository $repo) {
-                return $repo->createQueryBuilder('e')->where('e.id IN (1, 2)');
-            },
+            'query_builder' => static fn (EntityRepository $repo) => $repo->createQueryBuilder('e')->where('e.id IN (1, 2)'),
         ]);
 
         $formBuilder->add('property3', static::TESTED_TYPE, [
             'em' => 'default',
             'class' => self::SINGLE_IDENT_CLASS,
-            'query_builder' => function (EntityRepository $repo) {
-                return $repo->createQueryBuilder('e')->where('e.id IN (1, 2)');
-            },
+            'query_builder' => static fn (EntityRepository $repo) => $repo->createQueryBuilder('e')->where('e.id IN (1, 2)'),
         ]);
 
         $form = $formBuilder->getForm();
@@ -1280,17 +1258,13 @@ class EntityTypeTest extends BaseTypeTest
         $formBuilder->add('property2', static::TESTED_TYPE, [
             'em' => 'default',
             'class' => self::SINGLE_IDENT_CLASS,
-            'query_builder' => function (EntityRepository $repo) {
-                return $repo->createQueryBuilder('e')->where('e.id = :id')->setParameter('id', 1);
-            },
+            'query_builder' => static fn (EntityRepository $repo) => $repo->createQueryBuilder('e')->where('e.id = :id')->setParameter('id', 1),
         ]);
 
         $formBuilder->add('property3', static::TESTED_TYPE, [
             'em' => 'default',
             'class' => self::SINGLE_IDENT_CLASS,
-            'query_builder' => function (EntityRepository $repo) {
-                return $repo->createQueryBuilder('e')->where('e.id = :id')->setParameter('id', 1);
-            },
+            'query_builder' => static fn (EntityRepository $repo) => $repo->createQueryBuilder('e')->where('e.id = :id')->setParameter('id', 1),
         ]);
 
         $form = $formBuilder->getForm();
@@ -1310,12 +1284,12 @@ class EntityTypeTest extends BaseTypeTest
         $this->assertSame($choiceList1, $choiceList3);
     }
 
-    protected function createRegistryMock($name, $em): MockObject&ManagerRegistry
+    private function createRegistryMock($em): ManagerRegistry
     {
-        $registry = $this->createMock(ManagerRegistry::class);
-        $registry->expects($this->any())
+        $registry = $this->createStub(ManagerRegistry::class);
+        $registry
             ->method('getManager')
-            ->with($this->equalTo($name))
+            ->with($this->equalTo('default'))
             ->willReturn($em);
 
         return $registry;
@@ -1343,19 +1317,6 @@ class EntityTypeTest extends BaseTypeTest
         $this->assertEquals('name', $view->vars['id']);
         $this->assertEquals('name', $view->vars['name']);
         $this->assertEquals('name', $view->vars['full_name']);
-    }
-
-    public function testStripLeadingUnderscoresAndDigitsFromId()
-    {
-        $view = $this->factory->createNamed('_09name', static::TESTED_TYPE, null, [
-            'em' => 'default',
-            'class' => self::SINGLE_IDENT_CLASS,
-        ])
-            ->createView();
-
-        $this->assertEquals('name', $view->vars['id']);
-        $this->assertEquals('_09name', $view->vars['name']);
-        $this->assertEquals('_09name', $view->vars['full_name']);
     }
 
     public function testPassIdAndNameToViewWithParent()
@@ -1791,9 +1752,7 @@ class EntityTypeTest extends BaseTypeTest
             ->add('entity_two', self::TESTED_TYPE, [
                 'em' => 'default',
                 'class' => self::SINGLE_IDENT_CLASS,
-                'choice_value' => function ($choice) {
-                    return $choice ? $choice->name : '';
-                },
+                'choice_value' => static fn ($choice) => $choice ? $choice->name : '',
             ])
             ->createView()
         ;
@@ -1803,5 +1762,109 @@ class EntityTypeTest extends BaseTypeTest
 
         $this->assertSame('Foo', $view['entity_two']->vars['choices']['Foo']->value);
         $this->assertSame('Bar', $view['entity_two']->vars['choices']['Bar']->value);
+    }
+
+    public function testEmptyChoicesWhenLazy()
+    {
+        $entity1 = new SingleIntIdEntity(1, 'Foo');
+        $entity2 = new SingleIntIdEntity(2, 'Bar');
+        $this->persist([$entity1, $entity2]);
+
+        $view = $this->factory->create(FormTypeTest::TESTED_TYPE)
+            ->add('entity_one', self::TESTED_TYPE, [
+                'em' => 'default',
+                'class' => self::SINGLE_IDENT_CLASS,
+                'choice_lazy' => true,
+            ])
+            ->createView()
+        ;
+
+        $this->assertCount(0, $view['entity_one']->vars['choices']);
+    }
+
+    public function testLoadedChoicesWhenLazyAndBoundData()
+    {
+        $entity1 = new SingleIntIdEntity(1, 'Foo');
+        $entity2 = new SingleIntIdEntity(2, 'Bar');
+        $this->persist([$entity1, $entity2]);
+
+        $view = $this->factory->create(FormTypeTest::TESTED_TYPE, ['entity_one' => $entity1])
+            ->add('entity_one', self::TESTED_TYPE, [
+                'em' => 'default',
+                'class' => self::SINGLE_IDENT_CLASS,
+                'choice_lazy' => true,
+            ])
+            ->createView()
+        ;
+
+        $this->assertCount(1, $view['entity_one']->vars['choices']);
+        $this->assertSame('1', $view['entity_one']->vars['choices'][1]->value);
+    }
+
+    public function testLoadedChoicesWhenLazyAndSubmittedData()
+    {
+        $entity1 = new SingleIntIdEntity(1, 'Foo');
+        $entity2 = new SingleIntIdEntity(2, 'Bar');
+        $this->persist([$entity1, $entity2]);
+
+        $view = $this->factory->create(FormTypeTest::TESTED_TYPE)
+            ->add('entity_one', self::TESTED_TYPE, [
+                'em' => 'default',
+                'class' => self::SINGLE_IDENT_CLASS,
+                'choice_lazy' => true,
+            ])
+            ->submit(['entity_one' => '2'])
+            ->createView()
+        ;
+
+        $this->assertCount(1, $view['entity_one']->vars['choices']);
+        $this->assertSame('2', $view['entity_one']->vars['choices'][2]->value);
+    }
+
+    public function testEmptyChoicesWhenLazyAndEmptyDataIsSubmitted()
+    {
+        $entity1 = new SingleIntIdEntity(1, 'Foo');
+        $entity2 = new SingleIntIdEntity(2, 'Bar');
+        $this->persist([$entity1, $entity2]);
+
+        $view = $this->factory->create(FormTypeTest::TESTED_TYPE, ['entity_one' => $entity1])
+            ->add('entity_one', self::TESTED_TYPE, [
+                'em' => 'default',
+                'class' => self::SINGLE_IDENT_CLASS,
+                'choice_lazy' => true,
+            ])
+            ->submit([])
+            ->createView()
+        ;
+
+        $this->assertCount(0, $view['entity_one']->vars['choices']);
+    }
+
+    public function testErrorOnSubmitInvalidValuesWhenLazyAndCustomQueryBuilder()
+    {
+        $entity1 = new SingleIntIdEntity(1, 'Foo');
+        $entity2 = new SingleIntIdEntity(2, 'Bar');
+        $this->persist([$entity1, $entity2]);
+        $qb = $this->em
+            ->createQueryBuilder()
+            ->select('e')
+            ->from(self::SINGLE_IDENT_CLASS, 'e')
+            ->where('e.id = 2')
+        ;
+
+        $form = $this->factory->create(FormTypeTest::TESTED_TYPE, ['entity_one' => $entity2])
+            ->add('entity_one', self::TESTED_TYPE, [
+                'em' => 'default',
+                'class' => self::SINGLE_IDENT_CLASS,
+                'query_builder' => $qb,
+                'choice_lazy' => true,
+            ])
+            ->submit(['entity_one' => '1'])
+        ;
+        $view = $form->createView();
+
+        $this->assertCount(0, $view['entity_one']->vars['choices']);
+        $this->assertCount(1, $errors = $form->getErrors(true));
+        $this->assertSame('The selected choice is invalid.', $errors->current()->getMessage());
     }
 }

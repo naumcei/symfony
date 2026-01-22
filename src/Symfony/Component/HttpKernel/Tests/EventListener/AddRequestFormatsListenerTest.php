@@ -24,19 +24,11 @@ use Symfony\Component\HttpKernel\KernelEvents;
  */
 class AddRequestFormatsListenerTest extends TestCase
 {
-    /**
-     * @var AddRequestFormatsListener
-     */
-    private $listener;
+    private AddRequestFormatsListener $listener;
 
     protected function setUp(): void
     {
         $this->listener = new AddRequestFormatsListener(['csv' => ['text/csv', 'text/plain']]);
-    }
-
-    protected function tearDown(): void
-    {
-        $this->listener = null;
     }
 
     public function testIsAnEventSubscriber()
@@ -55,7 +47,7 @@ class AddRequestFormatsListenerTest extends TestCase
     public function testSetAdditionalFormats()
     {
         $request = $this->createMock(Request::class);
-        $event = new RequestEvent($this->createMock(HttpKernelInterface::class), $request, HttpKernelInterface::MAIN_REQUEST);
+        $event = new RequestEvent($this->createStub(HttpKernelInterface::class), $request, HttpKernelInterface::MAIN_REQUEST);
 
         $request->expects($this->once())
             ->method('setFormat')

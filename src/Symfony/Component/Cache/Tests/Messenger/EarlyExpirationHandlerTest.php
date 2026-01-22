@@ -11,15 +11,17 @@
 
 namespace Symfony\Component\Cache\Tests\Messenger;
 
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
+use Psr\Cache\CacheItemInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Component\Cache\CacheItem;
 use Symfony\Component\Cache\Messenger\EarlyExpirationHandler;
 use Symfony\Component\Cache\Messenger\EarlyExpirationMessage;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ReverseContainer;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Contracts\Cache\CallbackInterface;
 
 class EarlyExpirationHandlerTest extends TestCase
 {
@@ -28,17 +30,15 @@ class EarlyExpirationHandlerTest extends TestCase
         (new Filesystem())->remove(sys_get_temp_dir().'/symfony-cache');
     }
 
-    /**
-     * @group time-sensitive
-     */
+    #[Group('time-sensitive')]
     public function testHandle()
     {
         $pool = new FilesystemAdapter();
         $item = $pool->getItem('foo');
         $item->set(234);
 
-        $computationService = new class() {
-            public function __invoke(CacheItem $item)
+        $computationService = new class implements CallbackInterface {
+            public function __invoke(CacheItemInterface $item, bool &$save): mixed
             {
                 usleep(30000);
                 $item->expiresAfter(3600);

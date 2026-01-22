@@ -35,7 +35,7 @@ class NotificationEmailTest extends TestCase
             'markdown' => true,
             'raw' => false,
             'a' => 'b',
-            'footer_text' => 'Notification e-mail sent by Symfony',
+            'footer_text' => 'Notification email sent by Symfony',
         ], $email->getContext());
     }
 
@@ -58,7 +58,7 @@ class NotificationEmailTest extends TestCase
             'markdown' => false,
             'raw' => true,
             'a' => 'b',
-            'footer_text' => 'Notification e-mail sent by Symfony',
+            'footer_text' => 'Notification email sent by Symfony',
         ], $email->getContext());
 
         $this->assertSame('@email/example/notification/body.html.twig', $email->getHtmlTemplate());
@@ -127,5 +127,55 @@ class NotificationEmailTest extends TestCase
         $email = (new NotificationEmail())->markAsPublic()->from('me@example.com')->subject('Foo');
         $headers = $email->getPreparedHeaders();
         $this->assertSame('Foo', $headers->get('Subject')->getValue());
+    }
+
+    public function testContext()
+    {
+        $email = new NotificationEmail();
+        $email->context(['some' => 'context']);
+
+        $this->assertSame([
+            'importance' => NotificationEmail::IMPORTANCE_LOW,
+            'content' => '',
+            'exception' => false,
+            'action_text' => null,
+            'action_url' => null,
+            'markdown' => false,
+            'raw' => false,
+            'footer_text' => 'Notification email sent by Symfony',
+            'some' => 'context',
+        ], $email->getContext());
+
+        $context = $email->getContext();
+        $context['foo'] = 'bar';
+        $email->context($context);
+
+        $this->assertSame([
+            'importance' => NotificationEmail::IMPORTANCE_LOW,
+            'content' => '',
+            'exception' => false,
+            'action_text' => null,
+            'action_url' => null,
+            'markdown' => false,
+            'raw' => false,
+            'footer_text' => 'Notification email sent by Symfony',
+            'some' => 'context',
+            'foo' => 'bar',
+        ], $email->getContext());
+
+        $email->action('Action Text', 'Action URL');
+
+        $this->assertSame([
+            'importance' => NotificationEmail::IMPORTANCE_LOW,
+            'content' => '',
+            'exception' => false,
+            'action_text' => 'Action Text',
+            'action_url' => 'Action URL',
+            'markdown' => false,
+            'raw' => false,
+            'footer_text' => 'Notification email sent by Symfony',
+            'some' => 'context',
+            'foo' => 'bar',
+        ], $email->getContext());
     }
 }

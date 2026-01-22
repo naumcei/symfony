@@ -11,13 +11,12 @@
 
 namespace Symfony\Component\Mime\Tests;
 
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use Symfony\Component\Mime\FileinfoMimeTypeGuesser;
 use Symfony\Component\Mime\MimeTypeGuesserInterface;
 
-/**
- * @requires extension fileinfo
- */
-class FileinfoMimeTypeGuesserTest extends AbstractMimeTypeGuesserTest
+#[RequiresPhpExtension('fileinfo')]
+class FileinfoMimeTypeGuesserTest extends AbstractMimeTypeGuesserTestCase
 {
     protected function getGuesser(): MimeTypeGuesserInterface
     {

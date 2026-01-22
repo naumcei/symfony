@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Messenger\Transport\Serialization;
 
+use Symfony\Component\Lock\Serializer\LockKeyNormalizer;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\LogicException;
 use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
@@ -18,6 +19,7 @@ use Symfony\Component\Messenger\Stamp\NonSendableStampInterface;
 use Symfony\Component\Messenger\Stamp\SerializedMessageStamp;
 use Symfony\Component\Messenger\Stamp\SerializerStamp;
 use Symfony\Component\Messenger\Stamp\StampInterface;
+use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
@@ -36,24 +38,32 @@ class Serializer implements SerializerInterface
     private const STAMP_HEADER_PREFIX = 'X-Message-Stamp-';
 
     private SymfonySerializerInterface $serializer;
-    private string $format;
-    private array $context;
 
-    public function __construct(SymfonySerializerInterface $serializer = null, string $format = 'json', array $context = [])
-    {
+    public function __construct(
+        ?SymfonySerializerInterface $serializer = null,
+        private string $format = 'json',
+        private array $context = [],
+    ) {
         $this->serializer = $serializer ?? self::create()->serializer;
-        $this->format = $format;
-        $this->context = $context + [self::MESSENGER_SERIALIZATION_CONTEXT => true];
+        $this->context += [self::MESSENGER_SERIALIZATION_CONTEXT => true];
     }
 
     public static function create(): self
     {
         if (!class_exists(SymfonySerializer::class)) {
-            throw new LogicException(sprintf('The "%s" class requires Symfony\'s Serializer component. Try running "composer require symfony/serializer" or use "%s" instead.', __CLASS__, PhpSerializer::class));
+            throw new LogicException(\sprintf('The "%s" class requires Symfony\'s Serializer component. Try running "composer require symfony/serializer" or use "%s" instead.', __CLASS__, PhpSerializer::class));
         }
 
         $encoders = [new XmlEncoder(), new JsonEncoder()];
-        $normalizers = [new DateTimeNormalizer(), new ArrayDenormalizer(), new ObjectNormalizer()];
+        $normalizers = [
+            new DateTimeNormalizer(),
+            new ArrayDenormalizer(),
+            new ObjectNormalizer(propertyTypeExtractor: new ReflectionExtractor()),
+        ];
+        if (class_exists(LockKeyNormalizer::class)) {
+            array_unshift($normalizers, new LockKeyNormalizer());
+        }
+
         $serializer = new SymfonySerializer($normalizers, $encoders);
 
         return new self($serializer);
@@ -101,7 +111,7 @@ class Serializer implements SerializerInterface
 
         $envelope = $envelope->withoutStampsOfType(NonSendableStampInterface::class);
 
-        $headers = ['type' => \get_class($envelope->getMessage())] + $this->encodeStamps($envelope) + $this->getContentTypeHeader();
+        $headers = ['type' => $envelope->getMessage()::class] + $this->encodeStamps($envelope) + $this->getContentTypeHeader();
 
         return [
             'body' => $serializedMessageStamp
@@ -173,7 +183,7 @@ class Serializer implements SerializerInterface
             'json' => 'application/json',
             'xml' => 'application/xml',
             'yml',
-            'yaml' => 'application/x-yaml',
+            'yaml' => 'application/yaml',
             'csv' => 'text/csv',
             default => null,
         };

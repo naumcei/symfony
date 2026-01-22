@@ -7,6 +7,7 @@ class FooClass
     public $qux;
     public $foo;
     public $moo;
+    public $otherInstances;
 
     public $bar = null;
     public $initialized = false;
@@ -41,4 +42,19 @@ class FooClass
     {
         $this->bar = $value;
     }
+
+    public function setOtherInstances($otherInstances)
+    {
+        $this->otherInstances = $otherInstances;
+    }
+}
+
+namespace Acme;
+
+class Foo
+{
+}
+
+class WithShortCutArgs
+{
 }

@@ -12,16 +12,21 @@
 namespace Symfony\Component\Notifier\Bridge\Esendex\Tests;
 
 use Symfony\Component\Notifier\Bridge\Esendex\EsendexTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
+use Symfony\Component\Notifier\Test\MissingRequiredOptionTestTrait;
 
-final class EsendexTransportFactoryTest extends TransportFactoryTestCase
+final class EsendexTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+    use MissingRequiredOptionTestTrait;
+
     public function createFactory(): EsendexTransportFactory
     {
         return new EsendexTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'esendex://host.test?accountreference=ACCOUNTREFERENCE&from=FROM',
@@ -29,26 +34,26 @@ final class EsendexTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'esendex://email:password@host?accountreference=ACCOUNTREFERENCE&from=FROM'];
         yield [false, 'somethingElse://email:password@default'];
     }
 
-    public function incompleteDsnProvider(): iterable
+    public static function incompleteDsnProvider(): iterable
     {
         yield 'missing credentials' => ['esendex://host?accountreference=ACCOUNTREFERENCE&from=FROM'];
         yield 'missing email' => ['esendex://:password@host?accountreference=ACCOUNTREFERENCE&from=FROM'];
         yield 'missing password' => ['esendex://email:@host?accountreference=ACCOUNTREFERENCE&from=FROM'];
     }
 
-    public function missingRequiredOptionProvider(): iterable
+    public static function missingRequiredOptionProvider(): iterable
     {
         yield 'missing option: from' => ['esendex://email:password@host?accountreference=ACCOUNTREFERENCE'];
         yield 'missing option: accountreference' => ['esendex://email:password@host?from=FROM'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://email:password@default?accountreference=ACCOUNTREFERENCE&from=FROM'];
         yield ['somethingElse://email:password@host?accountreference=ACCOUNTREFERENCE']; // missing "from" option

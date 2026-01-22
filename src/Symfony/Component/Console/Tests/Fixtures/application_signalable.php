@@ -1,8 +1,5 @@
 <?php
 
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Command\SignalableCommandInterface;
-use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
@@ -14,18 +11,18 @@ while (!file_exists($vendor.'/vendor')) {
 }
 require $vendor.'/vendor/autoload.php';
 
-(new class() extends SingleCommandApplication implements SignalableCommandInterface {
+(new class extends SingleCommandApplication {
     public function getSubscribedSignals(): array
     {
         return [SIGINT];
     }
 
-    public function handleSignal(int $signal): void
+    public function handleSignal(int $signal, int|false $previousExitCode = 0): int|false
     {
-        exit;
+        exit(254);
     }
 })
-    ->setCode(function(InputInterface $input, OutputInterface $output) {
+    ->setCode(function(InputInterface $input, OutputInterface $output): int {
         $this->getHelper('question')
              ->ask($input, $output, new ChoiceQuestion('😊', ['y']));
 

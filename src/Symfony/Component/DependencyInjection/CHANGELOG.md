@@ -1,6 +1,125 @@
 CHANGELOG
 =========
 
+8.1
+---
+
+ * Add support for `SOURCE_DATE_EPOCH` environment variable
+ * Deprecate configuring options `alias`, `parent`, `synthetic`, `file`, `arguments`, `properties`, `configurator` or `calls` when using `from_callable`
+ * Deprecate default index/priority methods when defining tagged locators/iterators; use the `#[AsTaggedItem]` attribute instead
+ * Allow environment variables with `.` in them
+
+8.0
+---
+
+ * Remove support for using `$this` or the loader's internal scope from PHP config files; use the `$loader` variable instead
+ * Remove `ExtensionInterface::getXsdValidationBasePath()` and `getNamespace()` without alternatives, the XML configuration format is no longer supported
+ * Add argument `$throwOnAbstract` to `ContainerBuilder::findTaggedResourceIds()`
+ * Registering a service without a class when its id is a non-existing FQCN throws an error
+ * Remove `#[TaggedIterator]` and `#[TaggedLocator]` attributes, replaced by `#[AutowireLocator]` and `#[AutowireIterator]`
+ * Remove `ContainerBuilder::getAutoconfiguredAttributes()`, replaced by `ContainerBuilder::getAttributeAutoconfigurators()`
+ * Remove `!tagged` tag, use `!tagged_iterator` instead
+ * Add argument `$target` to `ContainerBuilder::registerAliasForArgument()`
+ * Remove support for the XML configuration format
+ * Remove the fluent PHP format for semantic configuration, instantiate builders inline with the config array as argument and return them instead
+
+7.4
+---
+
+ * [BC BREAK] Throw when using `$this` or its internal scope from PHP config files; use the `$loader` variable instead
+ * Allow adding resource tags using any config format
+ * Allow `#[AsAlias]` to be extended
+ * Parse attributes found on abstract classes for resource definitions
+ * Add argument `$target` to `ContainerBuilder::registerAliasForArgument()`
+ * Deprecate registering a service without a class when its id is a non-existing FQCN
+ * Allow multiple `#[AsDecorator]` attributes
+ * Handle declaring services using PHP arrays that follow the same shape as corresponding yaml files
+ * Add `AppReference` to help writing PHP configs using yaml-like array-shapes
+ * Deprecate XML configuration format, use YAML or PHP instead
+ * Deprecate `ExtensionInterface::getXsdValidationBasePath()` and `getNamespace()`
+ * Deprecate the fluent PHP format for semantic configuration, use `$container->extension()` or return an array instead
+
+7.3
+---
+
+ * Make `#[AsTaggedItem]` repeatable
+ * Support `@>` as a shorthand for `!service_closure` in yaml files
+ * Don't skip classes with private constructor when autodiscovering
+ * Add `Definition::addResourceTag()` and `ContainerBuilder::findTaggedResourceIds()`
+   for auto-configuration of classes excluded from the service container
+ * Accept multiple auto-configuration callbacks for the same attribute class
+ * Leverage native lazy objects when possible for lazy services
+ * Add `when` argument to `#[AsAlias]`
+
+7.2
+---
+
+ * Deprecate `!tagged` tag, use `!tagged_iterator` instead
+ * Add a `ContainerBuilder::registerChild()` shortcut method for registering child definitions
+ * Add support for `key-type` in `XmlFileLoader`
+ * Enable non-empty parameters with `ParameterBag::cannotBeEmpty()` and `ContainerBuilder::parameterCannotBeEmpty()` methods
+ * Resolve parameters found in index attribute of service tags
+
+7.1
+---
+
+ * Add `CheckAliasValidityPass` to check service compatibility with aliased interface
+ * Add argument `$prepend` to `ContainerConfigurator::extension()` to prepend the configuration instead of appending it
+ * Have `ServiceLocator` implement `ServiceCollectionInterface`
+ * Add `#[Lazy]` attribute as shortcut for `#[Autowire(lazy: [bool|string])]` and `#[Autoconfigure(lazy: [bool|string])]`
+ * Add `#[AutowireMethodOf]` attribute to autowire a method of a service as a callable
+ * Make `ContainerBuilder::registerAttributeForAutoconfiguration()` propagate to attribute classes that extend the registered class
+ * Add argument `$prepend` to `FileLoader::construct()` to prepend loaded configuration instead of appending it
+ * [BC BREAK] When used in the `prependExtension()` method, the `ContainerConfigurator::import()` method now prepends the configuration instead of appending it
+ * Cast env vars to null or bool when referencing them using `#[Autowire(env: '...')]` depending on the signature of the corresponding parameter
+ * Add `#[AutowireInline]` attribute to allow service definition at the class level
+ * Add `StaticEnvVarLoader`
+
+7.0
+---
+
+ * Remove `#[MapDecorated]`, use `#[AutowireDecorated]` instead
+ * Remove `ProxyHelper`, use `Symfony\Component\VarExporter\ProxyHelper` instead
+ * Remove `ReferenceSetArgumentTrait`
+ * Remove support of `@required` annotation, use the `Symfony\Contracts\Service\Attribute\Required` attribute instead
+ * Require explicit argument when calling `ContainerAwareTrait::setContainer()`
+ * Remove `PhpDumper` options `inline_factories_parameter` and `inline_class_loader_parameter`, use options `inline_factories` and `inline_class_loader` instead
+ * Parameter names of `ParameterBag` cannot be numerics
+ * Remove `ContainerAwareInterface` and `ContainerAwareTrait`, use dependency injection instead
+ * Add argument `$id` and `$asGhostObject` to `DumperInterface::isProxyCandidate()` and `getProxyCode()`
+ * Add argument `$source` to `FileLoader::registerClasses()`
+
+6.4
+---
+
+ * Allow using `#[Target]` with no arguments to state that a parameter must match a named autowiring alias
+ * Deprecate `ContainerAwareInterface` and `ContainerAwareTrait`, use dependency injection instead
+ * Add `defined` env var processor that returns `true` for defined and neither null nor empty env vars
+ * Add `#[AutowireLocator]` and `#[AutowireIterator]` attributes
+ * Add `urlencode` env var processor that url encodes a string value
+
+6.3
+---
+
+ * Add options `inline_factories` and `inline_class_loader` to `PhpDumper::dump()`
+ * Deprecate `PhpDumper` options `inline_factories_parameter` and `inline_class_loader_parameter`
+ * Add `RemoveBuildParametersPass`, which removes parameters starting with a dot during compilation
+ * Add support for nesting autowiring-related attributes into `#[Autowire(...)]`
+ * Deprecate undefined and numeric keys with `service_locator` config
+ * Fail if Target attribute does not exist during compilation
+ * Enable deprecating parameters with `ContainerBuilder::deprecateParameter()`
+ * Add `#[AsAlias]` attribute to tell under which alias a service should be registered or to use the implemented interface if no parameter is given
+ * Allow to trim XML service parameters value by using `trim="true"` attribute
+ * Allow extending the `Autowire` attribute
+ * Add `#[Exclude]` to skip autoregistering a class
+ * Add support for generating lazy closures
+ * Add support for autowiring services as closures using `#[AutowireCallable]` or `#[AutowireServiceClosure]`
+ * Add support for `#[Autowire(lazy: true|class-string)]`
+ * Make it possible to cast callables into single-method interfaces
+ * Deprecate `#[MapDecorated]`, use `#[AutowireDecorated]` instead
+ * Deprecate the `@required` annotation, use the `Symfony\Contracts\Service\Attribute\Required` attribute instead
+ * Add `constructor` option to services declaration and to `#[Autoconfigure]`
+
 6.2
 ---
 
@@ -14,6 +133,8 @@ CHANGELOG
  * Deprecate using numeric parameter names
  * Add support for tagged iterators/locators `exclude` option to the xml and yaml loaders/dumpers
  * Allow injecting `string $env` into php config closures
+ * Add `excludeSelf` parameter to `TaggedIteratorArgument` with default value to `true`
+   to control whether the referencing service should be automatically excluded from the iterator
 
 6.1
 ---

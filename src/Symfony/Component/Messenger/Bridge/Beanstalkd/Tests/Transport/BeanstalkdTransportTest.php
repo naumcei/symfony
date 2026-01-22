@@ -13,6 +13,7 @@ namespace Symfony\Component\Messenger\Bridge\Beanstalkd\Tests\Transport;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Bridge\Beanstalkd\Tests\Fixtures\DummyMessage;
+use Symfony\Component\Messenger\Bridge\Beanstalkd\Transport\BeanstalkdReceivedStamp;
 use Symfony\Component\Messenger\Bridge\Beanstalkd\Transport\BeanstalkdTransport;
 use Symfony\Component\Messenger\Bridge\Beanstalkd\Transport\Connection;
 use Symfony\Component\Messenger\Envelope;
@@ -31,8 +32,8 @@ final class BeanstalkdTransportTest extends TestCase
     public function testReceivesMessages()
     {
         $transport = $this->getTransport(
-            $serializer = $this->createMock(SerializerInterface::class),
-            $connection = $this->createMock(Connection::class)
+            $serializer = $this->createStub(SerializerInterface::class),
+            $connection = $this->createStub(Connection::class)
         );
 
         $decodedMessage = new DummyMessage('Decoded.');
@@ -50,10 +51,22 @@ final class BeanstalkdTransportTest extends TestCase
         $this->assertSame($decodedMessage, $envelopes[0]->getMessage());
     }
 
-    private function getTransport(SerializerInterface $serializer = null, Connection $connection = null): BeanstalkdTransport
+    public function testKeepalive()
     {
-        $serializer ??= $this->createMock(SerializerInterface::class);
-        $connection ??= $this->createMock(Connection::class);
+        $transport = $this->getTransport(
+            null,
+            $connection = $this->createMock(Connection::class),
+        );
+
+        $connection->expects($this->once())->method('keepalive')->with(1);
+
+        $transport->keepalive(new Envelope(new DummyMessage('foo'), [new BeanstalkdReceivedStamp(1, 'bar')]));
+    }
+
+    private function getTransport(?SerializerInterface $serializer = null, ?Connection $connection = null): BeanstalkdTransport
+    {
+        $serializer ??= $this->createStub(SerializerInterface::class);
+        $connection ??= $this->createStub(Connection::class);
 
         return new BeanstalkdTransport($connection, $serializer);
     }

@@ -28,22 +28,19 @@ final class IqsmsTransport extends AbstractTransport
 {
     protected const HOST = 'api.iqsms.ru';
 
-    private string $login;
-    private string $password;
-    private string $from;
-
-    public function __construct(string $login, #[\SensitiveParameter] string $password, string $from, HttpClientInterface $client = null, EventDispatcherInterface $dispatcher = null)
-    {
-        $this->login = $login;
-        $this->password = $password;
-        $this->from = $from;
-
+    public function __construct(
+        private string $login,
+        #[\SensitiveParameter] private string $password,
+        private string $from,
+        ?HttpClientInterface $client = null,
+        ?EventDispatcherInterface $dispatcher = null,
+    ) {
         parent::__construct($client, $dispatcher);
     }
 
     public function __toString(): string
     {
-        return sprintf('iqsms://%s?from=%s', $this->getEndpoint(), $this->from);
+        return \sprintf('iqsms://%s?from=%s', $this->getEndpoint(), $this->from);
     }
 
     public function supports(MessageInterface $message): bool
@@ -57,16 +54,14 @@ final class IqsmsTransport extends AbstractTransport
             throw new UnsupportedMessageTypeException(__CLASS__, SmsMessage::class, $message);
         }
 
-        $from = $message->getFrom() ?: $this->from;
-
         $response = $this->client->request('POST', 'https://'.$this->getEndpoint().'/messages/v2/send.json', [
             'json' => [
                 'messages' => [
                     [
                         'phone' => $message->getPhone(),
                         'text' => $message->getSubject(),
-                        'sender' => $from,
-                        'clientId' => uniqid(),
+                        'sender' => $message->getFrom() ?: $this->from,
+                        'clientId' => base64_encode(random_bytes(9)),
                     ],
                 ],
                 'login' => $this->login,
@@ -82,7 +77,7 @@ final class IqsmsTransport extends AbstractTransport
 
         foreach ($result['messages'] as $msg) {
             if ('accepted' !== $msg['status']) {
-                throw new TransportException(sprintf('Unable to send the SMS: "%s".', $msg['status']), $response);
+                throw new TransportException(\sprintf('Unable to send the SMS: "%s".', $msg['status']), $response);
             }
         }
 

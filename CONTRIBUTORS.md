@@ -4,3324 +4,4039 @@ CONTRIBUTORS
 Symfony is the result of the work of many people who made the code better.
 
 The Symfony Connect username in parenthesis allows to get more information
- - Fabien Potencier (fabpot)
  - Nicolas Grekas (nicolas-grekas)
- - Alexander M. Turek (derrabus)
+ - Fabien Potencier (fabpot)
  - Christian Flothmann (xabbuh)
+ - Alexander M. Turek (derrabus)
+ - Oskar Stark (oskarstark)
+ - Alexandre Daubois (alexandre-daubois)
  - Robin Chalas (chalas_r)
  - Bernhard Schussek (bschussek)
+ - Matthias Schmidt
  - Tobias Schultze (tobion)
- - Thomas Calvet (fancyweb)
- - Jérémy DERUSSÉ (jderusse)
+ - Jérôme Tamarelle (gromnan)
  - Grégoire Pineau (lyrixx)
+ - Thomas Calvet (fancyweb)
+ - HypeMC (hypemc)
+ - Yonel Ceruto (yonelceruto)
+ - Christophe Coevoet (stof)
  - Wouter de Jong (wouterj)
+ - Jordi Boggiano (seldaek)
+ - Javier Eguiluz (javier.eguiluz)
  - Maxime Steinhausser (ogizanagi)
  - Kévin Dunglas (dunglas)
- - Christophe Coevoet (stof)
- - Jordi Boggiano (seldaek)
- - Roland Franssen (ro0)
  - Victor Berchet (victor)
- - Yonel Ceruto (yonelceruto)
- - Tobias Nyholm (tobias)
- - Javier Eguiluz (javier.eguiluz)
- - Oskar Stark (oskarstark)
  - Ryan Weaver (weaverryan)
+ - Jérémy DERUSSÉ (jderusse)
+ - Jules Pietri (heah)
  - Johannes S (johannes)
- - Jakub Zalas (jakubzalas)
  - Kris Wallsmith (kriswallsmith)
+ - Jakub Zalas (jakubzalas)
+ - Antoine Lamirault (alamirault)
+ - Mathias Arlaud (mtarld)
  - Hugo Hamon (hhamon)
- - Hamza Amrouche (simperfit)
+ - Tobias Nyholm (tobias)
  - Samuel ROZE (sroze)
  - Pascal Borreli (pborreli)
  - Romain Neutron
- - Jules Pietri (heah)
- - Joseph Bielawski (stloyd)
- - Drak (drak)
- - Abdellatif Ait boudad (aitboudad)
- - Lukas Kahwe Smith (lsmith)
- - Jan Schädlich (jschaedl)
- - Martin Hasoň (hason)
- - Jérôme Tamarelle (gromnan)
- - Jeremy Mikola (jmikola)
  - Kevin Bond (kbond)
+ - Santiago San Martin (santysisi)
+ - Joseph Bielawski (stloyd)
+ - Abdellatif Ait boudad (aitboudad)
+ - Drak (drak)
+ - Lukas Kahwe Smith (lsmith)
+ - matlec
+ - Hamza Amrouche (simperfit)
+ - Mathieu Santostefano (welcomattic)
+ - Martin Hasoň (hason)
+ - Jeremy Mikola (jmikola)
  - Jean-François Simon (jfsimon)
  - Benjamin Eberlei (beberlei)
  - Igor Wiedler
- - HypeMC (hypemc)
- - Valentin Udaltsov (vudaltsov)
- - Vasilij Duško (staff)
+ - Jan Schädlich (jschaedl)
+ - Mathieu Lechat (mat_the_cat)
+ - Antonio J. García Lagar (ajgarlag)
+ - Vincent Langlet (deviling)
+ - Kévin THERAGE (kevin_therage)
+ - Pierre-Emmanuel CAPEL
+ - Simon André (simonandre)
+ - corradogrimoldi
+ - Valtteri R (valtzu)
  - Matthias Pigulla (mpdude)
- - Laurent VOULLEMIER (lvo)
- - Antoine Makdessi (amakdessi)
- - Pierre du Plessis (pierredup)
- - Grégoire Paris (greg0ire)
  - Gabriel Ostrolucký (gadelat)
  - Jonathan Wage (jwage)
- - David Maicher (dmaicher)
- - Titouan Galopin (tgalopin)
+ - Valentin Udaltsov (vudaltsov)
+ - Alexander Schranz (alexander-schranz)
+ - Grégoire Paris (greg0ire)
  - Alexandre Salomé (alexandresalome)
  - William DURAND
- - Alexander Schranz (alexander-schranz)
- - ornicar
+ - Pierre du Plessis (pierredup)
  - Dany Maillard (maidmaid)
- - Mathieu Santostefano (welcomattic)
  - Eriksen Costa
- - Diego Saint Esteben (dosten)
- - stealth35 ‏ (stealth35)
- - Alexander Mols (asm89)
- - Gábor Egyed (1ed)
  - Francis Besset (francisbesset)
- - Alexandre Daubois (alexandre-daubois)
- - Vasilij Dusko | CREATION
+ - Titouan Galopin (tgalopin)
+ - Gábor Egyed (1ed)
+ - stealth35 ‏ (stealth35)
+ - Diego Saint Esteben (dosten)
+ - Alexander Mols (asm89)
+ - David Maicher (dmaicher)
+ - Tomasz Kowalczyk (thunderer)
  - Bulat Shakirzyanov (avalanche123)
  - Iltar van der Berg
+ - Gary PEGEOT (gary-p)
  - Miha Vrhovnik (mvrhov)
- - Mathieu Piot (mpiot)
  - Saša Stamenković (umpirsky)
- - Alex Pott
- - Guilhem N (guilhemn)
- - Vincent Langlet (deviling)
- - Vladimir Reznichenko (kalessil)
- - Sarah Khalil (saro0h)
- - Konstantin Kudryashov (everzet)
+ - Allison Guilhem (a_guilhem)
+ - Ruud Kamphuis (ruudk)
+ - Mathieu Piot (mpiot)
+ - Vasilij Duško (staff)
  - Tomas Norkūnas (norkunas)
+ - Konstantin Kudryashov (everzet)
+ - Sarah Khalil (saro0h)
+ - Laurent VOULLEMIER (lvo)
+ - Guilhem N (guilhemn)
  - Bilal Amarni (bamarni)
  - Eriksen Costa
+ - Vladimir Reznichenko (kalessil)
  - Florin Patan (florinpatan)
  - Peter Rehm (rpet)
- - Mathieu Lechat (mat_the_cat)
  - Henrik Bjørnskov (henrikbjorn)
  - David Buchmann (dbu)
- - Konstantin Myakshin (koc)
+ - Hubert Lenoir (hubert_lenoir)
  - Andrej Hudec (pulzarraider)
- - Julien Falque (julienfalque)
- - Massimiliano Arione (garak)
- - Douglas Greenshields (shieldo)
- - Christian Raue
+ - soyuka
  - Jáchym Toušek (enumag)
- - Mathias Arlaud (mtarld)
- - Graham Campbell (graham)
- - Michel Weimerskirch (mweimerskirch)
+ - Arnout Boks (aboks)
+ - Antoine Makdessi (amakdessi)
  - Eric Clemmons (ericclemmons)
+ - Christian Raue
+ - Denis (yethee)
+ - Douglas Greenshields (shieldo)
+ - David Prévot (taffit)
+ - Michel Weimerskirch (mweimerskirch)
+ - Alex Pott
  - Issei Murasawa (issei_m)
  - Fran Moreno (franmomu)
- - Malte Schlüter (maltemaltesich)
- - Antoine Lamirault
- - Vasilij Dusko
- - Denis (yethee)
- - Arnout Boks (aboks)
+ - Baldini
+ - Frank A. Fiebig (fafiebig)
  - Charles Sarrazin (csarrazi)
- - Przemysław Bogusz (przemyslaw-bogusz)
- - Henrik Westphal (snc)
  - Dariusz Górecki (canni)
- - Maxime Helias (maxhelias)
+ - Henrik Westphal (snc)
+ - Massimiliano Arione (garak)
  - Ener-Getick
- - Ruud Kamphuis (ruudk)
- - Sebastiaan Stok (sstok)
- - Jérôme Vasseur (jvasseur)
- - Ion Bazan (ionbazan)
+ - Phil E. Taylor (philetaylor)
+ - Graham Campbell (graham)
+ - Tugdual Saunier (tucksaun)
+ - Joel Wurtz (brouznouf)
+ - Luis Cordova (cordoval)
  - Lee McDermott
  - Brandon Turner
- - Luis Cordova (cordoval)
- - Daniel Holmes (dholmes)
- - Toni Uebernickel (havvg)
- - Bart van den Burg (burgov)
+ - Julien Falque (julienfalque)
  - Jordan Alliot (jalliot)
- - Smaine Milianni (ismail1432)
- - John Wards (johnwards)
- - Dariusz Ruminski
- - Lars Strojny (lstrojny)
+ - Bart van den Burg (burgov)
+ - Konstantin Myakshin (koc)
+ - Daniel Holmes (dholmes)
+ - Vasilij Dusko | CREATION
+ - Toni Uebernickel (havvg)
  - Yanick Witschi (toflar)
- - Antoine Hérault (herzult)
+ - John Wards (johnwards)
+ - Théo FIDRY
  - Konstantin.Myakshin
+ - Antoine Hérault (herzult)
+ - Tac Tacelosky (tacman1123)
  - Rokas Mikalkėnas (rokasm)
- - Arman Hosseini (arman)
+ - Sebastiaan Stok (sstok)
+ - Jeroen Spee (jeroens)
  - Arnaud Le Blanc (arnaud-lb)
  - Maxime STEINHAUSSER
- - Peter Kokot (maastermedia)
- - Saif Eddin Gmati (azjezz)
- - Ahmed TAILOULOUTE (ahmedtai)
- - Simon Berger
  - Tim Nagel (merk)
- - Andreas Braun
- - Teoh Han Hui (teohhanhui)
- - YaFou
- - Gary PEGEOT (gary-p)
  - Chris Wilkinson (thewilkybarkid)
+ - gnito-org
+ - Jérôme Vasseur (jvasseur)
+ - Peter Kokot (peterkokot)
+ - Florent Morselli (spomky_)
  - Brice BERNARD (brikou)
- - Roman Martinuk (a2a4)
- - Gregor Harlan (gharlan)
- - Baptiste Clavié (talus)
- - Adrien Brault (adrienbrault)
+ - Jacob Dreesen (jdreesen)
+ - Nicolas Philippe (nikophil)
+ - Vladimir Tsykun (vtsykun)
+ - Lars Strojny (lstrojny)
  - Michal Piotrowski
  - marc.weistroff
- - lenar
- - Jesse Rushlow (geeshoe)
- - Théo FIDRY
- - jeremyFreeAgent (jeremyfreeagent)
- - Jeroen Spee (jeroens)
- - Michael Babker (mbabker)
  - Włodzimierz Gajda (gajdaw)
- - Christian Scheb
- - Guillaume (guill)
- - Tugdual Saunier (tucksaun)
- - Jacob Dreesen (jdreesen)
- - Joel Wurtz (brouznouf)
- - Olivier Dolbeau (odolbeau)
- - Florian Voutzinos (florianv)
- - zairig imad (zairigimad)
- - Colin Frei
- - Christopher Hertel (chertel)
  - Javier Spagnoletti (phansys)
- - excelwebzone
- - Phil Taylor (prazgod)
- - Jérôme Parmentier (lctrs)
- - HeahDude
- - Richard van Laak (rvanlaak)
+ - Adrien Brault (adrienbrault)
+ - Florian Voutzinos (florianv)
+ - Przemysław Bogusz (przemyslaw-bogusz)
+ - Colin Frei
+ - Bob van de Vijver (bobvandevijver)
+ - Younes ENNAJI (yokho)
+ - Teoh Han Hui (teohhanhui)
+ - Saif Eddin Gmati (azjezz)
  - Paráda József (paradajozsef)
- - Alessandro Lai (jean85)
- - Alexander Schwenn (xelaris)
- - Fabien Pennequin (fabienpennequin)
+ - Maximilian Beckers (maxbeckers)
  - Gordon Franke (gimler)
+ - Maxime Helias (maxhelias)
+ - Gregor Harlan (gharlan)
+ - Hugo Alliaume (kocal)
+ - Dāvis Zālītis (k0d3r1s)
+ - Jérôme Parmentier (lctrs)
+ - Fabien Pennequin (fabienpennequin)
+ - Baptiste Clavié (talus)
+ - Alexander Schwenn (xelaris)
+ - Alexis Lefebvre
  - François-Xavier de Guillebon (de-gui_f)
  - Andreas Schempp (aschempp)
- - Gabriel Caruso
- - Anthony GRASSIOT (antograssiot)
- - Jan Rosier (rosier)
- - Daniel Wehner (dawehner)
- - Hugo Monteiro (monteiro)
- - Baptiste Leduc (korbeil)
- - Marco Pivetta (ocramius)
- - Robert Schönthal (digitalkaoz)
- - Hugo Alliaume (kocal)
- - Võ Xuân Tiến (tienvx)
- - fd6130 (fdtvui)
- - Tigran Azatyan (tigranazatyan)
- - Eric GELOEN (gelo)
- - Matthieu Napoli (mnapoli)
- - Tomáš Votruba (tomas_votruba)
+ - Malte Schlüter (maltemaltesich)
+ - jeremyFreeAgent (jeremyfreeagent)
  - Joshua Thijssen
- - Stefano Sala (stefano.sala)
- - Alessandro Chitolina (alekitto)
- - Valentine Boineau (valentineboineau)
- - Jeroen Noten (jeroennoten)
- - Gocha Ossinkine (ossinkine)
- - Andreas Möller (localheinz)
- - OGAWA Katsuhiro (fivestar)
+ - Vasilij Dusko
+ - Christopher Hertel (chertel)
+ - Daniel Wehner (dawehner)
+ - Michael Babker (mbabker)
  - Jhonny Lidfors (jhonne)
- - Martin Hujer (martinhujer)
- - Wouter J
- - Chi-teck
- - Guilliam Xavier
- - Antonio Pauletich (x-coder264)
- - Timo Bakx (timobakx)
- - Juti Noppornpitak (shiroyuki)
- - Joe Bennett (kralos)
- - Nate Wiebe (natewiebe13)
- - Anthony MARTIN
- - Colin O&#039;Dell (colinodell)
- - Sebastian Hörl (blogsh)
- - Ben Davies (bendavies)
- - Daniel Gomes (danielcsgomes)
- - Michael Käfer (michael_kaefer)
- - Hidenori Goto (hidenorigoto)
- - Dāvis Zālītis (k0d3r1s)
- - Albert Casademont (acasademont)
- - Arnaud Kleinpeter (nanocom)
- - Guilherme Blanco (guilhermeblanco)
- - Michael Voříšek
- - Farhad Safarov (safarov)
- - SpacePossum
- - Pablo Godel (pgodel)
- - Denis Brumann (dbrumann)
- - Romaric Drigon (romaricdrigon)
- - Andréia Bohner (andreia)
- - Jannik Zschiesche
- - Rafael Dohms (rdohms)
- - George Mponos (gmponos)
- - Fritz Michael Gschwantner (fritzmg)
- - Aleksandar Jakovljevic (ajakov)
- - jwdeitch
- - Jurica Vlahoviček (vjurica)
- - David Prévot
- - Vincent Touzet (vincenttouzet)
- - Fabien Bourigault (fbourigault)
- - Jérémy Derussé
- - Nicolas Philippe (nikophil)
- - Hubert Lenoir (hubert_lenoir)
- - Florent Mata (fmata)
- - mcfedr (mcfedr)
- - Maciej Malarz (malarzm)
- - Soner Sayakci
- - Artem Lopata
- - Sokolov Evgeniy (ewgraf)
- - Stadly
- - Justin Hileman (bobthecow)
- - Niels Keurentjes (curry684)
- - Vyacheslav Pavlov
- - Richard Shank (iampersistent)
- - Andre Rømcke (andrerom)
- - Dmitrii Poddubnyi (karser)
- - soyuka
- - Sergey (upyx)
- - Rouven Weßling (realityking)
- - BoShurik
- - Zmey
- - Clemens Tolboom
- - Oleg Voronkovich
- - Helmer Aaviksoo
- - Michał (bambucha15)
- - Remon van de Kamp
- - Ben Hakim
- - Sylvain Fabre (sylfabre)
- - Filippo Tessarotto (slamdunk)
- - Tom Van Looy (tvlooy)
- - 77web
- - Bohan Yang (brentybh)
- - Bastien Jaillot (bastnic)
- - W0rma
- - Matthieu Ouellette-Vachon (maoueh)
- - Lynn van der Berg (kjarli)
- - Michał Pipa (michal.pipa)
- - Dawid Nowak
- - Amal Raghav (kertz)
- - Jonathan Ingram
- - Artur Kotyrba
- - Tyson Andre
+ - Smaine Milianni (ismail1432)
+ - Richard van Laak (rvanlaak)
  - Thomas Landauer (thomas-landauer)
+ - Gabriel Caruso
+ - Ion Bazan (ionbazan)
+ - Niels Keurentjes (curry684)
+ - Robert Schönthal (digitalkaoz)
+ - Jonathan Scheiber (jmsche)
+ - OGAWA Katsuhiro (fivestar)
+ - Stefano Sala (stefano.sala)
+ - Eric GELOEN (gelo)
+ - Daniel Gomes (danielcsgomes)
+ - Tigran Azatyan (tigranazatyan)
+ - Guilherme Blanco (guilhermeblanco)
+ - Arnaud Kleinpeter (nanocom)
+ - Florent Mata (fmata)
+ - Anthony MARTIN
+ - Juti Noppornpitak (shiroyuki)
+ - Sebastian Hörl (blogsh)
+ - Hidenori Goto (hidenorigoto)
+ - Rafael Dohms (rdohms)
+ - Alessandro Chitolina (alekitto)
+ - Farhad Safarov (safarov)
+ - Jan Rosier (rosier)
+ - Michael Käfer (michael_kaefer)
+ - Pablo Godel (pgodel)
+ - jwdeitch
+ - Stiven Llupa (sllupa)
+ - Fritz Michael Gschwantner (fritzmg)
+ - Roman Martinuk (a2a4)
+ - Tomas Votruba (tomas_votruba)
+ - Vyacheslav Pavlov
+ - Andréia Bohner (andreia)
+ - Tom Van Looy (tvlooy)
+ - Jérémy Derussé
+ - Ben Davies (bendavies)
+ - Romain Monteil (ker0x)
+ - Sokolov Evgeniy (ewgraf)
+ - Ahmed TAILOULOUTE (ahmedtai)
+ - Matthieu Napoli (mnapoli)
+ - Albert Casademont (acasademont)
+ - Roland Franssen
+ - Simon Berger
+ - Dawid Nowak
+ - Arman Hosseini (arman)
+ - Philipp Wahala (hifi)
+ - George Mponos (gmponos)
+ - Richard Shank (iampersistent)
+ - Amal Raghav (kertz)
+ - YaFou
+ - Artur Kotyrba
+ - Fabien Bourigault (fbourigault)
+ - Daniel Burger
+ - Oleg Voronkovich
+ - 77web
+ - Quynh Xuan Nguyen (seriquynh)
+ - Matthieu Ouellette-Vachon (maoueh)
+ - Olivier Dolbeau (odolbeau)
+ - Clemens Tolboom
+ - Jesse Rushlow (geeshoe)
+ - Vincent Touzet (vincenttouzet)
+ - Indra Gunawan (indragunawan)
+ - Wouter J
+ - Jonathan Ingram
+ - Tyson Andre
+ - Jannik Zschiesche
+ - wkania
  - GDIBass
+ - Gocha Ossinkine (ossinkine)
  - Samuel NELA (snela)
- - dFayet
- - Karoly Gossler (connorhu)
- - Vincent AUBERT (vincent)
- - Sebastien Morel (plopix)
- - Yoann RENARD (yrenard)
- - Thomas Lallement (raziel057)
- - Timothée Barray (tyx)
- - James Halsall (jaitsu)
- - Mikael Pajunen
+ - Alessandro Lai (jean85)
+ - Rouven Weßling (realityking)
+ - Antonio Pauletich (x-coder264)
+ - Michał Pipa (michal.pipa)
+ - Marco Pivetta (ocramius)
+ - Sergey (upyx)
+ - Guillaume (guill)
+ - Alex Hofbauer (alexhofbauer)
+ - Anthony GRASSIOT (antograssiot)
+ - Mario A. Alvarez Garcia (nomack84)
+ - Baptiste Leduc (korbeil)
+ - Asis Pattisahusiwa
  - Warnar Boekkooi (boekkooi)
- - Marco Petersen (ocrampete16)
- - Benjamin Leveque (benji07)
- - Dmitrii Chekaliuk (lazyhammer)
- - Clément JOBEILI (dator)
- - Vilius Grigaliūnas
+ - Quentin Devos
  - Marek Štípek (maryo)
- - Patrick Landolt (scube)
- - François Pluchino (francoispluchino)
+ - zairig imad (zairigimad)
+ - Alan Poulain (alanpoulain)
+ - Martin Hujer (martinhujer)
+ - Chi-teck
+ - Aleksandar Jakovljevic (ajakov)
+ - Sébastien Alfaiate (seb33300)
  - Daniel Espendiller
  - Arnaud PETITPAS (apetitpa)
- - Dorian Villet (gnutix)
- - Wojciech Kania
- - Alexey Kopytko (sanmai)
- - Sergey Linnik (linniksa)
- - Warxcell (warxcell)
  - Richard Miller
- - Leo Feyer (leofeyer)
- - Mario A. Alvarez Garcia (nomack84)
- - Thomas Rabaix (rande)
+ - Colin O&#039;Dell (colinodell)
+ - Victor Bocharsky (bocharsky_bw)
  - D (denderello)
- - Jonathan Scheiber (jmsche)
+ - Justin Hileman (bobthecow)
+ - Dmitrii Chekaliuk (lazyhammer)
+ - Andreas Möller (localheinz)
+ - Nate Wiebe (natewiebe13)
+ - Michael Voříšek
+ - Mikael Pajunen
+ - Larry Garfield (crell)
+ - Sergey Linnik (linniksa)
+ - Vincent AUBERT (vincent)
+ - James Halsall (jaitsu)
+ - Thomas Rabaix (rande)
  - DQNEO
- - Andrii Bodnar
- - Artem (artemgenvald)
- - ivan
- - Sergey Belyshkin (sbelyshkin)
- - Urinbayev Shakhobiddin (shokhaa)
- - Ahmed Raafat
- - Philippe Segatori
- - Thibaut Cheymol (tcheymol)
- - Julien Pauli
- - Islam Israfilov (islam93)
- - Oleg Andreyev (oleg.andreyev)
- - Daniel Gorgan
- - Sébastien Alfaiate (seb33300)
- - Hendrik Luup (hluup)
- - Martin Herndl (herndlm)
+ - Marko Kaznovac (kaznovac)
+ - Dorian Villet (gnutix)
+ - Clément JOBEILI (dator)
+ - Christian Scheb
+ - Martin Schuhfuß (usefulthink)
+ - Patrick Landolt (scube)
+ - mcfedr (mcfedr)
+ - Noel Guilbert (noel)
+ - Giorgio Premi
+ - roman joly (eltharin)
+ - Andre Rømcke (andrerom)
+ - Karoly Gossler (connorhu)
+ - bronze1man
+ - Timo Bakx (timobakx)
  - Ruben Gonzalez (rubenrua)
  - Benjamin Dulau (dbenjamin)
- - Pavel Kirpitsov (pavel-kirpichyov)
- - Mathieu Lemoine (lemoinem)
- - Christian Schmidt
- - Andreas Hucks (meandmymonkey)
- - Noel Guilbert (noel)
- - Hamza Makraz (makraz)
- - Loick Piera (pyrech)
- - Vitalii Ekert (comrade42)
- - Clara van Miert
- - Martin Auswöger
- - Alexander Menshchikov
  - Stepan Anchugov (kix)
- - bronze1man
- - sun (sun)
- - Alan Poulain (alanpoulain)
- - Larry Garfield (crell)
- - Fabien Villepinte
- - SiD (plbsid)
- - Thomas Bisignani (toma)
- - Edi Modrić (emodric)
- - Philipp Wahala (hifi)
- - Nikolay Labinskiy (e-moe)
- - Martin Schuhfuß (usefulthink)
- - apetitpa
- - Vladyslav Loboda
- - Pierre Minnieur (pminnieur)
- - Kyle
- - Dominique Bongiraud
- - Hidde Wieringa (hiddewie)
- - Christopher Davis (chrisguitarguy)
- - Lukáš Holeczy (holicz)
- - Florian Lonqueu-Brochard (florianlb)
- - Leszek Prabucki (l3l0)
- - Emanuele Panzeri (thepanz)
- - Matthew Smeets
- - François Zaninotto (fzaninotto)
- - Alexis Lefebvre
- - Dustin Whittle (dustinwhittle)
- - jeff
- - John Kary (johnkary)
- - Bob van de Vijver (bobvandevijver)
- - smoench
- - Michele Orselli (orso)
- - Sven Paulus (subsven)
- - Daniel STANCU
- - Markus Fasselt (digilist)
- - Maxime Veber (nek-)
- - Marcin Sikoń (marphi)
- - Sullivan SENECHAL (soullivaneuh)
- - Rui Marinho (ruimarinho)
- - Marc Weistroff (futurecat)
- - Dimitri Gritsajuk (ottaviano)
- - Possum
- - Jérémie Augustin (jaugustin)
- - Pascal Montoya
- - Julien Brochet
- - Michaël Perrin (michael.perrin)
- - Tristan Darricau (tristandsensio)
- - Fabien S (bafs)
- - Victor Bocharsky (bocharsky_bw)
- - Jan Sorgalla (jsor)
- - henrikbjorn
- - Alex Bowers
- - Simon Podlipsky (simpod)
- - Marcel Beerta (mazen)
- - flack (flack)
- - Craig Duncan (duncan3dc)
- - Mantis Development
- - Pablo Lozano (arkadis)
- - Romain Monteil (ker0x)
- - quentin neyrat (qneyrat)
- - Antonio Jose Cerezo (ajcerezo)
- - Marcin Szepczynski (czepol)
- - Lescot Edouard (idetox)
- - Rob Frawley 2nd (robfrawley)
- - Mohammad Emran Hasan (phpfour)
- - Dmitriy Mamontov (mamontovdmitriy)
- - Nikita Konstantinov (unkind)
- - Michael Lee (zerustech)
- - Dariusz
- - Francois Zaninotto
- - Laurent Masforné (heisenberg)
- - Claude Khedhiri (ck-developer)
- - Daniel Tschinder
+ - Bram Leeda (bram123)
+ - Stadly
+ - Mathieu Lemoine (lemoinem)
+ - Loick Piera (pyrech)
  - Christian Schmidt
- - Alexander Kotynia (olden)
- - Toni Rudolf (toooni)
- - Elnur Abdurrakhimov (elnur)
- - Iker Ibarguren (ikerib)
- - Manuel Reinhard (sprain)
- - Johann Pardanaud
- - Indra Gunawan (indragunawan)
- - Tim Goudriaan (codedmonkey)
- - Harm van Tilborg (hvt)
- - Baptiste Lafontaine (magnetik)
- - Dries Vints
- - Adam Prager (padam87)
- - Judicaël RUFFIEUX (axanagor)
- - Benoît Burnichon (bburnichon)
- - maxime.steinhausser
- - simon chrzanowski (simonch)
- - Andrew M-Y (andr)
- - Krasimir Bosilkov (kbosilkov)
- - Marcin Michalski (marcinmichalski)
- - Roman Ring (inori)
- - Xavier Montaña Carreras (xmontana)
- - Tarmo Leppänen (tarlepp)
- - AnneKir
- - Tobias Weichart
- - Miro Michalicka
- - M. Vondano
- - Xavier Perez
- - Arjen Brouwer (arjenjb)
- - Tavo Nieves J (tavoniievez)
+ - apetitpa
+ - sun (sun)
+ - Bastien Jaillot (bastnic)
+ - Filippo Tessarotto (slamdunk)
+ - Denis Brumann (dbrumann)
+ - Markus Fasselt (digilist)
+ - Guilliam Xavier
+ - Remon van de Kamp
+ - Andreas Hucks (meandmymonkey)
+ - Leo Feyer
+ - Pierre Minnieur (pminnieur)
+ - Nikolay Labinskiy (e-moe)
+ - Jonathan H. Wage
+ - Marcin Sikoń (marphi)
+ - Oleg Andreyev (oleg.andreyev)
+ - Maciej Malarz (malarzm)
+ - Tristan Darricau (tristandsensio)
+ - jeff
+ - Wojciech Kania
+ - henrikbjorn
+ - Chris Smith (cs278)
+ - Edi Modrić (emodric)
+ - Rui Marinho (ruimarinho)
+ - Mantis Development
+ - Evert Harmeling (evertharmeling)
+ - Jean-Baptiste Delhommeau
+ - Hugo Monteiro (monteiro)
+ - Florian Lonqueu-Brochard (florianlb)
+ - Timothée Barray (tyx)
+ - François Zaninotto (fzaninotto)
+ - François Pluchino (francoispluchino)
+ - Joe Bennett (kralos)
  - Arjen van der Meijden
- - Patrick McDougle (patrick-mcdougle)
- - Jerzy (jlekowski)
- - Danny Berger (dpb587)
- - Marek Zajac
- - Alif Rachmawadi
- - Anton Chernikov (anton_ch1989)
- - Pierre-Yves Lebecq (pylebecq)
- - Alireza Mirsepassi (alirezamirsepassi)
- - Jordan Samouh (jordansamouh)
- - Koen Reiniers (koenre)
- - Nathan Dench (ndenc2)
- - Gijs van Lammeren
- - Matthew Grasmick
- - David Badura (davidbadura)
- - Uwe Jäger (uwej711)
- - Eugene Leonovich (rybakit)
- - Damien Alexandre (damienalexandre)
- - Joseph Rouff (rouffj)
+ - Anderson Müller
+ - Michael Lee (zerustech)
+ - Võ Xuân Tiến (tienvx)
+ - Pascal Montoya
+ - Mickael GOETZ
+ - Maxime Veber (nek-)
+ - Jeroen Noten (jeroennoten)
+ - Jan Sorgalla (jsor)
+ - Dmitrii Poddubnyi (karser)
+ - Priyadi Iman Nurcahyo (priyadi)
+ - fd6130 (fdtvui)
+ - Jérémie Augustin (jaugustin)
+ - Peter Kruithof (pkruithof)
+ - Thomas Lallement (raziel057)
+ - Marcel Beerta (mazen)
+ - Michele Orselli (orso)
+ - Dustin Whittle (dustinwhittle)
+ - Julien Brochet
+ - Leszek Prabucki (l3l0)
+ - Sven Paulus (subsven)
+ - a.dmitryuk
+ - Valentine Boineau (valentineboineau)
+ - Yassine Guedidi (yguedidi)
+ - John Kary (johnkary)
+ - Arjen Brouwer (arjenjb)
+ - Michał (bambucha15)
  - Félix Labrecque (woodspire)
- - GordonsLondon
- - Roman Anasal
- - Piotr Kugla (piku235)
- - Quynh Xuan Nguyen (seriquynh)
- - Ray
- - Philipp Cordes (corphi)
- - Andrii Dembitskyi
- - Chekote
- - bhavin (bhavin4u)
- - Pavel Popov (metaer)
- - Thomas Adam
- - R. Achmad Dadang Nur Hidayanto (dadangnh)
- - Stefan Kruppa
- - Petr Duda (petrduda)
- - Marcos Rezende (rezende79)
- - jdhoek
- - Ivan Kurnosov
- - Dieter
- - Bob den Otter (bopp)
- - Johan Vlaar (johjohan)
+ - Fabien S (bafs)
+ - Kyle
+ - Sullivan SENECHAL (soullivaneuh)
+ - javaDeveloperKid
+ - Romaric Drigon (romaricdrigon)
+ - Alexander Kotynia (olden)
+ - Michel Roca (mroca)
+ - Lynn van der Berg (kjarli)
+ - Pierre-Yves Lebecq (pylebecq)
+ - Link1515
  - Thomas Schulz (king2500)
- - Benjamin Morel
- - Bernd Stellwag
- - Frank de Jonge
- - Chris Tanaskoski
- - julien57
- - Loïc Frémont (loic425)
- - Ippei Sumida (ippey_s)
- - Ben Ramsey (ramsey)
- - Matthieu Auger (matthieuauger)
- - Kévin THERAGE (kevin_therage)
- - Josip Kruslin (jkruslin)
- - Giorgio Premi
- - renanbr
- - Sébastien Lavoie (lavoiesl)
- - Alex Rock (pierstoval)
- - Wodor Wodorski
- - Beau Simensen (simensen)
- - Robert Kiss (kepten)
+ - Roman Ring (inori)
+ - Alif Rachmawadi
+ - Rob Frawley 2nd (robfrawley)
+ - Benjamin Leveque (benji07)
+ - Daniel Gorgan
+ - Francois Zaninotto
+ - Elnur Abdurrakhimov (elnur)
  - Zan Baldwin (zanbaldwin)
- - Antonio J. García Lagar (ajgarlag)
- - Alexandre Quercia (alquerci)
+ - Iker Ibarguren (ikerib)
+ - Jordan Samouh (jordansamouh)
+ - Anton Chernikov (anton_ch1989)
+ - Christian Schmidt
+ - Matthieu Lempereur (mryamous)
+ - Joseph Rouff (rouffj)
+ - Jack Worman (jworman)
+ - Thomas Adam
+ - Daniel Tschinder
+ - Adam Prager (padam87)
+ - Bob den Otter (bopp)
+ - Marc Weistroff (futurecat)
+ - maxime.steinhausser
+ - Dariusz Ruminski
+ - Renan (renanbr)
+ - siganushka (siganushka)
+ - Eugene Leonovich (rybakit)
+ - jdhoek
+ - Ray
+ - Uwe Jäger (uwej711)
+ - David Badura (davidbadura)
+ - Manuel Reinhard (sprain)
+ - Chekote
+ - Nikita Konstantinov (unkind)
+ - Danny Berger (dpb587)
+ - Arnt Gulbrandsen
+ - Xavier Perez
+ - Philipp Cordes (corphi)
+ - Aurélien Pillevesse (aurelienpillevesse)
+ - Pierre Ambroise (dotordu)
+ - GordonsLondon
+ - Adrian Rudnik (kreischweide)
+ - Benoît Burnichon (bburnichon)
+ - Emanuele Panzeri (thepanz)
+ - Hidde Wieringa (hiddewie)
+ - Sylvain Fabre (sylfabre)
+ - Xavier Montaña Carreras (xmontana)
+ - Jurica Vlahoviček (vjurica)
+ - BoShurik
+ - Michaël Perrin (michael.perrin)
+ - dFayet
+ - Tim Goudriaan (codedmonkey)
+ - Patrick McDougle (patrick-mcdougle)
+ - Wouter Van Hecke
+ - Pascal Luna (skalpa)
+ - Benjamin Morel
+ - Beau Simensen (simensen)
+ - Raphaël Geffroy (raphael-geffroy)
+ - Andrew Moore (finewolf)
+ - Magnus Nordlander (magnusnordlander)
+ - Pavel Batanov (scaytrase)
+ - Thomas Bisignani (toma)
+ - Manuel Kießling (manuelkiessling)
+ - Manuel de Ruiter (manuel)
+ - Karoly Negyesi (chx)
+ - Serkan Yildiz (srknyldz)
+ - Fabien Villepinte
+ - Blanchon Vincent (blanchonvincent)
+ - Matthieu Auger (matthieuauger)
+ - Sebastien Morel (plopix)
+ - Andrey Esaulov (andremaha)
+ - Aurelijus Valeiša (aurelijus)
  - Marcos Sánchez
- - Jérôme Tanghe (deuchnord)
+ - Andrey Lebedev (alebedev)
+ - Yoann RENARD (yrenard)
+ - Simon Podlipsky (simpod)
+ - Michael Hirschler (mvhirsch)
+ - Lee Rowlands
+ - Soner Sayakci
+ - Christopher Davis (chrisguitarguy)
+ - rudy onfroy (ronfroy)
  - Kim Hemsø Rasmussen (kimhemsoe)
+ - Francesc Rosàs (frosas)
+ - Thibault Gattolliat (crovitche)
+ - SiD (plbsid)
+ - Joppe De Cuyper (joppedc)
+ - janschoenherr
+ - Emanuele Gaspari (inmarelibero)
+ - Damien Alexandre (damienalexandre)
+ - Hamza Makraz (makraz)
+ - Baptiste Lafontaine (magnetik)
+ - Jordane VASPARD (elementaire)
+ - Warxcell (warxcell)
+ - Vilius Grigaliūnas
+ - Tiago Ribeiro (fixe)
+ - Stepan Tanasiychuk (stfalcon)
+ - Gustavo Piltcher
  - Maximilian Reichel (phramz)
  - Dane Powell
- - jaugustin
- - Dmytro Borysovskyi (dmytr0)
- - Mathias STRASSER (roukmoute)
- - Pascal Luna (skalpa)
- - Wouter Van Hecke
- - Peter Kruithof (pkruithof)
- - Michael Holm (hollo)
- - Giso Stallenberg (gisostallenberg)
- - Blanchon Vincent (blanchonvincent)
- - William Arslett (warslett)
- - Jérémy REYNAUD (babeuloula)
- - Christian Schmidt
- - Gonzalo Vilaseca (gonzalovilaseca)
- - Vadim Borodavko (javer)
- - Haralan Dobrev (hkdobrev)
- - Soufian EZ ZANTAR (soezz)
- - Jan van Thoor (janvt)
- - Martin Kirilov (wucdbm)
- - Axel Guckelsberger (guite)
- - Chris Smith (cs278)
- - Florian Klein (docteurklein)
- - Bilge
- - Cătălin Dan (dancatalin)
- - Rhodri Pugh (rodnaph)
- - Manuel Kiessling (manuelkiessling)
- - Patrick Reimers (preimers)
- - Anatoly Pashin (b1rdex)
- - Pol Dellaiera (drupol)
- - Atsuhiro KUBO (iteman)
- - rudy onfroy (ronfroy)
- - Serkan Yildiz (srknyldz)
- - Jeroen Thora (bolle)
- - Andrew Moore (finewolf)
- - Bertrand Zuchuat (garfield-fr)
- - Marc Morera (mmoreram)
- - Gabor Toth (tgabi333)
- - realmfoo
- - Thomas Tourlourat (armetiz)
- - Andrey Esaulov (andremaha)
- - Grégoire Passault (gregwar)
- - Jerzy Zawadzki (jzawadzki)
- - Ismael Ambrosi (iambrosi)
- - Yannick Ihmels (ihmels)
- - Saif Eddin G
- - Emmanuel BORGES (eborges78)
- - siganushka (siganushka)
- - Aurelijus Valeiša (aurelijus)
- - Evert Harmeling (evertharmeling)
- - Jan Decavele (jandc)
- - Gustavo Piltcher
- - Shakhobiddin
- - Grenier Kévin (mcsky_biig)
- - Stepan Tanasiychuk (stfalcon)
- - Tiago Ribeiro (fixe)
+ - Moshe Weitzman (weitzman)
  - Raul Fraile (raulfraile)
- - Adrian Rudnik (kreischweide)
- - Pavel Batanov (scaytrase)
- - Francesc Rosàs (frosas)
- - Bongiraud Dominique
- - janschoenherr
- - Marko Kaznovac (kaznovac)
- - Emanuele Gaspari (inmarelibero)
- - Dariusz Rumiński
- - Terje Bråten
- - Gennadi Janzen
- - James Hemery
- - Egor Taranov
- - Philippe Segatori
- - Adrian Nguyen (vuphuong87)
- - benjaminmal
- - Thierry T (lepiaf)
- - Lorenz Schori
- - Andrey Sevastianov
- - Oleksandr Barabolia (oleksandrbarabolia)
- - Khoo Yong Jun
- - Christin Gruber (christingruber)
- - Jeremy Livingston (jeremylivingston)
- - Julien Turby
- - scyzoryck
- - Greg Anderson
- - Tri Pham (phamuyentri)
- - marie
- - Erkhembayar Gantulga (erheme318)
- - Fractal Zombie
- - Gunnstein Lye (glye)
- - Thomas Talbot (ioni)
- - Noémi Salaün (noemi-salaun)
- - Michel Hunziker
- - Krystian Marcisz (simivar)
- - Matthias Krauser (mkrauser)
- - Erin Millard
- - Lorenzo Millucci (lmillucci)
- - Jérôme Tamarelle (jtamarelle-prismamedia)
- - Emil Masiakowski
- - Alexandre Parent
- - DT Inier (gam6itko)
- - Matthew Lewinski (lewinski)
- - Magnus Nordlander (magnusnordlander)
- - Ricard Clau (ricardclau)
- - Dmitrii Tarasov (dtarasov)
- - Philipp Kolesnikov
- - Maxim Dovydenok (shiftby)
- - Carlos Pereira De Amorim (epitre)
- - Rodrigo Aguilera
- - Roumen Damianoff
- - Vladimir Varlamov (iamvar)
- - Thomas Royer (cydonia7)
- - Gildas Quéméner (gquemener)
- - Nicolas LEFEVRE (nicoweb)
- - Asmir Mustafic (goetas)
- - Martins Sipenko
- - Guilherme Augusto Henschel
- - Mardari Dorel (dorumd)
- - Pierrick VIGNAND (pierrick)
- - Mateusz Sip (mateusz_sip)
- - Andy Palmer (andyexeter)
- - Marko H. Tamminen (gzumba)
- - Francesco Levorato
- - DerManoMann
- - David Molineus
- - Desjardins Jérôme (jewome62)
- - Vitaliy Zakharov (zakharovvi)
- - Tobias Sjösten (tobiassjosten)
- - Gyula Sallai (salla)
- - Stefan Gehrig (sgehrig)
- - Benjamin Cremer (bcremer)
- - rtek
- - Inal DJAFAR (inalgnu)
- - Christian Gärtner (dagardner)
- - Artem Stepin (astepin)
- - Adrien Jourdier (eclairia)
- - Ivan Grigoriev (greedyivan)
- - Tomasz Kowalczyk (thunderer)
- - Erik Saunier (snickers)
- - Kevin SCHNEKENBURGER
- - Fabien Salles (blacked)
- - Artur Eshenbrener
- - Ahmed Ashraf (ahmedash95)
- - Gert Wijnalda (cinamo)
- - Luca Saba (lucasaba)
- - Thomas Perez (scullwm)
- - Thomas P
- - Kristijan Kanalaš (kristijan_kanalas_infostud)
- - Felix Labrecque
- - mondrake (mondrake)
- - Yaroslav Kiliba
- - “Filip
- - Simon Watiau (simonwatiau)
- - Ruben Jacobs (rubenj)
- - Arkadius Stefanski (arkadius)
- - Jérémy M (th3mouk)
- - Terje Bråten
- - Pierre Rineau
- - Renan Gonçalves (renan_saddam)
- - Raulnet
- - Tomasz Kusy
- - Jakub Kucharovic (jkucharovic)
- - Kristen Gilden
+ - Bertrand Zuchuat (garfield-fr)
+ - Jerzy Zawadzki (jzawadzki)
  - Oleksiy (alexndlm)
- - Robbert Klarenbeek (robbertkl)
- - Eric Masoero (eric-masoero)
- - Michael Lutz
- - Michel Roca (mroca)
- - Reedy
- - hossein zolfi (ocean)
- - Clément Gautier (clementgautier)
- - Jelle Raaijmakers (gmta)
- - Roberto Nygaard
- - Joshua Nye
+ - Andrii Bodnar
+ - Mathieu Rochette (mathroc)
+ - Christian Schmidt
+ - Ben Hakim
+ - Alexey Kopytko (sanmai)
+ - Josip Kruslin (jkruslin)
+ - Thomas Tourlourat (armetiz)
+ - Alex Rock (pierstoval)
+ - Ivan Kurnosov
+ - Marc Morera (mmoreram)
+ - Robert Kiss (kepten)
+ - schlndh
+ - jaugustin
+ - Herberto Graca
+ - Alexandre Quercia (alquerci)
+ - Pavel Kirpitsov (pavel-kirpichyov)
+ - Sergey Belyshkin (sbelyshkin)
+ - Cédric Anne
+ - Bohan Yang (brentybh)
+ - Sébastien Lavoie (lavoiesl)
+ - Loïc Frémont (loic425)
+ - Craig Duncan (duncan3dc)
+ - realmfoo
+ - renanbr
+ - Dominique Bongiraud
+ - Frank de Jonge
+ - Grégoire Passault (gregwar)
+ - Florian Klein (docteurklein)
+ - Michael Holm (hollo)
+ - Atsuhiro KUBO (iteman)
+ - Samaël Villette (samadu61)
+ - Ismael Ambrosi (iambrosi)
+ - Emmanuel BORGES
+ - Gabor Toth (tgabi333)
+ - Wodor Wodorski
+ - Jan Decavele (jandc)
+ - Marco Petersen (ocrampete16)
  - Dalibor Karlović
- - Randy Geraads
- - Sanpi (sanpi)
- - James Gilliland (neclimdul)
- - Eduardo Gulias (egulias)
- - Andreas Leathley (iquito)
- - Nathanael Noblet (gnat)
- - giulio de donato (liuggio)
- - Mohamed Gamal
- - Eric COURTIAL
- - Xesxen
- - ShinDarth
- - Arun Philip
- - Stéphane PY (steph_py)
- - Philipp Kräutli (pkraeutli)
- - Carl Casbolt (carlcasbolt)
- - battye
- - BrokenSourceCode
- - Grzegorz (Greg) Zdanowski (kiler129)
- - Kirill chEbba Chebunin
- - kylekatarnls (kylekatarnls)
- - Steve Grunwell
- - 
- - Alex (aik099)
- - Greg Thornton (xdissent)
- - BENOIT POLASZEK (bpolaszek)
- - Shaharia Azam
- - Gerben Oolbekkink
- - Alexandre Parent
- - Thibault Richard (t-richard)
- - Oleksii Zhurbytskyi
- - Guillaume Verstraete
- - vladimir.panivko
- - Jason Tan (jt2k)
- - Costin Bereveanu (schniper)
- - kick-the-bucket
- - Marek Kalnik (marekkalnik)
- - Jeremiasz Major
- - Vyacheslav Salakhutdinov (megazoll)
- - Trevor North
- - Maksym Slesarenko (maksym_slesarenko)
- - Hassan Amouhzi
- - Antonin CLAUZIER (0x346e3730)
- - Andrei C. (moldman)
- - Tamas Szijarto
- - stlrnz
- - Adrien Wilmet (adrienfr)
- - Alex Bacart
- - hugovms
- - Michele Locati
- - Pavel Volokitin (pvolok)
- - DemigodCode
- - Arthur de Moulins (4rthem)
+ - Philippe SEGATORI (tigitz)
+ - Thierry T (lepiaf)
  - Matthias Althaus (althaus)
- - Maximilian Bösing
- - Leevi Graham (leevigraham)
- - Endre Fejes
- - Carlos Buenosvinos (carlosbuenosvinos)
- - Jake (jakesoft)
- - Tobias Naumann (tna)
- - Greg ORIOL
- - Bahman Mehrdad (bahman)
- - Daniel Beyer
- - Manuel Alejandro Paz Cetina
- - Youssef Benhssaien (moghreb)
- - Mario Ramundo (rammar)
- - Ivan
- - Shein Alexey
- - Nico Haase
- - Jacek Jędrzejewski (jacek.jedrzejewski)
- - Stefan Kruppa
- - Shahriar56
- - Dhananjay Goratela
- - Kien Nguyen
- - Joe Lencioni
- - arai
- - Mouad ZIANI (mouadziani)
- - Daniel Tschinder
+ - Thomas Royer (cydonia7)
+ - Maximilian Ruta (deltachaos)
+ - Issam Raouf (iraouf)
+ - Philipp Kräutli (pkraeutli)
+ - Arthur de Moulins (4rthem)
+ - Gasan Guseynov (gassan)
+ - Robbert Klarenbeek (robbertkl)
+ - Marek Kalnik (marekkalnik)
  - Diego Agulló (aeoris)
- - Tomasz Ignatiuk
- - Joachim Løvgaard (loevgaard)
  - vladimir.reznichenko
- - Kai
- - Lee Rowlands
- - Alain Hippolyte (aloneh)
- - Karoly Negyesi (chx)
- - Xavier HAUSHERR
- - Loïc Beurlet
- - Ana Raro
- - Ana Raro
- - Tom Klingenberg
- - Florian Wolfsjaeger (flowolf)
- - Ivan Sarastov (isarastov)
- - Jordi Sala Morales (jsala)
- - Albert Jessurum (ajessu)
- - Samuele Lilli (doncallisto)
- - Peter Bowyer (pbowyer)
- - Romain Pierre
- - Laszlo Korte
- - Gabrielle Langer
- - Alessandro Desantis
- - hubert lecorche (hlecorche)
- - bogdan
- - mmokhi
- - Daniel Tiringer
- - Andrew Codispoti
- - Lctrs
- - Joppe De Cuyper (joppedc)
- - Marc Morales Valldepérez (kuert)
+ - Vladyslav Loboda
+ - Inal DJAFAR (inalgnu)
  - Vadim Kharitonov (vadim)
- - Oscar Cubo Medina (ocubom)
+ - Haralan Dobrev (hkdobrev)
+ - Gwendolen Lynch
+ - Clément Gautier (clementgautier)
+ - Cătălin Dan (dancatalin)
+ - Harm van Tilborg (hvt)
+ - Alex (aik099)
+ - Francesco Levorato
+ - Stéphane PY (steph_py)
+ - Roumen Damianoff
+ - flack (flack)
+ - Urinbayev Shakhobiddin (shokhaa)
+ - Clara van Miert
+ - Julien Galenski (ruian)
+ - Nathanael Noblet (gnat)
+ - Endre Fejes
+ - Ricard Clau (ricardclau)
+ - Thibaut Cheymol (tcheymol)
+ - Wu (wu-agriconomie)
+ - Gonzalo Vilaseca (gonzalovilaseca)
+ - Ben Scott (bpscott)
+ - Pablo Lozano (arkadis)
+ - smoench
+ - Ilija Tovilo (ilijatovilo)
+ - Michele Locati
+ - Costin Bereveanu (schniper)
+ - Terje Bråten
+ - James Gilliland (neclimdul)
+ - Grenier Kévin (mcsky_biig)
+ - Dave Long
+ - Daniel Beyer
+ - Pol Dellaiera (drupol)
+ - Dimitri Gritsajuk (ottaviano)
+ - Maarten de Boer (mdeboer)
+ - Marc Morales Valldepérez (kuert)
+ - Nicolas LEFEVRE (nicoweb)
+ - Tobias Naumann (tna)
+ - Kirill chEbba Chebunin
+ - Alessandro Desantis
+ - Vyacheslav Salakhutdinov (megazoll)
+ - Ivan Mezinov
+ - Kristen Gilden
+ - Valmonzo
+ - Greg Thornton (xdissent)
+ - BrokenSourceCode
+ - Erin Millard
+ - Eric Masoero (eric-masoero)
+ - giulio de donato (liuggio)
+ - Lorenz Schori
+ - Sanpi (sanpi)
+ - Grzegorz (Greg) Zdanowski (kiler129)
+ - Daniel STANCU
+ - Pierre Rineau
+ - ShinDarth
+ - Quentin Schuler (sukei)
+ - Johann Pardanaud
+ - SUMIDA, Ippei (ippey_s)
+ - Joe Lencioni
+ - Asmir Mustafic (goetas)
+ - Rhodri Pugh (rodnaph)
+ - Jan Böhmer
+ - Pavel Volokitin (pvolok)
+ - Ivan Sarastov (isarastov)
+ - Lukáš Holeczy (holicz)
+ - Albert Jessurum (ajessu)
  - Karel Souffriau
  - Christophe L. (christophelau)
- - Daniël Brekelmans (dbrekelmans)
- - Simon Heimberg (simon_heimberg)
- - Morten Wulff (wulff)
- - Sander Toonen (xatoo)
+ - Max Baldanza
  - Anthon Pang (robocoder)
- - Julien Galenski (ruian)
- - Rimas Kudelis
- - Ben Scott (bpscott)
- - Andrii Dembitskyi
- - a.dmitryuk
- - Pavol Tuka
- - Paulo Ribeiro (paulo)
- - Marc Laporte
- - Michał Jusięga
- - Dmitriy Derepko
- - Sebastian Paczkowski (sebpacz)
- - Dragos Protung (dragosprotung)
- - Thiago Cordeiro (thiagocordeiro)
- - Julien Maulny
- - Brian King
- - Paul Oms
- - Steffen Roßkamp
- - Alexandru Furculita (afurculita)
- - Michel Salib (michelsalib)
- - Valentin Jonovs
- - geoffrey
- - Bastien DURAND (deamon)
- - Benoit Galati (benoitgalati)
- - Jon Gotlin (jongotlin)
- - Jeanmonod David (jeanmonod)
- - Daniel González (daniel.gonzalez)
- - Renan (renanbr)
- - Webnet team (webnet)
- - Tobias Bönner
- - Berny Cantos (xphere81)
- - Mátyás Somfai (smatyas)
- - Jan Schumann
+ - kor3k kor3k (kor3k)
+ - Hassan Amouhzi
+ - Raffaele Carelle
+ - Tarmo Leppänen (tarlepp)
+ - Yannick Ihmels (ihmels)
+ - Laszlo Korte
+ - Jakub Kucharovic (jkucharovic)
+ - ivan
+ - Marc Biorklund (mbiork)
+ - hossein zolfi (ocean)
+ - Hendrik Luup (hluup)
+ - Thomas Perez (scullwm)
+ - Kai
+ - Zmey
+ - Kieran Brahney
+ - Vitaliy Zakharov (zakharovvi)
+ - Artem (artemgenvald)
+ - hubert lecorche (hlecorche)
+ - Yaroslav Kiliba
+ - Shein Alexey
+ - Jeremy Livingston (jeremylivingston)
+ - Vincent Chalamon
+ - Maksym Slesarenko (maksym_slesarenko)
+ - Eduardo Gulias (egulias)
+ - Islam Israfilov (islam93)
+ - Gyula Sallai (salla)
+ - Daniel Tschinder
+ - Ahmed Raafat
+ - Dmytro Borysovskyi (dmytr0)
+ - C (dagardner)
+ - Xavier HAUSHERR
+ - FORT Pierre-Louis (plfort)
+ - Mateusz Sip (mateusz_sip)
+ - Alain Hippolyte (aloneh)
+ - Hans Mackowiak
+ - Kev
+ - Alex Bowers
+ - Matthew Lewinski (lewinski)
+ - Philippe Segatori
+ - Vitalii Ekert (comrade42)
+ - Martin Herndl (herndlm)
+ - Tobias Sjösten (tobiassjosten)
+ - Felix Labrecque
+ - mondrake (mondrake)
+ - Oscar Cubo Medina (ocubom)
+ - Kevin van Sonsbeek (kevin_van_sonsbeek)
+ - Claude Khedhiri (ck-developer)
+ - Roman Anasal
+ - Fabian Lange (codingfabian)
+ - Vicent Soria Durá (vicentgodella)
+ - Yi-Jyun Pan
+ - Restless-ET
+ - Nils Adermann (naderman)
+ - aaa2000 (aaa2000)
+ - Matthieu Bontemps
+ - Gábor Fási
+ - Jannik Zschiesche
+ - Steven RENAUX (steven_renaux)
+ - Gawain Lynch (gawain)
+ - Vadim Borodavko (javer)
+ - Markus Bachmann (baachi)
+ - Roy Van Ginneken (rvanginneken)
+ - Kamil Kokot (pamil)
+ - Toni Rudolf (toooni)
+ - Marcin Szepczynski (czepol)
+ - Krzysztof Piasecki (krzysztek)
+ - mcben
+ - PatNowak
+ - Pablo Díez (pablodip)
+ - Erkhembayar Gantulga (erheme318)
+ - Krasimir Bosilkov (kbosilkov)
  - Matheo Daninos (mathdns)
  - Niklas Fiekas
- - Mark Challoner (markchalloner)
- - Markus Bachmann (baachi)
- - Philippe SEGATORI (tigitz)
- - Roger Guasch (rogerguasch)
- - Luis Tacón (lutacon)
- - Alex Hofbauer (alexhofbauer)
- - Andrii Popov (andrii-popov)
- - lancergr
- - Ivan Nikolaev (destillat)
- - Xavier Leune (xleune)
- - Ben Roberts (benr77)
- - Joost van Driel (j92)
- - ampaze
- - Arturs Vonda
- - Xavier Briand (xavierbriand)
- - Daniel Badura
- - vagrant
- - Asier Illarramendi (doup)
- - AKeeman (akeeman)
- - Martijn Cuppens
- - Restless-ET
- - Vlad Gregurco (vgregurco)
- - Boris Vujicic (boris.vujicic)
- - Chris Sedlmayr (catchamonkey)
- - Kamil Kokot (pamil)
- - Seb Koelen
- - FORT Pierre-Louis (plfort)
- - Christoph Mewes (xrstf)
- - Vitaliy Tverdokhlib (vitaliytv)
- - Ariel Ferrandini (aferrandini)
- - Niklas Keller
- - Dirk Pahl (dirkaholic)
- - Cédric Lombardot (cedriclombardot)
- - Jonas Flodén (flojon)
- - Adrien Lucas (adrienlucas)
- - Dominik Zogg
- - Kai Dederichs
- - Luc Vieillescazes (iamluc)
- - Thomas Nunninger
- - François Dume (franek)
- - Rob Bast
- - Roberto Espinoza (respinoza)
- - Adam Harvey
- - ilyes kooli (skafandri)
- - Anton Bakai
- - Sam Fleming (sam_fleming)
- - Alex Bakhturin
- - Brayden Williams (redstar504)
- - insekticid
- - Trent Steel (trsteel88)
- - Vitaliy Ryaboy (vitaliy)
- - boombatower
- - Douglas Hammond (wizhippo)
- - Jérôme Macias (jeromemacias)
- - Andrey Astakhov (aast)
- - ReenExe
- - Fabian Lange (codingfabian)
- - Yoshio HANAWA
- - Toon Verwerft (veewee)
- - Gert de Pagter
- - Sebastian Bergmann
- - Miroslav Šustek (sustmi)
- - Pablo Díez (pablodip)
- - Damien Fa
- - Kevin McBride
- - Sergio Santoro
- - AndrolGenhald
- - Philipp Rieber (bicpi)
- - Dennis Væversted (srnzitcom)
- - Manuel de Ruiter (manuel)
- - nikos.sotiropoulos
- - Eduardo Oliveira (entering)
- - Jonathan Johnson (jrjohnson)
- - Eugene Wissner
- - Ricardo Oliveira (ricardolotr)
- - Roy Van Ginneken (rvanginneken)
- - ondrowan
- - Barry vd. Heuvel (barryvdh)
- - Jon Dufresne
- - Chad Sikorra (chadsikorra)
- - Mathias Brodala (mbrodala)
- - naitsirch (naitsirch)
- - Evan S Kaufman (evanskaufman)
- - Jonathan Sui Lioung Lee Slew (jlslew)
- - mcben
- - Jérôme Vieilledent (lolautruche)
- - Filip Procházka (fprochazka)
- - stoccc
- - Markus Lanthaler (lanthaler)
- - Gigino Chianese (sajito)
- - Xav` (xavismeh)
- - Remi Collet
- - Mathieu Rochette (mathroc)
- - Vicent Soria Durá (vicentgodella)
- - Michael Moravec
- - Anthony Ferrara
- - Glodzienski
- - Christian Gripp (core23)
- - Marcel Hernandez
- - Ioan Negulescu
- - Jakub Škvára (jskvara)
+ - Jiří Bok
+ - Andy Palmer (andyexeter)
  - Andrew Udvare (audvare)
- - Volodymyr Panivko
- - alexpods
- - Dennis Langen (nijusan)
- - Adam Szaraniec
- - Dariusz Ruminski
- - Romain Gautier (mykiwi)
- - Cyril Pascal (paxal)
- - Matthieu Bontemps
- - Erik Trapman
- - De Cock Xavier (xdecock)
- - Nicolas Dewez (nicolas_dewez)
- - Quentin Dreyer
- - Scott Arciszewski
- - Xavier HAUSHERR
- - Achilles Kaloeridis (achilles)
- - Norbert Orzechowicz (norzechowicz)
- - Robert-Jan de Dreu
- - Fabrice Bernhard (fabriceb)
- - Matthijs van den Bos (matthijs)
- - Jaik Dean (jaikdean)
- - Krzysztof Piasecki (krzysztek)
- - Lenard Palko
- - Nils Adermann (naderman)
- - Gábor Fási
- - Nate (frickenate)
- - sasezaki
- - Kristof Van Cauwenbergh (kristofvc)
- - Dawid Pakuła (zulusx)
- - Marco Lipparini (liarco)
- - Florian Rey (nervo)
- - Rodrigo Borrego Bernabé (rodrigobb)
- - John Bafford (jbafford)
- - Emanuele Iannone
- - Gasan Guseynov (gassan)
- - Ondrej Machulda (ondram)
- - Denis Gorbachev (starfall)
- - Martin Morávek (keeo)
- - Kevin Saliou (kbsali)
- - Matthieu Mota (matthieumota)
- - Steven Surowiec (steves)
- - Shawn Iwinski
- - Gawain Lynch (gawain)
- - Ryan
- - Alexander Deruwe (aderuwe)
- - Dave Hulbert (dave1010)
- - Konstantin Grachev (grachevko)
- - Ivan Rey (ivanrey)
- - M. (mbontemps)
- - Marcin Chyłek (songoq)
- - Ned Schwartz
- - Anderson Müller
- - Ziumin
- - Matthias Schmidt
- - Lenar Lõhmus
- - Ilija Tovilo (ilijatovilo)
- - Samaël Villette (samadu61)
- - Zach Badgett (zachbadgett)
- - Loïc Faugeron
- - Aurélien Fredouelle
- - Pavel Campr (pcampr)
- - Forfarle (forfarle)
- - Johnny Robeson (johnny)
- - Kai Eichinger (kai_eichinger)
- - Kuba Werłos (kuba)
- - Philipp Keck
- - Disquedur
- - Markus S. (staabm)
- - Guilherme Ferreira
- - Geoffrey Tran (geoff)
- - Elan Ruusamäe (glen)
- - Brad Jones
- - Nicolas de Marqué (nicola)
- - Jannik Zschiesche
- - Jan Ole Behrens (deegital)
- - Mantas Var (mvar)
- - Yann LUCAS (drixs6o9)
- - Sebastian Krebs
- - Htun Htun Htet (ryanhhh91)
- - Sorin Pop (sorinpop)
- - Piotr Stankowski
- - Stewart Malik
- - Stefan Graupner (efrane)
- - Gemorroj (gemorroj)
- - Adrien Chinour
- - Mihail Krasilnikov (krasilnikovm)
- - iamvar
- - Pierre Tondereau
- - Joel Lusavuvu (enigma97)
- - Alex Vo (votanlean)
- - André Matthies
- - Piergiuseppe Longo
- - Kevin Auivinet
- - Valentin Nazarov
- - Aurélien MARTIN
- - Malte Schlüter
- - Jules Matsounga (hyoa)
- - Quentin Dequippe (qdequippe)
- - Yewhen Khoptynskyi (khoptynskyi)
- - Jérôme Nadaud (jnadaud)
- - wuchen90
- - Alexandre Tranchant (alexandre_t)
- - Anthony Moutte
- - shreyadenny
- - Daniel Iwaniec
- - Thomas Ferney (thomasf)
- - Hallison Boaventura (hallisonboaventura)
- - Mas Iting
- - Albion Bame (abame)
- - Ivan Nemets
- - Dmitry Simushev
- - Grégoire Hébert (gregoirehebert)
- - alcaeus
- - Fred Cox
- - Iliya Miroslavov Iliev (i.miroslavov)
- - Safonov Nikita (ns3777k)
- - Simon DELICATA
- - Thibault Buathier (gwemox)
- - Julien Boudry
- - vitaliytv
- - Andreas Hennings
- - Arnaud Frézet
- - Nicolas Martin (cocorambo)
- - luffy1727
- - LHommet Nicolas (nicolaslh)
- - Sebastian Blum
- - Amirreza Shafaat (amirrezashafaat)
- - Laurent Clouet
- - Adoni Pavlakis (adoni)
- - Maarten Nusteling (nusje2000)
- - Ahmed EBEN HASSINE (famas23)
- - Eduard Bulava (nonanerz)
- - Ricky Su (ricky)
- - Igor Timoshenko (igor.timoshenko)
- - “teerasak”
- - Kyle Evans (kevans91)
- - Benoit Mallo
- - Max Rath (drak3)
- - Giuseppe Campanelli
- - Valentin
- - pizzaminded
- - Matthieu Calie (matth--)
- - Stéphane Escandell (sescandell)
- - ivan
- - linh
- - Oleg Krasavin (okwinza)
- - Mario Blažek (marioblazek)
- - Jure (zamzung)
- - James Johnston
- - Michael Nelson
- - Eric Krona
- - Sinan Eldem
- - Gennady Telegin
- - Kajetan Kołtuniak (kajtii)
- - Sander Goossens (sandergo90)
- - Damien  Fayet (rainst0rm)
- - Alexandre Dupuy (satchette)
- - MatTheCat
- - Malte Blättermann
- - Erfan Bahramali
- - Simeon Kolev (simeon_kolev9)
- - Abdiel Carrazana (abdielcs)
- - Arman
- - Gabi Udrescu
- - Adamo Crespi (aerendir)
- - Jonas Elfering
- - Luis Pabon (luispabon)
- - boulei_n
- - Anna Filina (afilina)
- - Mihai Stancu
- - Nahuel Cuesta (ncuesta)
- - Patrick Luca Fazzi (ap3ir0n)
- - Chris Boden (cboden)
- - EStyles (insidestyles)
- - Christophe Villeger (seragan)
- - Bruno Rodrigues de Araujo (brunosinister)
- - Julien Fredon
- - Jacek Wilczyński (jacekwilczynski)
- - Hany el-Kerdany
- - Wang Jingyu
- - Benjamin Georgeault (wedgesama)
- - Åsmund Garfors
- - Maxime Douailin
- - Jean Pasdeloup
- - Laurent Moreau
- - Michael Hirschler (mvhirsch)
- - Javier López (loalf)
- - tamar peled
- - Reinier Kip
- - Geoffrey Brier (geoffrey-brier)
- - Sofien Naas
- - Christophe Meneses (c77men)
- - Vladimir Tsykun
- - Andrei O
- - Dustin Dobervich (dustin10)
- - Alejandro Diaz Torres
- - Karl Shea
- - dantleech
- - Valentin
- - Sebastian Marek (proofek)
- - Łukasz Chruściel (lchrusciel)
- - Jan Vernieuwe (vernija)
- - zenmate
- - j.schmitt
- - Georgi Georgiev
- - David Fuhr
- - Evgeny Anisiforov
- - TristanPouliquen
- - Gwendolen Lynch
- - mwos
- - Aurimas Niekis (gcds)
- - Volker Killesreiter (ol0lll)
- - Vedran Mihočinec (v-m-i)
- - creiner
- - RevZer0 (rav)
- - remieuronews
- - Marek Binkowski
- - Rostyslav Kinash
- - Andrey Lebedev (alebedev)
- - Cristoforo Cervino (cristoforocervino)
- - Dennis Fridrich (dfridrich)
- - Yoann MOROCUTTI
- - Daisuke Ohata
- - Vincent Simonin
- - Alexander Onatskiy
- - Philipp Fritsche
- - tarlepp
- - Alex Bogomazov (alebo)
- - Claus Due (namelesscoder)
- - aaa2000 (aaa2000)
- - Guillaume Aveline
- - Alexandru Patranescu
- - Arkadiusz Rzadkowolski (flies)
- - Oksana Kozlova (oksanakozlova)
- - Quentin Moreau (sheitak)
- - Stefan Warman (warmans)
- - Bert Ramakers
- - Angelov Dejan (angelov)
- - Tristan Maindron (tmaindron)
- - Behnoush Norouzali (behnoush)
- - Marc Duboc (icemad)
- - Wesley Lancel
- - Ke WANG (yktd26)
- - Timothée BARRAY
- - Nilmar Sanchez Muguercia
- - Ivo Bathke (ivoba)
- - Lukas Mencl
- - Strate
- - Anton A. Sumin
- - Atthaphon Urairat
- - Jon Green (jontjs)
- - Mickaël Isaert (misaert)
- - Israel J. Carberry
- - Julius Kiekbusch
- - Miquel Rodríguez Telep (mrtorrent)
- - Tamás Nagy (t-bond)
- - Sergey Kolodyazhnyy (skolodyazhnyy)
- - umpirski
- - Benjamin
- - Quentin de Longraye (quentinus95)
- - Chris Heng (gigablah)
- - Oleksii Svitiashchuk
- - Tristan Bessoussa (sf_tristanb)
- - Richard Bradley
- - Nathanaël Martel (nathanaelmartel)
- - Nicolas Jourdan (nicolasjc)
- - Ulumuddin Cahyadi Yunus (joenoez)
- - Benjamin Dos Santos
- - GagnarTest (gagnartest)
- - Tomas Javaisis
- - Florian Pfitzer (marmelatze)
- - Johann Saunier (prophet777)
- - Lucas Bäuerle
- - Dario Savella
- - Jack Thomas
- - Andreas Erhard (andaris)
- - Evgeny Efimov (edefimov)
- - John VanDeWeghe
- - Oleg Mifle
- - gnito-org
- - Michael Devery (mickadoo)
- - Loïc Ovigne (oviglo)
- - Antoine Corcy
- - Markkus Millend
- - Clément
- - Jorrit Schippers (jorrit)
- - Aurimas Niekis (aurimasniekis)
- - maxime.perrimond
- - rvoisin
- - cthulhu
- - Sascha Grossenbacher (berdir)
- - Dmitry Derepko
- - Rémi Leclerc
- - Jan Vernarsky
- - Jonas Hünig
- - Amine Yakoubi
- - Robin Lehrmann
- - Szijarto Tamas
- - Arend Hummeling
- - Makdessi Alex
- - Juan Miguel Besada Vidal (soutlink)
- - dlorek
- - Stuart Fyfe
- - Jaroslav Kuba
- - Benjamin Zikarsky (bzikarsky)
- - Jason Schilling (chapterjason)
- - Nathan PAGE (nathix)
- - sl_toto (sl_toto)
- - Marek Pietrzak (mheki)
- - Dmitrii Lozhkin
- - Marion Hurteau (marionleherisson)
- - Mickaël Andrieu (mickaelandrieu)
- - Oscar Esteve (oesteve)
- - Sobhan Sharifi (50bhan)
- - Peter Potrowl
- - Stephen
- - Tomasz (timitao)
- - Nguyen Tuan Minh (tuanminhgp)
- - dbrekelmans
- - Piet Steinhart
- - mousezheng
- - Rémy LESCALLIER
- - Simon Schick (simonsimcity)
- - Victor Macko (victor_m)
- - Tristan Roussel
- - Quentin Devos
- - Jorge Vahldick (jvahldick)
- - Vladimir Mantulo (mantulo)
- - aim8604
- - Aleksandr Dankovtsev
- - Maciej Zgadzaj
- - David Legatt (dlegatt)
- - Maarten de Boer (mdeboer)
- - Cameron Porter
- - Hossein Bukhamsin
- - Oliver Hoff
- - Christian Sciberras (uuf6429)
- - Arthur Woimbée
- - Théo DELCEY
- - Andrii Serdiuk (andreyserdjuk)
- - dangkhoagms (dangkhoagms)
- - Floran Brutel (notFloran) (floran)
- - Vlad Gapanovich (gapik)
- - origaminal
- - Matteo Beccati (matteobeccati)
- - Konstantin Bogomolov
- - Mark Spink
- - Cesar Scur (cesarscur)
- - Kevin (oxfouzer)
- - Paweł Wacławczyk (pwc)
- - Sagrario Meneses
- - Oleg Zinchenko (cystbear)
- - Baptiste Meyer (meyerbaptiste)
- - Stefano A. (stefano93)
- - Tales Santos (tsantos84)
- - Johannes Klauss (cloppy)
- - PierreRebeilleau
- - Evan Villemez
- - Florian Hermann (fhermann)
- - fzerorubigd
- - Thomas Ploch
- - Benjamin Grandfond (benjamin)
- - Tiago Brito (blackmx)
- - Gintautas Miselis (naktibalda)
- - Christian Rishøj
- - Roromix
- - Patrick Berenschot
- - SuRiKmAn
- - rtek
- - Maxime AILLOUD (mailloud)
- - Richard van den Brand (ricbra)
- - Sergey Melesh (sergex)
- - mohammadreza honarkhah
- - develop
- - flip111
- - Artem Oliinyk (artemoliynyk)
- - Marvin Feldmann (breyndotechse)
- - fruty
- - VJ
- - RJ Garcia
- - Adam Wójs (awojs)
- - Justin Reherman (jreherman)
- - Delf Tonder (leberknecht)
- - Paweł Niedzielski (steveb)
- - Peter Jaap Blaakmeer
- - Agustin Gomes
- - Ondrej Exner
- - Mark Sonnabaum
- - Adiel Cristo (arcristo)
- - Fabian Kropfhamer (fabiank)
- - Junaid Farooq (junaidfarooq)
- - Chris Jones (magikid)
- - Massimiliano Braglia (massimilianobraglia)
- - Swen van Zanten (swenvanzanten)
- - Frankie Wittevrongel
- - Richard Quadling
- - James Hudson (mrthehud)
- - Adam Prickett
- - Raphaëll Roussel
- - Luke Towers
- - Anton Kroshilin
- - Norman Soetbeer
- - William Thomson (gauss)
- - Javier Espinosa (javespi)
- - jochenvdv
- - František Maša
- - Arturas Smorgun (asarturas)
- - Andrea Sprega (asprega)
- - Aleksandr Volochnev (exelenz)
- - Viktor Bajraktar (njutn95)
- - Robin van der Vleuten (robinvdvleuten)
- - Grinbergs Reinis (shima5)
- - Ruud Arentsen
- - Harald Tollefsen
- - Arend-Jan Tetteroo
- - Mbechezi Nawo
- - Andre Eckardt (korve)
- - Michael Piecko (michael.piecko)
- - Osayawe Ogbemudia Terry (terdia)
- - Toni Peric (tperic)
- - yclian
- - Aleksey Prilipko
- - Andrew Berry
- - Wybren Koelmans (wybren_koelmans)
- - Dmytro Dzubenko
- - Benjamin RICHARD
- - pdommelen
- - Cedrick Oka
- - Davide Borsatto (davide.borsatto)
- - Guillaume Sainthillier (guillaume-sainthillier)
- - Jens Hatlak
- - Tayfun Aydin
- - Arne Groskurth
- - Ilya Chekalsky
- - zenas1210
- - Ostrzyciel
- - Julien DIDIER (juliendidier)
- - Ilia Sergunin (maranqz)
- - Johan de Ruijter
- - marbul
- - Filippos Karailanidis
- - David Brooks
- - Volodymyr Kupriienko (greeflas)
- - Sebastian Grodzicki (sgrodzicki)
- - Florian Caron (shalalalala)
- - Serhiy Lunak (slunak)
- - Wojciech Błoszyk (wbloszyk)
- - Jeroen van den Enden (endroid)
- - Jiri Barous
- - abunch
- - tamcy
- - Mikko Pesari
- - Aurélien Fontaine
- - Pascal Helfenstein
- - Malcolm Fell (emarref)
- - phuc vo (phucwan)
- - Baldur Rensch (brensch)
- - Bogdan Scordaliu
- - Daniel Rotter (danrot)
- - Foxprodev
- - developer-av
- - Vladyslav Petrovych
- - Loïc Chardonnet
- - Hugo Sales
- - Dale.Nash
- - Alex Xandra Albert Sim
- - Sergey Yastrebov
- - Carson Full (carsonfull)
- - Yuen-Chi Lian
- - Maxim Semkin
- - BrokenSourceCode
- - Fabian Haase
- - Nikita Popov (nikic)
- - Robert Fischer (sandoba)
- - Tarjei Huse (tarjei)
- - Besnik Br
- - Michael Olšavský
- - Benny Born
- - Emirald Mateli
- - Tristan Pouliquen
- - Jose Gonzalez
- - Claudio Zizza
- - Ivo Valchev
- - Zlatoslav Desyatnikov
- - Wickex
- - tuqqu
- - Neagu Cristian-Doru (cristian-neagu)
- - Dave Marshall (davedevelopment)
- - Jakub Kulhan (jakubkulhan)
- - avorobiev
- - Gladhon
- - Kai
- - Bartłomiej Zając
- - Maximilian.Beckers
- - Grégoire Penverne (gpenverne)
- - Venu
- - Jonatan Männchen
- - Dennis Hotson
- - Andrew Tchircoff (andrewtch)
- - Lars Vierbergen (vierbergenlars)
- - Barney Hanlon
- - Bart Wach
- - Jos Elstgeest
- - Kirill Lazarev
- - Serhii Smirnov
- - Martins Eglitis
- - michaelwilliams
- - Wouter Diesveld
- - Romain
- - Matěj Humpál
- - Guillaume Loulier (guikingone)
- - Pedro Casado (pdr33n)
- - Pierre Grimaud (pgrimaud)
- - Alexander Janssen (tnajanssen)
- - 1emming
- - Nykopol (nykopol)
- - Julien BERNARD
- - Michael Zangerle
- - Jordan Deitch
- - Raphael Hardt
- - Casper Valdemar Poulsen
- - SnakePin
- - Matthew Covey
- - Anthony Massard (decap94)
- - Chris Maiden (matason)
- - Andrea Ruggiero (pupax)
- - Josiah (josiah)
- - Alexandre Beaujour
- - George Yiannoulopoulos
- - Joschi Kuphal
- - John Bohn (jbohn)
- - Peter Schultz
- - Benhssaein Youssef
- - bill moll
- - PaoRuby
- - Bizley
- - Edvin Hultberg
- - Dominik Piekarski (dompie)
- - Rares Sebastian Moldovan (raresmldvn)
- - Felds Liscia (felds)
- - dsech
- - Gilbertsoft
- - tadas
- - Bastien Picharles
- - mamazu
- - Victor Garcia
- - Juan Mrad
- - Denis Yuzhanin
- - knezmilos13
- - alireza
- - Marcin Kruk
- - Marek Víger (freezy)
- - Andrew Hilobok (hilobok)
- - Wahyu Kristianto (kristories)
- - Noah Heck (myesain)
- - Stephan Wentz (temp)
- - Christian Soronellas (theunic)
- - fedor.f
- - Yosmany Garcia (yosmanyga)
- - Markus Staab
- - bahram
- - Marie Minasyan (marie.minassyan)
- - Degory Valentine
- - izzyp
- - Jeroen Fiege (fieg)
- - Martin (meckhardt)
- - Radosław Kowalewski
- - JustDylan23
- - buffcode
- - Juraj Surman
- - Victor
- - Andreas Allacher
- - Alexis
- - Camille Dejoye (cdejoye)
- - Krzysztof Łabuś (crozin)
- - cybernet (cybernet2u)
- - Stefan Kleff (stefanxl)
- - Thijs-jan Veldhuizen (tjveldhuizen)
- - Xavier Lacot (xavier)
- - possum
- - Denis Zunke (donalberto)
- - _sir_kane (waly)
- - Olivier Maisonneuve
- - Bruno BOUTAREL
- - John Stevenson
- - everyx
- - Stanislav Gamayunov (happyproff)
- - Alexander McCullagh (mccullagh)
- - Paul L McNeely (mcneely)
- - Mike Meier (mykon)
- - Pedro Miguel Maymone de Resende (pedroresende)
- - Sergey Fokin (tyraelqp)
- - Masterklavi
- - Franco Traversaro (belinde)
- - Francis Turmel (fturmel)
- - Nikita Nefedov (nikita2206)
- - Bernat Llibre
- - Daniel Burger
- - cgonzalez
- - Ben
- - Joni Halme
- - aetxebeste
- - roromix
- - Vitali Tsyrkin
- - Juga Paazmaya
- - afaricamp
- - riadh26
- - Konstantinos Alexiou
- - Dilek Erkut
- - WaiSkats
- - Morimoto Ryosuke
- - Christoph König (chriskoenig)
- - Dmytro Pigin (dotty)
- - Vincent Composieux (eko)
- - Jm Aribau (jmaribau)
- - Jayson Xu (superjavason)
- - fago
- - popnikos
- - Tito Costa
- - Jan Prieser
- - Thiago Melo
- - Giorgio Premi
- - Matt Johnson (gdibass)
- - Gerhard Seidel (gseidel)
- - Zhuravlev Alexander (scif)
- - Stefano Degenkamp (steef)
- - James Michael DuPont
- - kor3k kor3k (kor3k)
- - Eric Schildkamp
- - agaktr
- - Vincent CHALAMON
- - Mostafa
- - kernig
- - Gennadi Janzen
- - SenTisso
- - Joe Springe
- - Ivan Kurnosov
- - Flinsch
- - botbotbot
- - Timon van der Vorm
- - G.R.Dalenoort
- - Vladimir Khramtsov (chrome)
- - Denys Voronin (hurricane)
- - Jordan de Laune (jdelaune)
- - Juan Gonzalez Montes (juanwilde)
- - Mathieu Dewet (mdewet)
- - Christopher Hall (mythmakr)
- - none (nelexa)
- - Patrick Dawkins (pjcdawkins)
- - Paul Kamer (pkamer)
- - Rafał Wrzeszcz (rafalwrzeszcz)
- - Rémi Faivre (rfv)
- - Nguyen Xuan Quynh
- - Reen Lokum
- - Martin Parsiegla (spea)
- - Bernhard Rusch
- - Ruben Jansen
- - Marc Biorklund
- - shreypuranik
- - Thibaut Salanon
- - Urban Suppiger
- - Denis Charrier (brucewouaigne)
- - Marcello Mönkemeyer (marcello-moenkemeyer)
- - Sander De la Marche (sanderdlm)
- - Philipp Scheit (pscheit)
- - Pierre Vanliefland (pvanliefland)
- - Roy Klutman (royklutman)
- - Sofiane HADDAG (sofhad)
- - Quentin Schuler (sukei)
- - VojtaB
- - frost-nzcr4
- - Yuri Karaban
- - Johan
- - Edwin
- - Andriy
- - Taylor Otwell
- - Sami Mussbach
- - qzylalala
- - Mikolaj Czajkowski
- - Shiro
- - Reda DAOUDI
- - Jesper Skytte
- - Christiaan Wiesenekker
- - Bozhidar Hristov
- - Foxprodev
- - Eric Hertwig
- - Sergey Panteleev
- - Dmitry Hordinky
- - Oliver Klee
- - Niels Robin-Aubertin
- - Mikko Ala-Fossi
- - Jan Christoph Beyer
- - Daniel Tiringer
- - Koray Zorluoglu
- - Roy-Orbison
- - kshida
- - Yasmany Cubela Medina (bitgandtter)
- - Aryel Tupinamba (dfkimera)
- - Hans Höchtl (hhoechtl)
- - Jawira Portugal (jawira)
- - Laurent Bassin (lbassin)
- - Roman Igoshin (masterro)
- - Jeroen van den Nieuwenhuisen (nieuwenhuisen)
- - Pierre Rebeilleau (pierrereb)
- - Raphael de Almeida (raphaeldealmeida)
- - andrey1s
- - Abhoryo
- - Fabian Vogler (fabian)
- - Korvin Szanto
- - Simon Ackermann
- - Stéphan Kochen
- - Steven Dubois
- - Arjan Keeman
- - Bálint Szekeres
- - Alaattin Kahramanlar (alaattin)
- - Sergey Zolotov (enleur)
- - Nicole Cordes (ichhabrecht)
- - Mark Beech (jaybizzle)
- - Maksim Kotlyar (makasim)
- - Thibaut Arnoud (thibautarnoud)
- - Neil Ferreira
- - Julie Hourcade (juliehde)
- - Dmitry Parnas (parnas)
- - Christian Weiske
- - Maria Grazia Patteri
- - Sébastien COURJEAN
- - Marko Vušak
- - Ismo Vuorinen
- - Tony Malzhacker
- - Valentin
- - Ali Tavafi
- - Viet Pham
- - Pchol
- - divinity76
- - Yiorgos Kalligeros
- - Arek Bochinski
- - Rafael Tovar
- - Amin Hosseini (aminh)
- - Andreas Lutro (anlutro)
- - DUPUCH (bdupuch)
- - Cyril Quintin (cyqui)
- - Cyrille Bourgois (cyrilleb)
- - Gerard van Helden (drm)
- - Johnny Peck (johnnypeck)
- - Geoffrey Monte (numerogeek)
- - Martijn Boers (plebian)
- - Plamen Mishev (pmishev)
- - Sergii Dolgushev (serhey)
- - Rein Baarsma (solidwebcode)
- - Stephen Lewis (tehanomalousone)
- - wicliff wolda (wickedone)
- - Wim Molenberghs (wimm)
- - Loic Chardonnet
- - Ivan Menshykov
- - David Romaní
- - Patrick Allaert
- - Alexander Li (aweelex)
- - Gustavo Falco (gfalco)
- - Matt Robinson (inanimatt)
- - Marcel Berteler
- - sdkawata
- - Aleksey Podskrebyshev
- - Calin Mihai Pristavu
- - Rainrider
- - Oliver Eglseder
- - zcodes
- - Jörn Lang
- - David Marín Carreño (davefx)
- - Fabien LUCAS (flucas2)
- - Hidde Boomsma (hboomsma)
- - Johan Wilfer (johanwilfer)
- - Toby Griffiths (tog)
- - Ashura
- - Alessandra Lai
- - Ernest Hymel
- - Andrea Civita
- - Nicolás Alonso
- - mwsaz
- - LoginovIlya
- - carlos-ea
- - Olexandr Kalaidzhy
- - Jérémy Benoist
- - Ferran Vidal
- - youssef saoubou
- - elattariyassine
- - Carlos Tasada
- - zors1
- - Peter Simoncic
- - lerminou
- - Ahmad El-Bardan
- - pdragun
- - Noel Light-Hilary
- - Emre YILMAZ
- - Marcos Labad
- - Antoine M
- - Frank Jogeleit
- - Ondřej Frei
- - Jenne van der Meer
- - Storkeus
- - Anton Zagorskii
- - ging-dev
- - zakaria-amm
- - Geert De Deckere
- - Agata
- - dakur
- - grizlik
- - florian-michael-mast
- - Henry Snoek
- - Vlad Dumitrache
- - Alex Kalineskou
- - Derek ROTH
- - Jeremy Benoist
- - Ben Johnson
- - Jan Kramer
- - mweimerskirch
- - robmro27
- - Vallel Blanco
- - Bastien Clément
- - Benjamin Franzke
- - Pavinthan
- - Sylvain METAYER
- - Benjamin Laugueux
- - Ivo Valchev
- - baron (bastien)
- - Benoît Bourgeois (bierdok)
- - Damien Harper (damien.harper)
- - Dominik Pesch (dombn)
- - Dmytro Boiko (eagle)
- - Shin Ohno (ganchiku)
- - Jaap van Otterdijk (jaapio)
- - Kubicki Kamil (kubik)
- - Simon Leblanc (leblanc_simon)
- - Vladislav Nikolayev (luxemate)
- - Martin Mandl (m2mtech)
  - Maxime Pinot (maximepinot)
- - Misha Klomp (mishaklomp)
- - Jean-Baptiste GOMOND (mjbgo)
- - Mikhail Prosalov (mprosalov)
- - Ulrik Nielsen (mrbase)
- - Artem (nexim)
- - Nicolas ASSING (nicolasassing)
- - Pierre Gasté (pierre_g)
- - Pierre-Olivier Vares (povares)
- - Ronny López (ronnylt)
- - Julius (sakalys)
- - abdul malik ikhsan (samsonasik)
- - Dmitry (staratel)
- - Tito Miguel Costa (titomiguelcosta)
- - Wim Godden (wimg)
- - Morgan Auchede
- - Christian Morgan
- - Alexander Miehe
- - Simon (kosssi)
- - Sascha Dens (saschadens)
- - Maxime Aknin (3m1x4m)
- - Geordie
- - Exploit.cz
- - Don Pinkster
- - Maksim Muruev
- - Emil Einarsson
- - Jason Stephens
- - 243083df
- - Tinjo Schöni
- - Thibault Duplessis
- - Quentin Favrie
- - Matthias Derer
- - vladyslavstartsev
- - Kévin
- - Marc Abramowitz
- - michal
- - Martijn Evers
- - Sjoerd Adema
- - Tony Tran
- - Evgeniy Koval
- - Claas Augner
- - Balazs Csaba
- - Bill Hance (billhance)
- - Douglas Reith (douglas_reith)
- - Harry Walter (haswalt)
- - Jeffrey Moelands (jeffreymoelands)
- - Jacques MOATI (jmoati)
- - Johnson Page (jwpage)
- - Ruben Gonzalez (rubenruateltek)
- - Ruslan Zavacky (ruslanzavacky)
- - Stefano Cappellini (stefano_cappellini)
- - Michael Roterman (wtfzdotnet)
- - Arno Geurts
- - Adán Lobato (adanlobato)
- - Ian Jenkins (jenkoian)
- - Marcos Gómez Vilches (markitosgv)
- - Matthew Davis (mdavis1982)
- - George Bateman
- - misterx
- - arend
- - Vincent Godé
- - helmi
- - Michael Steininger
- - Nardberjean
- - jersoe
- - Eric Grimois
- - Beno!t POLASZEK
- - Armando
- - Jens Schulze
- - Olatunbosun Egberinde
- - Knallcharge
- - Michel Bardelmeijer
- - Ikko Ashimine
- - Erwin Dirks
- - Markus Ramšak
- - den
- - George Dietrich
- - jannick-holm
- - Menno Holtkamp
- - Ser5
- - Clemens Krack
- - Bruno Baguette
- - Alexis Lefebvre
- - Michal Forbak
- - Alexey Berezuev
- - Pierrick Charron
- - gechetspr
- - brian978
- - Talha Zekeriya Durmuş
- - bch36
- - Steve Hyde
- - Ettore Del Negro
- - dima-gr
- - Gábor Tóth
- - Rodolfo Ruiz
- - tsilefy
- - Enrico
- - Jérémie Broutier
- - Success Go
- - Chris McGehee
- - Benjamin Rosenberger
- - Vladyslav Startsev
- - Markus Klein
- - Bruno Nogueira Nascimento Wowk
- - Tomanhez
- - satalaondrej
- - Matthias Dötsch
- - jonmldr
- - ouardisoft
- - RTUnreal
- - Richard Hodgson
- - Sven Fabricius
- - Bogdan
- - Marco Pfeiffer
- - Daniel Cestari
- - Matt Janssen
- - Kévin Gonella
- - Matteo Galli
- - Ash014
- - Loenix
- - Simon Frost
- - Cantepie
- - detinkin
- - Harry Wiseman
- - Steve Marvell
- - Shyim
- - sabruss
- - Andrejs Leonovs
- - Signor Pedro
- - Matthias Larisch
- - Maxime  P
- - Sean Templeton
- - Yendric
- - Stéphane Delprat
- - Matthias Meyer
- - Temuri Takalandze (abgeo)
- - Bernard van der Esch (adeptofvoltron)
- - Benedict Massolle (bemas)
- - Gerard Berengue Llobera (bere)
- - Ronny (big-r)
- - Anton (bonio)
- - Alexandre Fiocre (demos77)
- - Jordane VASPARD (elementaire)
- - Erwan Nader (ernadoo)
- - Faizan Akram Dar (faizanakram)
- - Greg Szczotka (greg606)
- - Ian Littman (iansltx)
- - Nathan DIdier (icz)
- - Ilia Lazarev (ilzrv)
- - Arkadiusz Kondas (itcraftsmanpl)
- - Joao Paulo V Martins (jpjoao)
- - Brunet Laurent (lbrunet)
- - Jérémy (libertjeremy)
- - Florent Viel (luxifer)
- - Maks 3w (maks3w)
- - Mamikon Arakelyan (mamikon)
- - Michiel Boeckaert (milio)
- - Mike Milano (mmilano)
- - Guillaume Lajarige (molkobain)
- - Diego Aguiar (mollokhan)
- - Mikhail Yurasov (mym)
- - PLAZANET Pierre (pedrotroller)
- - Igor Tarasov (polosatus)
- - Robert Gruendler (pulse00)
- - Ramazan APAYDIN (rapaydin)
- - Babichev Maxim (rez1dent3)
- - Christopher Georg (sky-chris)
- - Francisco Alvarez (sormes)
- - Simon Terrien (sterrien)
- - Stephan Vierkant (svierkant)
- - Benoît Merlet (trompette)
- - Aaron Piotrowski (trowski)
- - Roman Tymoshyk (tymoshyk)
- - Vincent MOULENE (vints24)
- - datibbaw
- - Koen Kuipers (koku)
- - Ryan Linnit
- - Antoine Leblanc
- - Andre Johnson
- - MaPePeR
- - Marco Pfeiffer
- - Matthieu Bontemps
- - Vivien
- - Rootie
- - david-binda
- - Alexandru Năstase
- - ddegentesh
- - Anne-Julia Seitz
- - Alexander Bauer (abauer)
- - Sébastien Santoro (dereckson)
- - Gabriel Solomon (gabrielsolomon)
- - Daniel Alejandro Castro Arellano (lexcast)
- - Aleksandar Dimitrov (netbull)
- - Gary Houbre (thegarious)
- - Florent Morselli
- - Thomas Jarrand
- - Baptiste Leduc (bleduc)
- - Antoine Bluchet (soyuka)
- - Patrick Kaufmann
- - Anton Dyshkant
- - Kirill Nesmeyanov (serafim)
- - Reece Fowell (reecefowell)
- - Muhammad Aakash
- - Guillaume Gammelin
- - Valérian Galliat
- - d-ph
- - Renan Taranto (renan-taranto)
- - Rikijs Murgs
- - Uladzimir Tsykun
- - Amaury Leroux de Lens (amo__)
- - Christian Jul Jensen
- - Franck RANAIVO-HARISOA (franckranaivo)
- - Alexandre GESLIN
- - The Whole Life to Learn
- - Mikkel Paulson
- - ergiegonzaga
- - Liverbool (liverbool)
- - Dalibor Karlović
- - Sam Malone
- - Ha Phan (haphan)
- - Chris Jones (leek)
- - neghmurken
- - stefan.r
- - xaav
- - Jean-Christophe Cuvelier [Artack]
- - Mahmoud Mostafa (mahmoud)
- - Ahmed Abdou
- - Pieter
- - Michael Tibben
- - Billie Thompson
- - Ganesh Chandrasekaran (gxc4795)
- - Sander Marechal
- - Franz Wilding (killerpoke)
- - Ferenczi Krisztian (fchris82)
- - Oleg Golovakhin (doc_tr)
- - Icode4Food (icode4food)
- - Radosław Benkel
- - Bert ter Heide (bertterheide)
- - Kevin Nadin (kevinjhappy)
- - jean pasqualini (darkilliant)
- - Ross Motley (rossmotley)
- - ttomor
- - Mei Gwilym (meigwilym)
- - Michael H. Arieli
- - Jitendra Adhikari (adhocore)
- - Tom Panier (neemzy)
- - Fred Cox
- - Luciano Mammino (loige)
- - fabios
- - Sander Coolen (scoolen)
- - Nicolas Le Goff (nlegoff)
- - Anne-Sophie Bachelard
- - Marvin Butkereit
- - Ben Oman
- - Jack Worman (jworman)
- - Chris de Kok
- - Andreas Kleemann (andesk)
- - Hubert Moreau (hmoreau)
- - Manuele Menozzi
- - Anton Babenko (antonbabenko)
- - Irmantas Šiupšinskas (irmantas)
- - Charles-Henri Bruyand
- - Danilo Silva
- - Konstantin S. M. Möllers (ksmmoellers)
- - Ken Stanley
- - Zachary Tong (polyfractal)
- - Ashura
- - Hryhorii Hrebiniuk
- - johnstevenson
- - hamza
- - dantleech
- - Rudy Onfroy
- - Tero Alén (tero)
- - DerManoMann
- - Guillaume Royer
- - Artem (digi)
- - boite
- - Silvio Ginter
- - MGDSoft
- - joris
- - Vadim Tyukov (vatson)
- - David Wolter (davewww)
- - Sortex
- - chispita
- - Wojciech Sznapka
- - Gavin (gavin-markup)
- - Ksaveras Šakys (xawiers)
- - Shaun Simmons
- - Ariel J. Birnbaum
- - Danijel Obradović
- - Pablo Borowicz
- - Ondřej Frei
- - Máximo Cuadros (mcuadros)
- - EXT - THERAGE Kevin
- - tamirvs
- - gauss
- - julien.galenski
- - Florian Guimier
- - Christian Neff (secondtruth)
- - Chris Tiearney
- - Oliver Hoff
- - Ole Rößner (basster)
- - Faton (notaf)
- - Tom Houdmont
- - Per Sandström (per)
- - Goran Juric
- - Laurent G. (laurentg)
- - Nicolas Macherey
- - Asil Barkin Elik (asilelik)
- - Bhujagendra Ishaya
- - Guido Donnari
- - Mert Simsek (mrtsmsk0)
- - Lin Clark
- - Jeremy David (jeremy.david)
- - Jordi Rejas
- - Troy McCabe
- - Ville Mattila
- - gr1ev0us
- - Léo VINCENT
- - mlazovla
- - Max Beutel
- - Nathan Sepulveda
- - Antanas Arvasevicius
- - Pierre Dudoret
- - Michal Trojanowski
- - Thomas
- - Norbert Schultheisz
- - Maximilian Berghoff (electricmaxxx)
- - SOEDJEDE Felix (fsoedjede)
- - Piotr Antosik (antek88)
- - Nacho Martin (nacmartin)
- - Sergey Novikov (s12v)
- - ProgMiner
- - Marcos Quesada (marcos_quesada)
- - Matthew (mattvick)
- - MARYNICH Mikhail (mmarynich-ext)
- - Viktor Novikov (nowiko)
- - Paul Mitchum (paul-m)
- - Angel Koilov (po_taka)
- - Dan Finnie
- - Ken Marfilla (marfillaster)
- - Max Grigorian (maxakawizard)
- - allison guilhem
- - benatespina (benatespina)
- - Denis Kop
- - Jean-Guilhem Rouel (jean-gui)
- - Ivan Yivoff
- - EdgarPE
- - jfcixmedia
- - Dominic Tubach
- - Martijn Evers
- - Benjamin Paap (benjaminpaap)
- - Christian
- - Denis Golubovskiy (bukashk0zzz)
- - Serge (nfx)
- - Mikkel Paulson
- - Michał Strzelecki
- - Hugo Fonseca (fonsecas72)
- - Martynas Narbutas
- - Bailey Parker
- - Antanas Arvasevicius
- - Kris Kelly
- - Eddie Abou-Jaoude (eddiejaoude)
- - Haritz Iturbe (hizai)
- - Nerijus Arlauskas (nercury)
- - Diego Sapriza
- - Joan Cruz
- - inspiran
- - Alex Demchenko
- - Cristobal Dabed
- - Daniel Mecke (daniel_mecke)
- - Matteo Giachino (matteosister)
- - Serhii Polishchuk (spolischook)
- - Tadas Gliaubicas (tadcka)
- - Thanos Polymeneas (thanos)
- - Benoit Garret
- - HellFirePvP
- - Maximilian Ruta (deltachaos)
- - Jakub Sacha
- - Olaf Klischat
- - orlovv
- - Claude Dioudonnat
- - Jonathan Hedstrom
- - Peter Smeets (darkspartan)
- - Julien Bianchi (jubianchi)
- - Robert Meijers
- - Tijs Verkoyen
- - James Sansbury
- - Marcin Chwedziak
- - hjkl
- - Dan Wilga
- - Andrew Tch
- - Alexander Cheprasov
- - Rodrigo Díez Villamuera (rodrigodiez)
- - Stephen Clouse
- - e-ivanov
- - Yann Rabiller (einenlum)
- - Jochen Bayer (jocl)
- - Patrick Carlo-Hickman
- - Bruno MATEU
- - Jeremy Bush
- - Thomason, James
- - Gordienko Vladislav
- - Ener-Getick
- - Viacheslav Sychov
- - Helmut Hummel (helhum)
- - Matt Brunt
- - Carlos Ortega Huetos
- - Péter Buri (burci)
- - kaiwa
- - Charles Sanquer (csanquer)
- - Albert Ganiev (helios-ag)
- - Neil Katin
- - David Otton
- - Will Donohoe
- - peter
- - Jeroen de Boer
- - Jérémy Jourdin (jjk801)
- - BRAMILLE Sébastien (oktapodia)
- - Artem Kolesnikov (tyomo4ka)
- - Gustavo Adrian
- - Yannick
- - Vladimir Luchaninov (luchaninov)
- - spdionis
- - rchoquet
- - v.shevelev
- - gitlost
- - Taras Girnyk
- - Sergio
- - Eduardo García Sanz (coma)
- - fduch (fduch)
- - David de Boer (ddeboer)
- - Eno Mullaraj (emullaraj)
- - Stephan Vock (glaubinix)
- - Guillem Fondin (guillemfondin)
- - Ryan Rogers
- - Arnaud
- - Klaus Purer
- - Gilles Doge (gido)
- - abulford
- - Philipp Kretzschmar
- - Jairo Pastor
- - Ilya Vertakov
- - Brooks Boyd
- - Axel Venet
- - Roger Webb
- - Dmitriy Simushev
- - Pawel Smolinski
- - John Espiritu (johnillo)
- - Oxan van Leeuwen
- - pkowalczyk
- - Soner Sayakci
- - Max Voloshin (maxvoloshin)
- - Nicolas Fabre (nfabre)
- - Raul Rodriguez (raul782)
- - mshavliuk
- - Jesper Skytte
- - MightyBranch
- - Kacper Gunia (cakper)
- - Derek Lambert (dlambert)
- - Mark Pedron (markpedron)
- - Peter Thompson (petert82)
- - error56
- - Felicitus
- - alexpozzi
- - Krzysztof Przybyszewski (kprzybyszewski)
- - Boullé William (williamboulle)
- - Frederic Godfrin
- - Paul Matthews
- - Jakub Kisielewski
- - Vacheslav Silyutin
- - Juan Traverso
- - Alain Flaus (halundra)
- - tsufeki
- - Philipp Strube
- - Petar Obradović
- - Clement Herreman (clemherreman)
- - Dan Ionut Dumitriu (danionut90)
- - Evgeny (disparity)
- - Vladislav Rastrusny (fractalizer)
- - Alexander Kurilo (kamazee)
- - nyro (nyro)
- - Marco
- - Marc Torres
- - gndk
- - Alberto Aldegheri
- - Dalibor Karlović
- - Cyril Vermandé (cyve)
- - Dmitri Petmanson
- - heccjj
- - Alexandre Melard
- - AlbinoDrought
- - Jay Klehr
- - Sergey Yuferev
- - Tobias Stöckler
- - Mario Young
- - martkop26
- - Sander Hagen
- - Ilia (aliance)
- - cilefen (cilefen)
- - Mo Di (modi)
- - Pablo Schläpfer
- - Robert Meijers
- - Xavier RENAUDIN
- - Christian Wahler (christian)
- - Jelte Steijaert (jelte)
- - David Négrier (moufmouf)
- - Quique Porta (quiqueporta)
- - Tobias Feijten (tobias93)
- - Andrea Quintino (dirk39)
- - Andreas Heigl (heiglandreas)
- - Tomasz Szymczyk (karion)
- - Peter Dietrich (xosofox)
- - Alex Vasilchenko
- - sez-open
- - ConneXNL
- - Aharon Perkel
- - matze
- - Rubén Calvo (rubencm)
- - Abdul.Mohsen B. A. A
- - Cédric Girard
- - pthompson
- - Malaney J. Hill
- - Patryk Kozłowski
- - Alexandre Pavy
- - Tim Ward
- - Christian Flach (cmfcmf)
- - Lars Ambrosius Wallenborn (larsborn)
- - Oriol Mangas Abellan (oriolman)
- - Sebastian Göttschkes (sgoettschkes)
- - Tatsuya Tsuruoka
- - Ross Tuck
- - omniError
- - Zander Baldwin
- - László GÖRÖG
- - Kévin Gomez (kevin)
- - Kevin van Sonsbeek (kevin_van_sonsbeek)
- - Mihai Nica (redecs)
- - Andrei Igna
- - azine
- - Wojciech Zimoń
- - Pierre Tachoire
- - Dawid Sajdak
- - Ludek Stepan
- - Mark van den Berg
- - Aaron Stephens (astephens)
- - Craig Menning (cmenning)
- - Balázs Benyó (duplabe)
- - Erika Heidi Reinaldo (erikaheidi)
- - Marc J. Schmidt (marcjs)
- - Maximilian Beckers (maxbeckers)
- - Sebastian Schwarz
- - karolsojko
- - Marco Jantke
- - Saem Ghani
- - Zacharias Luiten
- - Sebastian Utz
- - Adrien Gallou (agallou)
- - Maks Rafalko (bornfree)
- - Conrad Kleinespel (conradk)
- - Clément LEFEBVRE (nemoneph)
- - Walter Dal Mut (wdalmut)
- - abluchet
- - PabloKowalczyk
- - Matthieu
- - Albin Kerouaton
- - Sébastien HOUZÉ
- - Jingyu Wang
- - steveYeah
- - Samy D (dinduks)
- - Keri Henare (kerihenare)
- - Cédric Lahouste (rapotor)
- - Samuel Vogel (samuelvogel)
- - Berat Doğan
- - Guillaume LECERF
- - Juanmi Rodriguez Cerón
- - twifty
- - Andy Raines
- - Anthony Ferrara
- - Geoffrey Pécro (gpekz)
- - Jérémy DECOOL (jdecool)
- - Klaas Cuvelier (kcuvelier)
- - Flavien Knuchel (knuch)
- - Mathieu TUDISCO (mathieutu)
- - Peter Ward
- - markusu49
- - Steve Frécinaux
- - Constantine Shtompel
- - Jules Lamur
- - Renato Mendes Figueiredo
- - Raphaël Droz
- - Eric Stern
- - ShiraNai7
- - Antal Áron (antalaron)
- - Vašek Purchart (vasek-purchart)
- - Janusz Jabłoński (yanoosh)
- - Fleuv
- - Łukasz Makuch
- - George Giannoulopoulos
- - Alexander Pasichnik (alex_brizzz)
- - Luis Ramirez (luisdeimos)
- - Daniel Richter (richtermeister)
- - Sandro Hopf (senaria)
- - ChrisC
- - jack.shpartko
- - Willem Verspyck
- - Kim Laï Trinh
- - Jason Desrosiers
- - m.chwedziak
- - Andreas Frömer
- - Bikal Basnet
- - Philip Frank
- - Lance McNearney
- - Illia Antypenko (aivus)
- - Jelizaveta Lemeševa (broken_core)
- - Dominik Ritter (dritter)
- - Frank Neff (fneff)
- - Ilya Biryukov (ibiryukov)
- - Roma (memphys)
- - Giorgio Premi
- - Krzysztof Pyrkosz
- - ncou
- - Ian Carroll
- - caponica
- - Daniel Kay (danielkay-cp)
- - Matt Daum (daum)
- - Alberto Pirovano (geezmo)
- - Pascal Woerde (pascalwoerde)
- - Pete Mitchell (peterjmit)
- - Tom Corrigan (tomcorrigan)
- - Luis Galeas
- - Martin Pärtel
- - Frédéric Bouchery (fbouchery)
- - Patrick Daley (padrig)
- - Phillip Look (plook)
- - Max Summe
- - Ema Panz
- - Chihiro Adachi (chihiro-adachi)
- - Raphaëll Roussel
- - Tadcka
- - Abudarham Yuval
- - Beth Binkovitz
- - Gonzalo Míguez
- - Romain Geissler
- - Adrien Moiruad
- - Tomaz Ahlin
- - Nasim
- - AnotherSymfonyUser (arderyp)
- - Marcus Stöhr (dafish)
- - Daniel González Zaballos (dem3trio)
- - Emmanuel Vella (emmanuel.vella)
- - Guillaume BRETOU (guiguiboy)
- - Ibon Conesa (ibonkonesa)
- - Yoann Chocteau (kezaweb)
- - nuryagdy mustapayev (nueron)
- - Carsten Nielsen (phreaknerd)
- - Jay Severson
- - René Kerner
- - Nathaniel Catchpole
- - Adrien Samson (adriensamson)
- - Samuel Gordalina (gordalina)
- - Maksym Romanowski (maxromanovsky)
- - Nicolas Eeckeloo (neeckeloo)
- - Andriy Prokopenko (sleepyboy)
- - Dariusz Ruminski
- - Daniel Tschinder
- - Arnaud CHASSEUX
- - Wojciech Gorczyca
- - Mathieu Morlon (glutamatt)
- - Rafał Muszyński (rafmus90)
- - Sébastien Decrême (sebdec)
- - Timothy Anido (xanido)
- - acoulton
- - Mara Blaga
- - Rick Prent
- - skalpa
- - Pieter Jordaan
- - Tournoud (damientournoud)
- - Michael Dowling (mtdowling)
- - Arnaud POINTET (oipnet)
- - Karlos Presumido (oneko)
- - Tony Vermeiren (tony)
- - Thomas Counsell
- - BilgeXA
- - mmokhi
- - Robert Queck
- - Peter Bouwdewijn
- - Daniil Gentili
- - Eduard Morcinek
- - Amine Matmati
- - Kristen Gilden
- - caalholm
- - Nouhail AL FIDI (alfidi)
- - Fabian Steiner (fabstei)
- - Felipy Amorim (felipyamorim)
- - Klaus Silveira (klaussilveira)
- - Michael Lively (mlivelyjr)
- - Abderrahim (phydev)
- - Attila Bukor (r1pp3rj4ck)
- - Thomas Boileau (tboileau)
- - Thomas Chmielowiec (chmielot)
- - Jānis Lukss
- - rkerner
- - Alex Silcock
- - Qingshan Luo
- - Ergie Gonzaga
- - Matthew J Mucklo
- - AnrDaemon
- - Charly Terrier (charlypoppins)
- - Emre Akinci (emre)
- - Rustam Bakeev (nommyde)
- - psampaz (psampaz)
- - Maxwell Vandervelde
- - kaywalker
- - Sebastian Ionescu
- - Robert Kopera
- - Pablo Ogando Ferreira
- - Thomas Ploch
- - Simon Neidhold
- - Valentin VALCIU
- - Jeremiah VALERIE
- - Patrik Patie Gmitter
- - Yannick Snobbert
- - Kevin Dew
- - James Cowgill
- - sensio
- - Julien Menth (cfjulien)
- - Lyubomir Grozdanov (lubo13)
- - Nicolas Schwartz (nicoschwartz)
- - Tim Jabs (rubinum)
- - Stéphane Seng (stephaneseng)
- - Jonathan Gough
- - Benoit Leveque
- - Benjamin Bender
- - Jared Farrish
- - Yohann Tilotti
- - karl.rixon
- - raplider
- - Konrad Mohrfeldt
- - Lance Chen
- - Ciaran McNulty (ciaranmcnulty)
- - Andrew (drew)
- - j4nr6n (j4nr6n)
- - Stelian Mocanita (stelian)
- - Gautier Deuette
- - Kirk Madera
- - Keith Maika
- - Mephistofeles
- - Hoffmann András
- - Cédric Anne
- - LubenZA
- - Flavian Sierk
- - Michael Bessolov
- - Zdeněk Drahoš
- - Dan Harper
- - moldcraft
- - Antoine Bellion (abellion)
- - Ramon Kleiss (akathos)
- - Antonio Peric-Mazar (antonioperic)
- - César Suárez (csuarez)
- - Bjorn Twachtmann (dotbjorn)
- - Tobias Genberg (lorceroth)
- - Michael Simonson (mikes)
- - Nicolas Badey (nico-b)
- - Olivier Scherler (oscherler)
- - Shane Preece (shane)
- - Johannes Goslar
- - Geoff
- - georaldc
- - wusuopu
- - Wouter de Wild
- - Peter Potrowl
- - povilas
- - Gavin Staniforth
- - Alessandro Tagliapietra (alex88)
- - Nikita Starshinov (biji)
- - Alex Teterin (errogaht)
- - Gunnar Lium (gunnarlium)
- - Malte Wunsch (maltewunsch)
- - Simo Heinonen (simoheinonen)
- - Tiago Garcia (tiagojsag)
- - Artiom
- - Jakub Simon
- - Bouke Haarsma
- - mlievertz
- - Enrico Schultz
- - tpetry
- - Martin Eckhardt
- - natechicago
- - Leonid Terentyev
- - Sergei Gorjunov
- - Jonathan Poston
- - Adrian Olek (adrianolek)
- - Jody Mickey (jwmickey)
- - Przemysław Piechota (kibao)
- - Martin Schophaus (m_schophaus_adcada)
- - Martynas Sudintas (martiis)
- - Anton Sukhachev (mrsuh)
- - Marcel Siegert
- - ryunosuke
- - Francisco Facioni (fran6co)
- - Iwan van Staveren (istaveren)
- - Povilas S. (povilas)
- - Laurent Negre (raulnet)
- - Victoria Quirante Ruiz (victoria)
- - Evrard Boulou
- - pborreli
- - Boris Betzholz
- - Eric Caron
- - Arnau González
- - GurvanVgx
- - 2manypeople
- - Wing
- - Thomas Bibb
- - Stefan Koopmanschap
- - Matt Farmer
- - catch
- - Alexandre Segura
- - Asier Etxebeste
- - Josef Cech
- - Andrii Boiko
- - Harold Iedema
- - Ikhsan Agustian
- - Benoit Lévêque (benoit_leveque)
- - Simon Bouland (bouland)
- - Jakub Janata (janatjak)
- - Jibé Barth (jibbarth)
- - Matthew Foster (mfoster)
- - Reyo Stallenberg (reyostallenberg)
- - Paul Seiffert (seiffert)
- - Vasily Khayrulin (sirian)
- - Stas Soroka (stasyan)
- - Stefan Hüsges (tronsha)
- - Jake Bishop (yakobeyak)
- - Dan Blows
- - Matt Wells
- - Nicolas Appriou
- - stloyd
- - Andreas
- - Chris Tickner
- - Andrew Coulton
- - Ulugbek Miniyarov
- - Jeremy Benoist
- - sdrewergutland
- - Michal Gebauer
- - Phil Davis
- - Gleb Sidora
- - David Stone
- - Jovan Perovic (jperovic)
- - Pablo Maria Martelletti (pmartelletti)
- - Sander van der Vlugt (stranding)
- - Yassine Guedidi (yguedidi)
- - Florian Bogey
- - Waqas Ahmed
- - Bert Hekman
- - Luis Muñoz
- - Matthew Donadio
- - Kris Buist
- - Houziaux mike
- - Phobetor
- - Markus
- - Janusz Mocek
- - Thomas Chmielowiec
- - shdev
- - Andrey Ryaguzov
- - Stefan
- - Peter Bex
- - Manatsawin Hanmongkolchai
- - Gunther Konig
- - Mickael GOETZ
- - Tobias Speicher
- - Jesper Noordsij
- - DerStoffel
- - Maciej Schmidt
- - tatankat
- - nuncanada
- - Thierry Marianne
- - František Bereň
- - Jeremiah VALERIE
- - Mike Francis
- - Nil Borodulia
- - Almog Baku (almogbaku)
- - Benjamin Schultz (bschultz)
- - Gerd Christian Kunze (derdu)
- - Ionel Scutelnicu (ionelscutelnicu)
- - Kamil Madejski (kmadejski)
- - Nicolas Tallefourtané (nicolab)
- - Botond Dani (picur)
- - Radek Wionczek (rwionczek)
- - Nick Stemerdink
- - David Stone
- - Grayson Koonce
- - Wissame MEKHILEF
- - Romain Dorgueil
- - Christopher Parotat
- - Dennis Haarbrink
- - 蝦米
- - Julius Beckmann (h4cc)
- - Andrey Helldar (helldar)
- - Julien JANVIER (jjanvier)
- - Karim Cassam Chenaï (ka)
- - Lorenzo Adinolfi (loru88)
- - Ahmed Shamim Hassan (me_shaon)
- - Michal Kurzeja (mkurzeja)
- - Nicolas Bastien (nicolas_bastien)
- - Nikola Svitlica (thecelavi)
- - Andrew Zhilin (zhil)
- - Sjors Ottjes
- - azjezz
- - Andy Stanberry
- - Felix Marezki
- - Normunds
- - Walter Doekes
- - Thomas Rothe
- - Troy Crawford
- - nietonfir
- - alefranz
- - David Barratt
- - Andrea Giannantonio
- - Pavel.Batanov
- - avi123
- - Pavel Prischepa
- - Philip Dahlstrøm
- - Pierre Schmitz
- - alsar
- - downace
- - Aarón Nieves Fernández
- - Ph3nol
- - Kirill Saksin
- - Koalabaerchen
- - michalmarcinkowski
- - Warwick
- - Chris
- - Farid Jalilov
- - Florent Olivaud
- - JakeFr
- - Simon Sargeant
- - efeen
- - Nicolas Pion
- - Muhammed Akbulut
- - Xesau
- - Aaron Somi
- - Michał Dąbrowski (defrag)
- - Simone Fumagalli (hpatoio)
- - Brian Graham (incognito)
- - Kevin Vergauwen (innocenzo)
- - Alessio Baglio (ioalessio)
- - Johannes Müller (johmue)
- - Jordi Llonch (jordillonch)
- - julien_tempo1 (julien_tempo1)
- - Nicholas Ruunu (nicholasruunu)
- - Milos Colakovic (project2481)
- - Rénald Casagraude (rcasagraude)
- - Robin Duval (robin-duval)
- - Mohammad Ali Sarbanha (sarbanha)
- - Steeve Titeca (stiteca)
- - Artem Lopata (bumz)
- - alex
- - Roman Orlov
- - Andreas Allacher
- - VolCh
- - Alexey Popkov
- - Gijs Kunze
- - Artyom Protaskin
- - Nathanael d. Noblet
- - Yurun
- - helmer
- - ged15
- - Simon Asika
- - Daan van Renterghem
- - Boudry Julien
- - amcastror
- - Bram Van der Sype (brammm)
- - Guile (guile)
- - Julien Moulin (lizjulien)
- - Raito Akehanareru (raito)
- - Mauro Foti (skler)
- - Yannick Warnier (ywarnier)
- - Jörn Lang
- - Kevin Decherf
- - Paul LE CORRE
- - Jason Woods
- - klemens
- - dened
- - jpauli
- - Dmitry Korotovsky
- - Michael van Tricht
- - ReScO
- - Tim Strehle
- - Sam Ward
- - Hans N. Hjort
- - Walther Lalk
- - Adam
- - Ivo
- - Sören Bernstein
- - devel
- - taiiiraaa
- - gedrox
- - Alan Bondarchuk
- - dropfen
- - Andrey Chernykh
- - Edvinas Klovas
- - Drew Butler
- - Peter Breuls
- - Kevin EMO
- - Chansig
- - Tischoi
- - Andreas Hasenack
- - J Bruni
- - Alexey Prilipko
- - vlakoff
- - thib92
- - Rudolf Ratusiński
- - Bertalan Attila
- - AmsTaFF (amstaff)
- - Simon Müller (boscho)
- - Yannick Bensacq (cibou)
- - Damien Vauchel (damien_vauchel)
- - Dmitrii Fedorenko (dmifedorenko)
- - Frédéric G. Marand (fgm)
- - Freek Van der Herten (freekmurze)
- - Luca Genuzio (genuzio)
- - Andrew Marcinkevičius (ifdattic)
- - Ioana Hazsda (ioana-hazsda)
- - Jan Marek (janmarek)
- - Mark de Haan (markdehaan)
- - Maxime Corteel (mcorteel)
- - Dan Patrick (mdpatrick)
- - Mathieu MARCHOIS (mmar)
- - Pedro Magalhães (pmmaga)
- - Rares Vlaseanu (raresvla)
- - Trevor N. Suarez (rican7)
- - Clément Bertillon (skigun)
- - tante kinast (tante)
- - Adam RANDI (tiecoders)
- - Vincent LEFORT (vlefort)
- - Walid BOUGHDIRI (walidboughdiri)
- - Darryl Hein (xmmedia)
- - Vladimir Sadicov (xtech)
- - Peter van Dommelen
- - Tim van Densen
- - Andrzej
- - Alexander Zogheb
- - Rémi Blaise
- - Nicolas Séverin
- - Houssem
- - Joel Marcey
- - zolikonta
- - David Christmann
- - root
- - pf
- - Zoli Konta
- - Vincent Chalnot
- - Roeland Jago Douma
- - Patrizio Bekerle
- - Tom Maguire
- - Mateusz Lerczak
- - Richard Quadling
- - David Zuelke
- - Adrian
- - neFAST
- - Peter Gribanov
- - Pierre Rineau
- - Florian Morello
- - Maxim Lovchikov
- - adenkejawen
- - Florent SEVESTRE (aniki-taicho)
- - Ari Pringle (apringle)
- - Dan Ordille (dordille)
- - Jan Eichhorn (exeu)
- - Georg Ringer (georgringer)
- - Grégory Pelletier (ip512)
- - John Nickell (jrnickell)
- - Martin Mayer (martin)
- - Grzegorz Łukaszewicz (newicz)
- - Omar Yepez (oyepez003)
- - Jonny Schmid (schmidjon)
- - Götz Gottwald
- - Christoph Krapp
- - Nick Chiu
- - Robert Campbell
- - Matt Lehner
- - Helmut Januschka
- - Hein Zaw Htet™
- - Ruben Kruiswijk
- - Cosmin-Romeo TANASE
- - Michael J
- - Joseph Maarek
- - Alexander Menk
- - Alex Pods
- - timaschew
- - Jelle Kapitein
- - Jochen Mandl
- - Marin Nicolae
- - Gerrit Addiks
- - Albert Prat
- - Alessandro Loffredo
- - Ian Phillips
- - Remi Collet
- - Haritz
- - Matthieu Prat
- - Brieuc Thomas
- - mantulo
- - Paul Le Corre
- - Filipe Guerra
- - Jean Ragouin
- - Gerben Wijnja
- - Rowan Manning
- - qsz
- - Per Modin
- - David Windell
- - Gabriel Birke
- - Derek Bonner
- - martijn
- - annesosensio
- - NothingWeAre
- - goabonga
- - Alan Chen
- - Maerlyn
- - Even André Fiskvik
- - Erik van Wingerden
- - Valouleloup
- - Alexis MARQUIS
- - Matheus Gontijo
- - Gerrit Drost
- - Linnaea Von Lavia
- - Simon Mönch
- - Javan Eskander
- - Lenar Lõhmus
- - Cristian Gonzalez
- - MusikAnimal
- - AlberT
- - hainey
- - Juan M Martínez
- - Gilles Gauthier
- - ddebree
- - Gyula Szucs
- - Tomas Liubinas
- - Jan Hort
- - Klaas Naaijkens
- - Rafał
- - Adria Lopez (adlpz)
- - Aaron Scherer (aequasi)
- - Alexandre Jardin (alexandre.jardin)
- - Bart Brouwer (bartbrouwer)
- - Rosio (ben-rosio)
- - Simon Paarlberg (blamh)
- - Masao Maeda (brtriver)
- - Darius Leskauskas (darles)
- - david perez (davidpv)
- - David Joos (djoos)
- - Denis Klementjev (dklementjev)
- - Dominik Hajduk (dominikalp)
- - Tomáš Polívka (draczris)
- - Dennis Smink (dsmink)
- - Franz Liedke (franzliedke)
- - Alex (garrett)
- - Gaylord Poillon (gaylord_p)
- - gondo (gondo)
- - Joris Garonian (grifx)
- - Grummfy (grummfy)
- - Hadrien Cren (hcren)
- - Gusakov Nikita (hell0w0rd)
- - Oz (import)
- - Javier Núñez Berrocoso (javiernuber)
- - Jelle Bekker (jbekker)
- - Giovanni Albero (johntree)
- - Jorge Martin (jorgemartind)
- - Joeri Verdeyen (jverdeyen)
- - Kevin Verschaeve (keversc)
- - Kevin Herrera (kherge)
- - Luis Ramón López López (lrlopez)
- - Mehdi Mabrouk (mehdidev)
- - Bart Reunes (metalarend)
- - Muriel (metalmumu)
- - Michael Pohlers (mick_the_big)
- - mlpo (mlpo)
- - Marek Šimeček (mssimi)
- - Dmitriy Tkachenko (neka)
- - Cayetano Soriano Gallego (neoshadybeat)
- - Olivier Laviale (olvlvl)
- - Pablo Monterde Perez (plebs)
- - Jimmy Leger (redpanda)
- - Mokhtar Tlili (sf-djuba)
- - Marcin Szepczynski (szepczynski)
- - Simone Di  Maulo (toretto460)
- - Cyrille Jouineau (tuxosaurus)
- - Lajos Veres (vlajos)
- - Vladimir Chernyshev (volch)
- - Yorkie Chadwick (yorkie76)
- - Pavel Barton
- - GuillaumeVerdon
- - ureimers
- - akimsko
- - Youpie
- - srsbiz
- - Taylan Kasap
- - Michael Orlitzky
- - Nicolas A. Bérard-Nault
- - Francois Martin
- - Saem Ghani
- - Stefan Oderbolz
- - Tamás Szigeti
- - Gabriel Moreira
- - Alexey Popkov
- - ChS
- - Alexis MARQUIS
- - Joseph Deray
- - Damian Sromek
- - Ben
- - Evgeniy Tetenchuk
- - Shrey Puranik
- - Lars Moelleken
- - dasmfm
- - Mathias Geat
- - Angel Fernando Quiroz Campos (angelfqc)
- - Arnaud Buathier (arnapou)
- - Curtis (ccorliss)
- - chesteroni (chesteroni)
- - Mauricio Lopez (diaspar)
- - HADJEDJ Vincent (hadjedjvincent)
- - Daniele Cesarini (ijanki)
- - Ismail Asci (ismailasci)
- - Ondřej Mirtes (mirtes)
- - Paulius Jarmalavičius (pjarmalavicius)
- - Ramon Ornelas (ramonornela)
- - Ricardo de Vries (ricardodevries)
- - Thomas Dutrion (theocrite)
- - Till Klampaeckel (till)
- - Tobias Weinert (tweini)
- - Wotre
- - goohib
- - Tom Counsell
- - Sepehr Lajevardi
- - Xavier HAUSHERR
- - Edwin Hageman
- - Mantas Urnieža
- - temperatur
- - Paul Andrieux
- - Sezil
- - Cas
- - ghazy ben ahmed
- - Karolis
- - Myke79
- - Brian Debuire
- - Piers Warmers
- - Sylvain Lorinet
- - klyk50
- - jc
- - BenjaminBeck
- - Aurelijus Rožėnas
- - Jordan Hoff
- - znerol
- - Christian Eikermann
- - Sergei Shitikov
- - Antonio Angelino
- - Pavel Golovin
- - Matt Fields
- - Andras Debreczeni
- - Vladimir Sazhin
- - Tomas Kmieliauskas
- - Billie Thompson
- - lol768
- - jamogon
- - Antoine LA
- - Vyacheslav Slinko
- - Benjamin Laugueux
- - Jakub Chábek
- - William Pinaud (DocFX)
- - Johannes
- - Jörg Rühl
- - wesleyh
- - Michael Hudson-Doyle
- - Daniel Bannert
- - Karim Miladi
- - Michael Genereux
- - patrick-mcdougle
- - Tyler Stroud
- - Dariusz Czech
- - Jack Wright
- - MrNicodemuz
- - Anonymous User
- - demeritcowboy
- - Paweł Tomulik
- - Eric J. Duran
- - Blackfelix
- - Alexandru Bucur
- - cmfcmf
- - Drew Butler
- - pawel-lewtak
- - Steve Müller
- - omerida
- - Andras Ratz
- - andreabreu98
- - Michael Schneider
- - n-aleha
- - Anatol Belski
- - Alexis BOYER
- - Kaipi Yann
- - adam-mospan
- - Sam Williams
- - Guillaume Aveline
- - Adrian Philipp
- - James Michael DuPont
- - Markus Tacker
- - Kasperki
- - Tammy D
- - Adrien Foulon
- - Ryan Rud
- - Ondrej Slinták
- - vlechemin
- - Brian Corrigan
- - Ladislav Tánczos
- - Brian Freytag
- - Skorney
- - Lucas Matte
- - fmarchalemisys
- - MGatner
- - mieszko4
- - Steve Preston
- - ibasaw
- - Wojciech Skorodecki
- - Kevin Frantz
- - Neophy7e
- - bokonet
- - Arrilot
- - andrey-tech
- - Shaun Simmons
+ - Kevin McBride
+ - Eugene Wissner
+ - Denis Gorbachev (starfall)
+ - Alex Bakhturin
+ - kylekatarnls (kylekatarnls)
+ - Ziumin
+ - Fabrice Bernhard (fabriceb)
  - Markus Staab
- - Pierre-Louis LAUNAY
- - djama
- - Michael Gwynne
- - Eduardo Conceição
- - changmin.keum
- - Jon Cave
- - Sébastien HOUZE
- - Abdulkadir N. A.
- - Adam Klvač
- - Yevgen Kovalienia
- - Lebnik
- - Shude
- - Ondřej Führer
- - Sema
- - Ayke Halder
- - Thorsten Hallwas
- - Brian Freytag
- - Alex Nostadt
- - Michael Squires
- - Egor Gorbachev
- - Derek Stephen McLean
- - Norman Soetbeer
- - zorn
- - Yuriy Potemkin
- - Emilie Lorenzo
- - prudhomme victor
- - enomotodev
- - Vincent
- - Benjamin Long
- - Ben Miller
- - Peter Gribanov
- - Bart Ruysseveldt
- - kwiateusz
- - Ilya Bulakh
- - David Soria Parra
- - Sergiy Sokolenko
- - Ahmed Abdulrahman
- - dinitrol
- - Penny Leach
- - Yurii K
- - Richard Trebichavský
- - g123456789l
- - Mark Ogilvie
- - Jonathan Vollebregt
- - Vladimir Vasilev
- - oscartv
- - DanSync
- - Peter Zwosta
- - Michal Čihař
- - parhs
- - Diego Campoy
- - Oncle Tom
- - Sam Anthony
- - Christian Stocker
- - Oussama Elgoumri
- - David Lima
- - Dawid Nowak
- - Lesnykh Ilia
- - darnel
- - Nicolas
+ - Michael Moravec
+ - Arkadius Stefanski (arkadius)
+ - Maelan LE BORGNE
+ - Dominik Zogg
+ - Jonas Elfering
+ - Denis Kulichkin (onexhovia)
+ - Ioan Negulescu
+ - Steffen Roßkamp
+ - Jan van Thoor (janvt)
+ - Scott Arciszewski
+ - Nate (frickenate)
+ - Guilherme Ferreira
+ - Bernd Stellwag
+ - Chris Tanaskoski (devristo)
+ - Emanuele Iannone
+ - Marek Zajac
+ - Valentin Jonovs
+ - Desjardins Jérôme (jewome62)
+ - Martijn Cuppens
+ - Rob Bast
+ - Vlad Gregurco (vgregurco)
+ - simon chrzanowski (simonch)
+ - Gildas Quéméner (gquemener)
+ - Florian Merle (florian-merle)
+ - Asier Illarramendi (doup)
+ - Steven Surowiec (steves)
+ - Vitaliy Tverdokhlib (vitaliytv)
+ - Gijs van Lammeren
  - Sergio Santoro
- - tirnanog06
- - Alfonso Fernández García
- - phc
- - Дмитрий Пацура
- - Michaël VEROUX
- - Julia
- - Lin Lu
- - arduanov
- - sualko
- - Fabien
- - Martin Komischke
- - ADmad
- - Nicolas Roudaire
- - Abdouni Karim (abdounikarim)
- - Andreas Forsblom (aforsblo)
- - Alex Olmos (alexolmos)
- - Cedric BERTOLINI (alsciende)
- - Antonio Mansilla (amansilla)
- - Robin Kanters (anddarerobin)
- - Juan Ases García (ases)
- - Siragusa (asiragusa)
- - Daniel Basten (axhm3a)
- - Bernd Matzner (bmatzner)
- - Bram Tweedegolf (bram_tweedegolf)
- - Brandon Kelly (brandonkelly)
- - Choong Wei Tjeng (choonge)
- - Kousuke Ebihara (co3k)
- - Loïc Vernet (coil)
- - Christoph Vincent Schaefer (cvschaefer)
- - Damon Jones (damon__jones)
- - David Courtey (david-crty)
- - Łukasz Giza (destroyer)
- - Daniel Londero (dlondero)
- - Dušan Kasan (dudo1904)
- - Sebastian Landwehr (dword123)
- - Adel ELHAIBA (eadel)
- - Damián Nohales (eagleoneraptor)
- - Elliot Anderson (elliot)
- - Fabien D. (fabd)
- - Carsten Eilers (fnc)
- - Sorin Gitlan (forapathy)
- - Yohan Giarelli (frequence-web)
- - Gerry Vandermaesen (gerryvdm)
- - Arash Tabrizian (ghost098)
+ - Cédric Lombardot (cedriclombardot)
+ - Ahmed Ghanem (ahmedghanem00)
+ - Andrii Dembitskyi
+ - Matthias Krauser (mkrauser)
+ - Martin Morávek (keeo)
+ - Pavel Campr (pcampr)
+ - Greg Anderson
+ - Erik Saunier (snickers)
+ - Sergey Panteleev
+ - PHAS Developer
+ - Andreas Hennings
+ - Yoshio HANAWA
+ - Forfarle (forfarle)
+ - Sam Fleming (sam_fleming)
+ - Marcin Michalski (marcinmichalski)
+ - Jacek Jędrzejewski (jacek.jedrzejewski)
+ - Jérémy M (th3mouk)
+ - Johan Vlaar (johjohan)
+ - Webnet team (webnet)
+ - Jérôme Macias (jeromemacias)
+ - Ryan
+ - Nathan Dench (ndenc2)
+ - AnneKir
+ - Florent Destremau (florentdestremau)
+ - Antonin CLAUZIER (0x346e3730)
+ - Anton Bakai
+ - Oleksii Zhurbytskyi
+ - Luc Vieillescazes (iamluc)
+ - Jonathan Johnson (jrjohnson)
+ - William Arslett (warslett)
+ - Xavier HAUSHERR
+ - Chad Sikorra (chadsikorra)
+ - Brayden Williams (redstar504)
+ - Matthijs van den Bos (matthijs)
+ - Dirk Pahl (dirkaholic)
+ - Boris Vujicic (boris.vujicic)
+ - Faizan Akram Dar (faizanakram)
+ - NickSdot
+ - Matthew Grasmick
+ - ilyes kooli (skafandri)
+ - Thomas Durand
+ - Bilge
+ - Klaus Silveira (klaussilveira)
+ - Jérémy DECOOL (jdecool)
+ - Maxim Dovydenok (dovydenok-maxim)
+ - Romain Gautier (mykiwi)
+ - Petr Duda (petrduda)
+ - Benjamin Cremer (bcremer)
+ - Remi Collet
+ - Ayyoub AFW-ALLAH (ayyoub-afwallah)
+ - Arturs Vonda
+ - Kevin Saliou (kbsali)
+ - Roberto Espinoza (respinoza)
+ - Zach Badgett (zachbadgett)
+ - tim
+ - Bhavinkumar Nakrani (bhavin4u)
+ - Mohammad Emran Hasan (phpfour)
+ - M. (mbontemps)
+ - Aurélien Fredouelle
+ - Philipp Rieber (bicpi)
+ - Tri Pham (phamuyentri)
+ - Jérôme Tanghe (deuchnord)
+ - Joshua Nye
+ - nathanpage
+ - Evan S Kaufman (evanskaufman)
+ - Dave Hulbert (dave1010)
+ - Pavel Popov (metaer)
+ - Markus Lanthaler (lanthaler)
+ - Wolfgang Klinger (wolfgangklingerplan2net)
+ - Laurent Masforné (heisenberg)
+ - Damien Fernandes
+ - Raulnet
+ - Florian Rey (nervo)
+ - mamazu
+ - Maximilian Zumbansen
+ - Soufian EZ ZANTAR (soezz)
+ - Jérémy REYNAUD (babeuloula)
+ - Greg ORIOL
+ - Korvin Szanto
+ - Ioan Ovidiu Enache (ionutenache)
+ - vagrant
+ - Bahman Mehrdad (bahman)
+ - Berny Cantos (xphere81)
+ - Arnaud POINTET (oipnet)
+ - Anthony Ferrara
+ - Filip Procházka (fprochazka)
+ - Peter Bowyer (pbowyer)
+ - Angelov Dejan (angelov)
+ - Jakub Škvára (jskvara)
+ - Jaik Dean (jaikdean)
+ - boombatower
+ - Lctrs
+ - Zbigniew Malcherczyk (ferror)
+ - Michel Salib (michelsalib)
+ - Jeroen Thora (bolle)
+ - Barry vd. Heuvel (barryvdh)
+ - Kurt Thiemann
+ - M. Vondano
+ - Piotr Kugla (piku235)
+ - Ivan Nikolaev (destillat)
+ - Marcin Chyłek (songoq)
+ - BASAK Semih (itsemih)
+ - François Dume (franek)
+ - Judicaël RUFFIEUX (axanagor)
+ - Benjamin Georgeault (wedgesama)
+ - DerManoMann
+ - Alexandru Furculita (afurculita)
+ - BENOIT POLASZEK (bpolaszek)
+ - Tobias Weichart
+ - Jérôme Vieilledent (lolautruche)
+ - Benoit Galati (benoitgalati)
+ - Norbert Orzechowicz (norzechowicz)
+ - Leevi Graham (leevigraham)
+ - Dries Vints
+ - De Cock Xavier (xdecock)
+ - geoffrey
+ - Jan Ole Behrens (deegital)
+ - Jerzy Lekowski (jlekowski)
+ - Grummfy (grummfy)
+ - Ned Schwartz
+ - Nicolas Dewez (nicolas_dewez)
+ - Christian Gripp (core23)
+ - Nadim AL ABDOU (nadim)
+ - Adam Harvey
+ - Tavo Nieves J (tavoniievez)
+ - nikos.sotiropoulos
+ - Thomas Talbot (ioni)
+ - Ben Ramsey (ramsey)
+ - Mathias STRASSER (roukmoute)
+ - Jonas Flodén (flojon)
+ - Adam Szaraniec
+ - Bohdan Pliachenko
+ - Mark Challoner (markchalloner)
+ - Daniel Tiringer
+ - Trent Steel (trsteel88)
+ - Alireza Mirsepassi (alirezamirsepassi)
+ - Arnaud De Abreu (arnaud-deabreu)
+ - battye
+ - Joachim Løvgaard (loevgaard)
+ - Jan Schumann
+ - Martin Kirilov (wucdbm)
+ - Sander Toonen (xatoo)
+ - Johnny Robeson (johnny)
+ - ReenExe
+ - Lenard Palko
+ - Mokhtar Tlili (sf-djuba)
+ - Andrii Dembitskyi
+ - Ivan Rey (ivanrey)
+ - Andrey Astakhov (aast)
+ - Erik Trapman
+ - Samuele Lilli (doncallisto)
+ - Benjamin Zaslavsky (tiriel)
+ - Shawn Iwinski
+ - Tom Klingenberg
+ - Quentin Dequippe (qdequippe)
+ - Geoffrey Tran (geoff)
+ - Miroslav Šustek (sustmi)
+ - Lescot Edouard (idetox)
+ - Nicolas Rigaud
+ - AKeeman (akeeman)
+ - quentin neyrat (qneyrat)
+ - R. Achmad Dadang Nur Hidayanto (dadangnh)
+ - Eduardo Oliveira (entering)
+ - Jibé Barth (jibbarth)
+ - Dariusz Ruminski
+ - Tobias Bönner
+ - Sebastian Bergmann
+ - Marcos Rezende (rezende79)
+ - Ricardo Oliveira (ricardolotr)
+ - wicliff wolda (wickedone)
+ - Loïc Faugeron
+ - Disquedur
+ - Chris Sedlmayr (catchamonkey)
+ - Rodrigo Borrego Bernabé (rodrigobb)
+ - Shakhobiddin
+ - Miro Michalicka
+ - Alexander Deruwe (aderuwe)
+ - Andrew M-Y (andr)
+ - Christoph Mewes (xrstf)
+ - Patrick Reimers (preimers)
+ - lenar
+ - Dmitriy Mamontov (mamontovdmitriy)
+ - Sergey Melesh (sergex)
+ - Gigino Chianese (sajito)
+ - Brian King
+ - Petrisor Ciprian Daniel
+ - Neil Peyssard (nepey)
+ - Stefan Kruppa
+ - Axel Guckelsberger (guite)
+ - Jan Nedbal
+ - Artem Stepin (astepin)
+ - Koen Reiniers (koenre)
+ - Antonio Jose Cerezo (ajcerezo)
+ - Ariel Ferrandini (aferrandini)
+ - Belhassen Bouchoucha (crownbackend)
+ - Dawid Pakuła (zulusx)
+ - Robert-Jan de Dreu
+ - Marvin Feldmann (breyndotechse)
+ - Gunnstein Lye (glye)
+ - John Bafford (jbafford)
+ - Markus S. (staabm)
+ - Dennis Fridrich (dfridrich)
+ - Giso Stallenberg (gisostallenberg)
+ - mmokhi
+ - Benjamin (yzalis)
+ - Ben Roberts (benr77)
+ - Stefan Gehrig (sgehrig)
+ - W0rma
+ - Matthew Smeets
+ - sasezaki
+ - Jeanmonod David (jeanmonod)
+ - lancergr
+ - Anatoly Pashin (b1rdex)
+ - Mustafa Cheraim (musta_cher)
+ - Tony Tran
+ - Philippe Segatori
+ - Patrick Allaert
+ - louismariegaborit
+ - Michael Lutz
+ - Adrien Wilmet (adrienfr)
+ - Martin (meckhardt)
+ - Paweł Wacławczyk (pwc)
+ - Yi-Jyun Pan
+ - Jordan Deitch
+ - Stefano Degenkamp (steef)
+ - Noah Heck (myesain)
+ - Robert Gruendler (pulse00)
+ - Jelle Raaijmakers (gmta)
+ - Sascha Grossenbacher (berdir)
+ - Piotr Stankowski
+ - Jon Dufresne
+ - Benjamin Lebon
+ - Douglas Reith (douglas_reith)
+ - frost-nzcr4
+ - Vincent CHALAMON
+ - VJ
+ - Martins Sipenko
+ - Andreas Braun
+ - ouardisoft
+ - Geordie
+ - develop
+ - Stephan Vierkant (svierkant)
+ - Oleg Zinchenko (cystbear)
+ - Alex Xandra Albert Sim
+ - buffcode
+ - Pedro Miguel Maymone de Resende (pedroresende)
+ - Nicolas de Marqué (nicola)
+ - Oleksandr Barabolia (oleksandrbarabolia)
+ - Alex Bacart
+ - ampaze
+ - Nicolas Dousson
+ - Denis Zunke (donalberto)
+ - Ivan Kurnosov
+ - Dennis Hotson
+ - RJ Garcia
+ - Ke WANG (yktd26)
+ - Jonathan (jlslew)
+ - marie
+ - Mickaël Buliard (mbuliard)
+ - Maxime Douailin
+ - Youssef Benhssaien (moghreb)
+ - Sergey Kolodyazhnyy (skolodyazhnyy)
+ - Mathias Brodala (mbrodala)
+ - Baldur Rensch (brensch)
+ - vitaliytv
+ - wanxiangchwng
+ - Roger Guasch (rogerguasch)
+ - Daniel Alejandro Castro Arellano (lexcast)
+ - Sofiane HADDAG (sofhad)
+ - Gert Wijnalda (cinamo)
+ - Gregor Nathanael Meyer (spackmat)
+ - Daisuke Ohata
+ - Christin Gruber (christingruber)
+ - Kay Wei
+ - mohamed
+ - Loïc Chardonnet
+ - arai
+ - Renan Rodrigo
+ - Florian Wolfsjaeger (flowolf)
+ - fzerorubigd
+ - Geoffrey Brier (geoffrey-brier)
+ - Krzysztof Łabuś (crozin)
+ - Claudio Zizza
+ - Marc Abramowitz
+ - AndrolGenhald
+ - umpirski
+ - Dave Marshall (davedevelopment)
+ - Travis Carden (traviscarden)
+ - Guilherme Augusto Henschel
+ - Carlos Buenosvinos (carlosbuenosvinos)
+ - Israel J. Carberry
+ - Vladimir Varlamov (iamvar)
+ - Jason Tan (jt2k)
+ - Vincent Composieux (eko)
+ - Oriol Viñals
+ - Matthieu Mota (matthieumota)
+ - Fabian Vogler (fabian)
+ - Christophe Villeger (seragan)
+ - Ivan Menshykov
+ - Tales Santos (tsantos84)
+ - Shin Ohno (ganchiku)
+ - Masterklavi
+ - Tony Malzhacker
+ - “Filip
+ - James Johnston
+ - Damien Fa
+ - Wybren Koelmans (wybren_koelmans)
+ - julien57
+ - Ondrej Machulda (ondram)
+ - Paweł Niedzielski (steveb)
+ - Ahmed Ashraf (ahmedash95)
+ - Hany el-Kerdany
+ - Jean-Baptiste GOMOND (mjbgo)
+ - Matijn (matijn-made)
+ - Thibaut THOUEMENT (thibaut_thouement)
+ - Kyle Evans (kevans91)
+ - andrey1s
+ - Jeroen van den Enden (endroid)
+ - Jean Pasdeloup
+ - Jordi Sala Morales (jsala)
+ - Nico Haase
+ - Ferran Perxas (fperxas)
+ - Michiel Boeckaert (milio)
+ - Geert De Deckere
+ - Joschi Kuphal
+ - Emil Einarsson
+ - Ivo Bathke (ivoba)
+ - Marek Pietrzak (mheki)
+ - Rootie
+ - David Fuhr
+ - radar3301
+ - NanoSector
+ - Lorenzo Millucci (lmillucci)
+ - Besnik Br
+ - Pierre Vanliefland (pvanliefland)
+ - Gennadi Janzen
+ - Jawira Portugal (jawira)
+ - Andrew Hilobok (hilobok)
+ - Toon Verwerft (veewee)
+ - Tamás Nagy (t-bond)
+ - Andre Hoong
+ - Jonatan Männchen
+ - Pierre-Emmanuel Tanguy (petanguy)
+ - Malte Blättermann
+ - Ulumuddin Cahyadi Yunus (joenoez)
+ - Paul Oms
+ - Ворожцов Максим (myks92)
+ - Pierrick VIGNAND (pierrick)
+ - Gintautas Miselis (naktibalda)
+ - Benjamin Schoch (bschoch)
+ - Edvin Hultberg
+ - Sergii Dolgushev (serhey)
+ - Andreas Lutro (anlutro)
+ - Franco Traversaro (belinde)
+ - Yosmany Garcia (yosmanyga)
+ - Fractal Zombie
+ - Gert de Pagter
+ - Dennis Langen (nijusan)
+ - benjaminmal
+ - Mikhail Yurasov (mym)
+ - Volodymyr Panivko
+ - Maxime COLIN (maximecolin)
+ - Maximilian Bösing
+ - Oliver Hoff
+ - Kien Nguyen
+ - Chris Heng (gigablah)
+ - Simon Terrien (sterrien)
+ - Carl Casbolt (carlcasbolt)
+ - Ettore Del Negro (ettoredn)
+ - Dmitrii Tarasov (dtarasov)
+ - David ALLIX
+ - Seb Koelen
+ - Andrew Tchircoff (andrewtch)
+ - Christophe V. (cvergne)
+ - Bastien THOMAS
+ - Philipp Scheit (pscheit)
+ - Ondrej Exner
+ - Tim Düsterhus
+ - COMBROUSE Dimitri
+ - Matthieu Calie (matth--)
+ - Cyril Vermandé (cyve)
+ - Derek ROTH
+ - mfettig
+ - Matt Johnson (gdibass)
+ - Alexandre Dupuy (satchette)
+ - Sergey Zolotov (enleur)
+ - Martijn Evers
+ - Olivier Maisonneuve
+ - Mihai Stancu
+ - Pavlo Pelekh (pelekh)
+ - Andrew Codispoti
+ - shubhalgupta
+ - Michał Marcin Brzuchalski (brzuchal)
+ - hugovms
+ - Marcel Hernandez
+ - Aleksandr Volochnev (exelenz)
+ - Mickaël Andrieu (mickaelandrieu)
+ - Arjan Keeman
+ - Patrick Dawkins (pjcdawkins)
+ - Asier Etxebeste
+ - Dhananjay Goratela
+ - Delf Tonder (leberknecht)
+ - Thorry84
+ - Mickaël Isaert (misaert)
+ - Xavier Leune (xleune)
+ - Maximilian.Beckers
+ - Pascal Helfenstein
+ - Andrew Neil Forster (krciga22)
+ - ToshY
+ - Adrian Nguyen (vuphuong87)
+ - Jan Pintr
+ - Andrii Popov (andrii-popov)
+ - Jiri Barous
+ - Marko H. Tamminen (gzumba)
+ - Christian Sciberras (uuf6429)
+ - Gerben Oolbekkink
+ - Carlos Quintana
+ - Rodrigo Aguilera
+ - Nykopol (nykopol)
+ - kick-the-bucket
+ - Simon Leblanc (leblanc_simon)
+ - Adrien Roches (neirda24)
+ - Javier López (loalf)
+ - Jonas Elfering
+ - Romanavr
+ - Fabien Salles (blacked)
+ - Julie Hourcade (juliehde)
+ - Xav` (xavismeh)
+ - Maksim Muruev
+ - Stéphane Escandell (sescandell)
+ - Ramunas Pabreza (doobas)
+ - Xavier Lacot (xavier)
+ - Sébastien Despont (bouillou)
+ - Egor Taranov
+ - Oliver Hader
+ - Michael Bessolov
+ - Loïc Beurlet
+ - Grégoire Penverne (gpenverne)
+ - noniagriconomie
+ - Brad Jones
+ - Max Rath (drak3)
+ - Neil Ferreira
+ - SpacePossum
+ - Tamás Szigeti
+ - Fabien LUCAS (flucas2)
+ - Wesley Lancel
+ - Kevin (oxfouzer)
+ - Natsuki Ikeguchi
+ - Pierre Hennequart
+ - Alexandre parent
+ - Thibault Buathier (gwemox)
+ - Vladimir Luchaninov (luchaninov)
+ - Cristoforo Cervino (cristoforocervino)
+ - Julien DIDIER (juliendidier)
+ - Steve Grunwell
+ - Joost van Driel (j92)
+ - Matthieu Bontemps
+ - Daniel González (daniel.gonzalez)
+ - Nguyen Xuan Quynh
+ - Lars Vierbergen (vierbergenlars)
+ - Guillaume Verstraete
+ - Sander De la Marche (sanderdlm)
+ - Ana Raro
+ - Simon (kosssi)
+ - Thiago Cordeiro (thiagocordeiro)
+ - Evan Villemez
+ - Quentin Dreyer (qkdreyer)
+ - Dragos Protung (dragosprotung)
+ - Shaharia Azam
+ - Rafael Kraut
+ - Stéphane Delprat
+ - Sebastian Grodzicki (sgrodzicki)
+ - Gina Peter Banyard
+ - Florian Weber
+ - Alexander Miehe
+ - Alaattin Kahramanlar (alaattin)
+ - Åsmund Garfors
+ - Maks 3w (maks3w)
+ - Andrew Berry
+ - Adrien Lucas (adrienlucas)
+ - Adrian Günter (adrianguenter)
+ - Ilia (aliance)
+ - Davide Borsatto (davide.borsatto)
+ - Kuba Werłos (kuba)
+ - Minna N
+ - Randy Geraads
+ - alexpozzi
+ - Yuriy Vilks (igrizzli)
+ - Terje Bråten
+ - alexandre.lassauge
+ - Jérôme Tamarelle (jtamarelle-prismamedia)
+ - Jan Walther (janwalther)
+ - Arturas Smorgun (asarturas)
+ - Venu
+ - Mark Schmale (masch)
+ - Tomasz Ignatiuk
+ - Jose Gonzalez
+ - Kieran
+ - fago
+ - Nahuel Cuesta (ncuesta)
+ - Kristof Van Cauwenbergh (kristofvc)
+ - Marc Laporte
+ - Jason Woods
+ - Alexander Li (aweelex)
+ - Martin Parsiegla (spea)
+ - den
+ - Tarjei Huse (tarjei)
+ - Michel Hunziker
+ - Manuel Alejandro Paz Cetina
+ - Marcos Gómez Vilches (markitosgv)
+ - Roy Klutman (royklutman)
+ - Kieran Cross (kilosierracharlie)
+ - Sébastien JEAN (sebastien76)
+ - Takashi Kanemoto (ttskch)
+ - Morten Wulff (wulff)
+ - Gennady Telegin
+ - EStyles (insidestyles)
+ - Tinjo Schöni
+ - Christian Stoller (naitsirch)
+ - Artur Eshenbrener
+ - Tristan Roussel
+ - Glodzienski
+ - Loïc Ovigne (oviglo)
+ - Aurimas Niekis (aurimasniekis)
+ - Marco Lipparini (liarco)
+ - Morgan Auchede
+ - Daniel Cestari
+ - Jacques MOATI (jmoati)
+ - David Molineus
+ - mweimerskirch
+ - Niklas Keller
+ - Pierre-Yves Landuré (biapy)
+ - Cyril Quintin (cyqui)
+ - Vincent Simonin
+ - Mohamed Gamal
+ - Alex (garrett)
+ - Vladimir Valikayev
+ - zenmate
+ - Mardari Dorel (dorumd)
+ - Francisco Alvarez (sormes)
+ - Tomasz Kusy
+ - Matthew Davis (mdavis1982)
+ - Robin Lehrmann
+ - stoccc
+ - Harry Walter (haswalt)
+ - Sergey Yastrebov
+ - Ilya Levin (ilyachase)
+ - Sylvain BEISSIER (sylvain-beissier)
+ - Petar Obradović
+ - Balazs Csaba
+ - Jan Kramer
+ - Simon DELICATA
+ - Sebastian Paczkowski (sebpacz)
+ - Raphaëll Roussel
+ - Miquel Rodríguez Telep (mrtorrent)
+ - Xavier Briand (xavierbriand)
+ - Cosmin Sandu
+ - Elan Ruusamäe (glen)
+ - phpner
+ - Konstantin Grachev (grachevko)
+ - Florian Pfitzer (marmelatze)
+ - Antoine Corcy
+ - Kristijan Kanalaš (kristijan_kanalas_infostud)
+ - Casper Valdemar Poulsen
+ - Mantas Var (mvar)
+ - Roy de Vos Burchart
+ - Julien Tattevin (jutattevin)
+ - fedor.f
+ - Benoît Merlet (trompette)
+ - Hossein Bukhamsin
+ - Ivan Grigoriev (greedyivan)
+ - Benjamin Grandfond (benjamin)
+ - Krystian Marcisz (simivar)
+ - Ben
+ - Gabrielle Langer
+ - Rustam Bakeev (nommyde)
+ - djordy
+ - Cornel Cruceru (amne)
+ - Thomas P
+ - Jay Klehr
+ - acoulton
+ - Mátyás Somfai (smatyas)
+ - Ali-HENDA
+ - Malte Müns
+ - Thomas Nunninger
+ - _sir_kane (waly)
+ - Julien Fredon
+ - Nikita Nefedov (nikita2206)
+ - Douglas Hammond (wizhippo)
+ - Johann Saunier (prophet777)
+ - Michael Roterman (wtfzdotnet)
+ - Cyril Pascal (paxal)
+ - Maksim Kotlyar (makasim)
+ - Xesxen
+ - Alexandre Parent
+ - Simon Watiau (simonwatiau)
+ - Philipp Keck
+ - Evan C
+ - Josiah (josiah)
+ - Baptiste CONTRERAS
+ - aegypius
+ - bogdan
+ - Ruben Gonzalez (rubenruateltek)
+ - Florent Blaison (orkin)
+ - Kevin SCHNEKENBURGER
+ - Bálint Szekeres
+ - Aydin Hassan
+ - Fred Cox
+ - Cameron Porter
+ - Tiago Brito (blackmx)
+ - Benjamin Laugueux
+ - Matt Robinson (inanimatt)
+ - Stefan Warman (warmans)
+ - Arun Philip
+ - Chris Boden (cboden)
+ - Johnson Page (jwpage)
+ - Reen Lokum
+ - Trevor North
+ - stlrnz
+ - scyzoryck
+ - Adrien Jourdier (eclairia)
+ - Gladhon
+ - datibbaw
+ - Alexander Dmitryuk (coden1)
+ - Jake (jakesoft)
+ - DUPUCH (bdupuch)
+ - Richard Henkenjohann (richardhj)
+ - Mark Sonnabaum
+ - Tristan Maindron (tmaindron)
+ - ywisax
+ - Álvaro Sánchez Taboada
+ - Carson Full (carsonfull)
+ - Carlos Pereira De Amorim (epitre)
+ - Hidde Boomsma (hboomsma)
+ - Arnaud Frézet
+ - Reedy
+ - James Hemery
+ - Mior Muhammad Zaki (crynobone)
+ - Florent Viel (luxifer)
+ - Tamas Szijarto
+ - ornicar
+ - Dmitry Parnas (parnas)
+ - Eric COURTIAL
+ - Daniel Badura
+ - Eric Abouaf (neyric)
+ - Michael Piecko (michael.piecko)
+ - d-mitrofanov-v
+ - Stephan Vock (glaubinix)
+ - Paul Kamer (pkamer)
+ - Gábor Tóth
+ - Brunet Laurent (lbrunet)
+ - Anton A. Sumin
+ - Robin van der Vleuten (robinvdvleuten)
+ - Alexander Grimalovsky (flying)
+ - Siebe Vanden Eynden (siebe_ve)
+ - Don Pinkster
+ - Rodrigo Méndez (rodmen)
+ - Richard Bradley
+ - Paulo Ribeiro (paulo)
+ - Rostyslav Kinash
+ - Richard van den Brand (ricbra)
+ - Andreas Erhard (andaris)
+ - grizlik
+ - Gálik Pál
+ - Dmytro Boiko (eagle)
+ - Nicole Cordes (ichhabrecht)
+ - Ivan
+ - Maxim Tugaev (tugmaks)
+ - flip111
+ - Simon Schick (simonsimcity)
+ - Thijs-jan Veldhuizen (tjveldhuizen)
+ - Pedro Casado (pdr33n)
+ - abdul malik ikhsan (samsonasik)
+ - Matt Janssen
+ - Adam
+ - zenas1210
+ - Jaroslav Kuba
+ - katario
+ - Jesper Noordsij
+ - Alexander Kim
+ - Vladyslav Petrovych
+ - Michael Devery (mickadoo)
+ - Jörn Lang
+ - Benjamin Zikarsky (bzikarsky)
+ - David Marín Carreño (davefx)
+ - origaminal
+ - Lukas Mencl
+ - Bill Hance (billhance)
+ - Sascha Dens (saschadens)
+ - Alex Bogomazov (alebo)
+ - Francis Turmel (fturmel)
+ - Pavol Tuka
+ - Shahriar56
+ - Philipp Kolesnikov
+ - 243083df
+ - Korvin Szanto
+ - Abhoryo
+ - Gustavo Falco (gfalco)
+ - Antal Áron (antalaron)
+ - izzyp
+ - Sebastian Krebs
+ - Andreas Leathley (iquito)
+ - Jesper Noordsij
+ - Nikolai Mikhailov (sonnymilton)
+ - Oriol Viñals
+ - Andrei C. (moldman)
+ - Matteo Beccati (matteobeccati)
+ - Aurimas Niekis (gcds)
+ - sl_toto (sl_toto)
+ - Renan Gonçalves (renan_saddam)
+ - Luca Saba (lucasaba)
+ - Reyo Stallenberg (reyostallenberg)
+ - Jakub Podhorsky (podhy)
+ - Jeremiasz Major
+ - Daniël Brekelmans (dbrekelmans)
+ - avorobiev
+ - Evan Shaw
+ - James Michael DuPont
+ - Johannes Klauss (cloppy)
+ - James Hudson (mrthehud)
+ - Chris Jones (magikid)
+ - Sinan Eldem (sineld)
+ - Jayson Xu (superjavason)
+ - Jakub Vrána (vrana)
+ - Hossein Hosni
+ - Simo Heinonen (simoheinonen)
+ - mwsaz
+ - Jakub Kulhan (jakubkulhan)
+ - Dustin Dobervich (dustin10)
+ - Toni Peric (tperic)
+ - Ayke Halder
+ - Felds Liscia (felds)
+ - Laurent Bassin (lbassin)
+ - Henry Snoek (snoek09)
+ - Mario Ramundo (rammar)
+ - Christian Soronellas (theunic)
+ - Grinbergs Reinis (shima5)
+ - Marko Petrovic
+ - Vitaliy Ryaboy (vitaliy)
+ - Florian Hermann (fhermann)
+ - Thibault Richard (t-richard)
+ - Wouter van der Loop (toppy-hennie)
+ - Benjamin Toussaint (bto)
+ - Baptiste Meyer (meyerbaptiste)
+ - Gerard van Helden (drm)
+ - Ruben Jacobs (rubenj)
+ - Jeroen Fiege (fieg)
+ - Alex Kalineskou
+ - Koen Kuipers (koku)
+ - Denis Charrier (brucewouaigne)
+ - StefanoTarditi
+ - Dominik Ulrich
+ - Behnoush Norouzali (behnoush)
+ - Ian Irlen
+ - Julien Maulny
+ - wuchen90
+ - Mouad ZIANI (mouadziani)
+ - Stanislau Kviatkouski (7-zete-7)
+ - Adán Lobato (adanlobato)
+ - Rafał Wrzeszcz (rafalwrzeszcz)
+ - Emil Masiakowski
+ - Noémi Salaün (noemi-salaun)
+ - yclian
+ - skmedix (skmedix)
+ - Massimiliano Braglia (massimilianobraglia)
+ - Jan Prieser
+ - Luis Tacón (lutacon)
+ - Roberto Nygaard
+ - Mike Meier (mykon)
+ - Simon Heimberg (simon_heimberg)
+ - Bozhidar Hristov
+ - Sebastian Blum
+ - Reinier Kip
+ - Brajk19
+ - DemigodCode
+ - Silas Joisten (silasjoisten)
+ - rtek
+ - Ian Jenkins (jenkoian)
+ - Robert Fischer (sandoba)
+ - Thomas Ploch
+ - Degory Valentine
+ - Vitaliy Zhuk (zhukv)
+ - Dennis Væversted (srnzitcom)
+ - Franck RANAIVO-HARISOA (franckranaivo)
+ - jochenvdv
+ - Simeon Kolev (simeon_kolev9)
+ - Thomas Cochard (tcochard)
+ - Ryan Hendrickson
+ - Zhuravlev Alexander (scif)
+ - michaelwilliams
+ - Michał Jusięga
+ - DT Inier (gam6itko)
+ - Christopher Hall (mythmakr)
+ - Stéphan Kochen
+ - Ricky Su (ricky)
+ - Sherin Bloemendaal
+ - Arno Geurts
+ - Andrey Sevastianov
+ - Sofien Naas
+ - vladimir.panivko
+ - Rimas Kudelis
+ - Sem Schidler (xvilo)
+ - Benedikt Lenzen (demigodcode)
+ - Achilles Kaloeridis (achilles)
+ - David Romaní
+ - Thomas Trautner (thomastr)
+ - Calin Mihai Pristavu
+ - Quentin de Longraye (quentinus95)
+ - John Bohn (jbohn)
+ - Jesper Skytte (greew)
+ - Barney Hanlon
+ - Johnny Peck (johnnypeck)
+ - Benoît Bourgeois (bierdok)
+ - Simon Mönch
+ - Kagan Balga (kagan-balga)
+ - Guillaume Aveline
+ - Bert Hekman (demontpx)
+ - Christian Grasso (chris54721)
+ - Julien Turby
+ - Ana Raro
+ - Sebastian Marek (proofek)
+ - Amr Ezzat (amrezzat)
+ - Richard Quadling
+ - Jon Gotlin (jongotlin)
+ - Khoo Yong Jun
+ - MrMicky
+ - Sébastien Santoro (dereckson)
+ - johan Vlaar
+ - Zouaoui Montassar
+ - Bastien DURAND (deamon)
  - Vladislav Krupenkin (ideea)
- - Peter Orosz (ill_logical)
- - Imangazaliev Muhammad (imangazaliev)
- - j0k (j0k)
- - joris de wit (jdewit)
- - Jérémy CROMBEZ (jeremy)
- - Jose Manuel Gonzalez (jgonzalez)
- - Joachim Krempel (jkrempel)
- - Jorge Maiden (jorgemaiden)
- - Justin Rainbow (jrainbow)
- - Juan Luis (juanlugb)
- - JuntaTom (juntatom)
- - Julien Manganne (juuuuuu)
- - Ismail Faizi (kanafghan)
- - Karolis Daužickas (kdauzickas)
+ - Tito Miguel Costa (titomiguelcosta)
+ - Pawel Smolinski
+ - Vašek Purchart (vasek-purchart)
+ - Xesau
+ - Clément LEFEBVRE (nemoneph)
+ - Tomas Liubinas
+ - Philipp Strube
+ - Dan Finnie
+ - Tim Porter
+ - Steve Preston
+ - Gunther Konig
+ - Nicolas Macherey
+ - Attila Bukor (r1pp3rj4ck)
+ - Troy McCabe
+ - Christian
+ - mboultoureau
+ - Nguyen Tuan Minh (tuanminhgp)
+ - Andoni Larzabal (andonilarz)
+ - Maria Grazia Patteri
+ - Rudy Onfroy
  - Sébastien Armand (khepin)
- - Pierre-Chanel Gauthier (kmecnin)
- - Krzysztof Menżyk (krymen)
- - samuel laulhau (lalop)
- - Laurent Bachelier (laurentb)
- - Luís Cobucci (lcobucci)
- - Mehdi Achour (machour)
- - Matt Ketmo (mattketmo)
- - Moritz Borgmann (mborgmann)
- - Matt Drollette (mdrollette)
- - Adam Monsen (meonkeys)
- - Ala Eddine Khefifi (nayzo)
- - emilienbouard (neime)
- - Nicholas Byfleet (nickbyfleet)
- - Nicolas Bondoux (nsbx)
- - Cedric Kastner (nurtext)
- - ollie harridge (ollietb)
- - Pawel Szczepanek (pauluz)
- - Philippe Degeeter (pdegeeter)
- - Christian López Espínola (penyaskito)
- - Petr Jaroš (petajaros)
- - Philipp Hoffmann (philipphoffmann)
- - Alex Carol (picard89)
- - Daniel Perez Pinazo (pitiflautico)
- - Maksym Pustynnikov (pustynnikov)
- - Ralf Kühnel (ralfkuehnel)
- - Rich Sage (richsage)
- - scourgen hung (scourgen)
- - Sebastian Busch (sebu)
- - Sergey Stavichenko (sergey_stavichenko)
- - André Filipe Gonçalves Neves (seven)
- - Bruno Ziegler (sfcoder)
- - Andrea Giuliano (shark)
- - Şəhriyar İmanov (shehriyari)
- - Thomas Baumgartner (shoplifter)
- - Schuyler Jager (sjager)
- - Volker (skydiablo)
- - Julien Sanchez (sumbobyboys)
- - Ron Gähler (t-ronx)
- - Guillermo Gisinger (t3chn0r)
- - Tom Newby (tomnewbyau)
- - Andrew Clark (tqt_andrew_clark)
- - David Lumaye (tux1124)
- - Moritz Kraft (userfriendly)
- - Víctor Mateo (victormateo)
- - David Grüner (vworldat)
- - Eugene Babushkin (warl)
- - Wouter Sioen (wouter_sioen)
- - Xavier Amado (xamado)
- - Jesper Søndergaard Pedersen (zerrvox)
- - Florent Cailhol
- - szymek
- - Konrad
- - Kovacs Nicolas
- - craigmarvelley
- - Stano Turza
+ - 蝦米
+ - Shude
  - drublic
- - Andreas Streichardt
+ - Nsbx
+ - Kaipi Yann
+ - Maciej Zgadzaj
+ - Amaury Leroux de Lens (amo__)
+ - sabruss
+ - Maksym Pustynnikov (pustynnikov)
  - Alexandre Segura
- - Pascal Hofmann
- - smokeybear87
- - Gustavo Adrian
- - damaya
- - Kevin Weber
- - Dionysis Arvanitis
- - Sergey Fedotov
- - Konstantin Scheumann
- - Michael
- - fh-github@fholzhauer.de
- - rogamoore
+ - Arrakis (arrakis)
+ - Bruno Nogueira Nascimento Wowk
  - AbdElKader Bouadjadja
- - DSeemiller
+ - Maxim Lovchikov
+ - Tobias Rautenkranz
+ - Asrorbek Sultanov
+ - phuc vo (phucwan)
+ - linh
+ - Grégoire Rabasse
+ - Artem Oliinyk (artemoliynyk)
+ - Rafał Treffler
+ - Christian Eikermann
+ - Muriel (metalmumu)
+ - Marcos Labad
+ - Oscar Esteve (oesteve)
+ - goohib
+ - Jakub Simon
+ - Felix Eymonot (hyanda)
+ - Tomanhez
+ - orlovv
+ - Elías (eliasfernandez)
+ - boulei_n
+ - Aleksandar Dimitrov (netbull)
+ - Jelizaveta Lemeševa (broken_core)
+ - Kevin Verschaeve (keversc)
+ - Sam Anthony
+ - Pavinthan
+ - Alexandru Năstase
+ - Bojan
+ - Karl Shea
+ - RENAUDIN Xavier (xorrox)
+ - Chris Maiden (matason)
+ - Steve Marvell
+ - Aleksejs Kovalovs (aleksejs1)
  - Jan Emrich
- - Mark Topper
- - Romain
- - Xavier REN
+ - DidierLmn
+ - nyro (nyro)
+ - Vladimir Melnik
+ - Hein Zaw Htet™
+ - Oksana Kozlova (oksanakozlova)
+ - Bruno MATEU
+ - Michael van Tricht
+ - Adam Klvač
+ - maxperei
+ - Maxim Semkin
+ - Lin Lu
+ - Yewhen Khoptynskyi (khoptynskyi)
+ - Cayetano Soriano Gallego (neoshadybeat)
+ - Dariusz Czech
+ - soyuka
+ - Michael Tibben
+ - cay89
+ - Abdiel Carrazana (abdielcs)
+ - Adam Kiss
+ - Konstantin Bogomolov
+ - Penny Leach
+ - Adam Wójs (awojs)
+ - Tom Corrigan (tomcorrigan)
+ - Artem (nexim)
+ - Piotr Antosik (antek88)
+ - Adam Monsen (meonkeys)
+ - Htun Htun Htet (ryanhhh91)
+ - Ruben Kruiswijk
+ - Valérian Lepeule (vlepeule)
+ - Wouter de Wild
+ - Roland Franssen :)
+ - Maxime THIRY
+ - Oxan van Leeuwen
+ - Kovacs Nicolas
+ - Peter Ward
+ - Vladimir Khramtsov (chrome)
+ - Daan van Renterghem
+ - Janusz Mocek
+ - Nilmar Sanchez Muguercia
+ - Alexey Buyanow (alexbuyanow)
+ - Jacek Wilczyński (jacekwilczynski)
+ - Martin Pärtel
+ - Oleg Mifle
+ - Baptiste Leduc (bleduc)
+ - rchoquet
+ - Shiro
+ - Alexandre Fiocre (demos77)
+ - Victor Garcia
+ - Kevin Weber
+ - Myke79
+ - Moza Bogdan (bogdan_moza)
+ - Stas Soroka (stasyan)
+ - Ivo
+ - Ovidiu Gabriel Gireada (ovidiugireada)
+ - Steve Hyde
+ - Mark Pedron (markpedron)
+ - Tom Panier (neemzy)
+ - Robert-Jan de Dreu
+ - Jenne van der Meer
+ - Zeeshan Rashid (zeeshan)
+ - Alexey Berezuev
+ - gauss
+ - Götz Gottwald
+ - Guido Donnari
+ - Nicolas Appriou
+ - Jules Lamur
+ - vdauchy
+ - JakeFr
+ - Houssem
+ - eminjk
+ - Klaas Cuvelier (kcuvelier)
+ - Yuri Karaban
+ - Javier Espinosa (javespi)
+ - Stéphane Seng (stephaneseng)
+ - Marc Jauvin
+ - Jochen Bayer (jocl)
+ - Vincent AMSTOUTZ (vincent_amstz)
+ - Phil Davis
+ - Benoit Leveque
+ - moldcraft
+ - Aurimas Rimkus (patrikas)
+ - simbera
+ - Will Rowe
+ - dened
+ - Manuele Menozzi
+ - dakur
+ - Jeroen Bouwmans
+ - zolikonta
+ - Jānis Lukss
+ - bahram
+ - Arnaud Buathier (arnapou)
+ - Daniel Richter (richtermeister)
+ - Radoslaw Kowalewski
+ - Thomas Rothe
+ - Antonio Peric-Mazar (antonioperic)
+ - Pierre Foresi (pforesi)
+ - Kousuke Ebihara (co3k)
+ - sez-open
+ - Kévin
+ - Dmytro Dzubenko
+ - Alberto Pirovano (geezmo)
+ - HADJEDJ Vincent (hadjedjvincent)
+ - Benjamin Rosenberger
+ - Serge (nfx)
+ - Antoine Beyet
+ - Ladislav Tánczos
+ - Jeremy Bush
+ - Sebastian Drewer-Gutland (sdg)
+ - djama
+ - Alexandre Segura
+ - Vallel Blanco
+ - adam-mospan
+ - Vyacheslav Slinko
+ - Sami Mussbach
+ - Martins Eglitis
+ - HellFirePvP
+ - ergiegonzaga
+ - Jonathan Poston
+ - Paul Le Corre
+ - Jake Bishop (yakobeyak)
+ - Marcin Nowak
+ - Mark van den Berg
+ - Nicolas Attard (nicolasattard)
+ - Yoann Chocteau (kezaweb)
+ - sal-car
+ - Claus Due (namelesscoder)
+ - Simon Ackermann
+ - alex
+ - chispita
+ - Stuart Fyfe
+ - Jordi Rejas
+ - Johannes
+ - Tammy D
+ - Antoine Bellion (abellion)
+ - Sergei Shitikov
+ - David Ronchaud
+ - Nikola Svitlica (thecelavi)
+ - Ali Tavafi
+ - Ben Johnson
+ - Henne Van Och (hennevo)
+ - Steve Müller
+ - Thomas Boileau (tboileau)
+ - Ioana Hazsda (ioana-hazsda)
+ - Sven Nolting
+ - Artyom Protaskin
+ - Frederic Godfrin
+ - Cédric Girard
+ - Andreas Allacher
+ - Théo DELCEY
+ - Bruno Ziegler (sfcoder)
+ - Michael Hüneburg
+ - Dmitry Korotovsky
+ - Zlatoslav Desyatnikov
+ - mikocevar
+ - Niels Robin-Aubertin
+ - Dan Harper
+ - Kacper Gunia (cakper)
+ - Ema Panz
+ - Patrick Berenschot
+ - root
+ - Julien Sanchez (sumbobyboys)
+ - Damon Jones (damon__jones)
+ - Matthew (mattvick)
+ - František Bereň
+ - Fabien D. (fabd)
+ - andreybolonin1989@gmail.com
+ - Yevhen Sidelnyk
+ - oscartv
+ - Wotre
+ - Mathias Geat
+ - Buster Neece
+ - Laurent Moreau
+ - Jean-Guilhem Rouel (jean-gui)
+ - LubenZA
+ - d-ph
+ - John Edmerson Pizarra
+ - helmi
+ - mlpo (mlpo)
+ - Thibaut Chieux
+ - Michał Dąbrowski (defrag)
+ - Dmytro Pigin (dotty)
+ - Daniele Orru&#039; (danydev)
+ - Bárbara Luz
+ - 🦅KoNekoD
+ - Yannick
+ - Thomas Hanke
+ - Chris
+ - Ariful Alam
+ - Pierre-Louis LAUNAY
+ - Rachid Hammaoui (makmaoui)
+ - Yurguis Garcia (yurguis)
+ - Richard Heine
+ - Richard van Velzen
+ - hainey
+ - excelwebzone
+ - Faton (notaf)
+ - The Whole Life to Learn
+ - Tony Vermeiren (tony)
+ - Wim Molenberghs (wimm)
+ - Jovan Perovic (jperovic)
+ - Zuruuh
+ - Duncan de Boer (farmer-duck)
+ - vladyslavstartsev
+ - Alan Scott
+ - Alessandro Loffredo
+ - Evgeniy Koval
+ - Stefano Cappellini (stefano_cappellini)
+ - Oleg Krasavin (okwinza)
+ - Alexander McCullagh (mccullagh)
+ - Wissame MEKHILEF
+ - Alexander Janssen (tnajanssen)
+ - Martin Schophaus (m_schophaus_adcada)
+ - Ash014
+ - Peter Dietrich (xosofox)
+ - Luke Towers
+ - Storkeus
+ - Ernest Hymel
+ - Mateusz Lerczak
+ - AnrDaemon
+ - Thomas BERTRAND (sevrahk)
+ - Adriaan Zonnenberg
+ - znerol
+ - Evgeny Z (meze)
+ - andreyserdjuk
+ - Pathpat
+ - Florian Guimier
+ - tamirvs
+ - Sébastien Lévêque (legenyes)
+ - Maciej Paprocki (maciekpaprocki)
+ - Soner Sayakci
+ - Stelian Mocanita (stelian)
+ - mlazovla
+ - Sylvain Just
+ - Kevin EMO
+ - Thomas
+ - Francois Martin
+ - Viktoriia Zolotova
+ - László GÖRÖG
+ - Yurii K
+ - Evgeny (disparity)
+ - Kenjy Thiébault (kthiebault)
+ - Evgeny Efimov (edefimov)
+ - Eno Mullaraj (emullaraj)
+ - Victor Macko (victor_m)
+ - Anthony Ferrara
+ - Beth Binkovitz
+ - Juan M Martínez
+ - Lauris Binde (laurisb)
+ - Josef Hlavatý
+ - vlakoff
+ - Julien ARBEY
+ - Jan Vernieuwe (vernija)
+ - Clément
+ - William Pinaud (docfx)
+ - Sebastian Ionescu
+ - RichardGuilland
+ - Abderrahman DAIF (death_maker)
+ - Eric Caron
+ - Ahmad Al-Naib
+ - Jakub Vrána
+ - Kai Eichinger
+ - Helmut Hummel (helhum)
+ - Sebastian Schwarz
+ - ivelin vasilev
+ - Drew Butler
+ - k-sahara
+ - Luca Genuzio (genuzio)
+ - Denis Klementjev (dklementjev)
+ - Asil Barkin Elik (asilelik)
+ - Jonathan Vollebregt
+ - Martin Eckhardt
+ - alangvazq
+ - Ahmed Abdulrahman
+ - Carsten Nielsen (phreaknerd)
+ - Dustin Wilson
+ - Pierre-Chanel Gauthier (kmecnin)
+ - Ian Littman (iansltx)
+ - ConneXNL
+ - Juraj Surman
+ - Charly Terrier (charlypoppins)
+ - Christophe Meneses (c77men)
+ - Vincent Chalamon
+ - Ramon Cuñat
+ - Neil Katin
+ - Muharrem Demirci (mdemirci)
+ - Dale.Nash
+ - VojtaB
+ - Liverbool (liverbool)
+ - Gil Hadad
+ - Nicolas
+ - Alain Flaus (halundra)
+ - Arthur Woimbée
+ - Frederik Schmitt
+ - bch36
+ - Ahmad El-Bardan
+ - Abderrahim (phydev)
+ - Eviljeks
+ - inspiran
+ - Fred Cox
+ - Benjamin Paap (benjaminpaap)
+ - Florian Caron (shalalalala)
+ - ryunosuke
+ - BilgeXA
+ - Per Modin
+ - Adrien Peyre (adpeyre)
+ - Ikko Ashimine
+ - kaiwa
+ - Jimmy Leger (redpanda)
+ - Robert Campbell
+ - Cedric Kastner (nurtext)
+ - Jontsa
+ - Johannes
+ - jprivet-dev
+ - Andrea Giuliano (shark)
+ - Arend Hummeling
+ - Walter Doekes
+ - Thomas Citharel (tcit)
+ - Jean Ragouin
+ - xdavidwu
+ - Michael Gwynne
+ - Bernard van der Esch (adeptofvoltron)
+ - Dennis Tobar
+ - Marie Minasyan (marie.minassyan)
+ - Sylvain METAYER
+ - Mihail Krasilnikov (krasilnikovm)
+ - Valentin
+ - j.schmitt
  - max
+ - Alexandre Beaujour
+ - Andy Raines
+ - Peter Culka
+ - Pontus Mårdnäs
+ - Damian Sromek
+ - Oliver Eglseder
+ - Flavian Sierk
+ - Aurelijus Rožėnas
+ - Krzysztof Menżyk (krymen)
+ - Olivier Scherler (oscherler)
+ - Alex Vasilchenko
+ - Siragusa (asiragusa)
+ - Hadrien Cren (hcren)
+ - Tijs Verkoyen
+ - Benhssaein Youssef
+ - Benjamin Bender
+ - Ian Phillips
+ - Benjamin BOUDIER
+ - Romain
+ - Dominik Pesch (dombn)
+ - Kasper Hansen
+ - Bram Van der Sype (brammm)
+ - Imangazaliev Muhammad (imangazaliev)
+ - Jeroen de Graaf
+ - Bálint Szekeres
+ - Christian Neff (secondtruth)
+ - Christiaan Wiesenekker
+ - Joan Cruz
+ - Ikhsan Agustian
+ - Jörn Lang
+ - Laurent Negre (raulnet)
+ - Brian Corrigan
+ - Markus Staab
+ - Jared Farrish
+ - Tristan Pouliquen
+ - André Laugks
+ - Stephen Clouse
+ - Sven Scholz
+ - MrNicodemuz
+ - Volker (skydiablo)
+ - Alexis MARQUIS
+ - Josef Cech
+ - mindaugasvcs
+ - peter
+ - Simon Paarlberg (blamh)
+ - TheMhv
+ - Lukas Kaltenbach
+ - shdev
+ - Per Sandström (per)
+ - Roeland Jago Douma
+ - inwebo veritas (inwebo)
+ - ivan
+ - PLAZANET Pierre (pedrotroller)
+ - Dmitrii Fedorenko (dmifedorenko)
+ - Ferenczi Krisztian (fchris82)
+ - David Windell
+ - Ismail Asci (ismailasci)
+ - BrokenSourceCode
+ - Yannick Bensacq (cibou)
+ - Brian Freytag
+ - GuillaumeVerdon
+ - Ahto Türkson
+ - brian978
+ - vltrof
+ - AntoineDly
+ - Foxprodev
+ - Viktor Novikov (nowiko)
+ - Anton (bonio)
+ - Maciej Schmidt
+ - VAN DER PUTTE Guillaume (guillaume_vdp)
+ - Dr. Gianluigi &quot;Zane&quot; Zanettini
+ - Constantine Shtompel
+ - Billy Scheufler
+ - Charly Goblet (_mocodo)
+ - Ahmed Abdou
+ - Alexandre GESLIN
+ - tpetry
+ - Botond Dani (picur)
+ - Adam
+ - omerida
+ - Andrey Helldar
+ - Sören Bernstein
+ - Matthew Foster (mfoster)
+ - Farhad Hedayatifard
+ - JK Groupe
+ - hjkl
+ - Eddie Abou-Jaoude (eddiejaoude)
+ - Dave Heineman (dheineman)
+ - Anthony Tenneriello
+ - Rosio (ben-rosio)
+ - Harold Iedema
+ - Emilien Escalle
+ - damaya
+ - bill moll
+ - Yura Uvarov (zim32)
+ - Masao Maeda (brtriver)
+ - Rikijs Murgs
+ - Alex Carol (picard89)
+ - jack.thomas (jackthomasatl)
+ - Martijn Evers
+ - Arnau González
+ - Matt Emerson
+ - Mephistofeles
+ - Toby Griffiths (tog)
+ - Bert Hekman
+ - LoginovIlya
+ - ondrowan
+ - Chihiro Adachi (chihiro-adachi)
+ - Nicolas Martin (cocorambo)
+ - Erwan Nader (ernadoo)
+ - Mert Simsek (mrtsmsk0)
+ - David Brooks
+ - wusuopu
+ - Gunnar Lium (gunnarlium)
+ - gr8b
+ - Joe Springe
+ - Tom Houdmont
+ - patrickmaynard
+ - Paulius Jarmalavičius (pjarmalavicius)
+ - Chris Jones (leek)
+ - Andrei Igna
+ - Sylvain Lorinet
+ - Colin Michoudet
+ - Giorgio Premi
+ - Wim Godden (wimg)
+ - Franz Liedke (franzliedke)
+ - Tom Newby (tomnewbyau)
+ - Ionel Scutelnicu (ionelscutelnicu)
+ - Marin Nicolae
+ - gechetspr
+ - Fleuv
+ - Tom Maguire
+ - Fabien
+ - Bhujagendra Ishaya
+ - Guillaume BRETOU (guiguiboy)
+ - Vincent Godé
+ - Nicolas Pion
+ - CarolienBEER
+ - Lorenzo Adinolfi (loru88)
+ - Bogdan
+ - klemens
+ - Adrien Samson (adriensamson)
+ - Zander Baldwin
+ - Ron Gähler (t-ronx)
+ - Ksaveras Šakys (xawiers)
+ - maxime.perrimond
+ - Jeremy Benoist
+ - Andrew Zhilin (zhil)
+ - mlievertz
+ - Krzysztof Pyrkosz
+ - Timothée BARRAY
+ - Adam Bramley
+ - Adrien Moiruad
+ - Alexandru Bucur
+ - Brieuc Thomas
+ - Beno!t POLASZEK
+ - Samuel Vogel (samuelvogel)
+ - Ruslan Zavacky (ruslanzavacky)
+ - Maxime Aknin (3m1x4m)
+ - Ryan Linnit
+ - Gennadi Janzen
+ - Sagrario Meneses
+ - MARYNICH Mikhail (mmarynich-ext)
+ - Emirald Mateli
+ - Alexey Popkov
+ - Adam Prickett
+ - iamvar
+ - Pierre Rineau
+ - Markkus Millend
+ - Bastien Picharles
+ - Agustin Gomes
+ - Ramon Ornelas (ramonornela)
+ - Joseph FRANCLIN
+ - Matt Wells
+ - Felix Marezki
+ - Jack Wright
+ - Guillaume Smolders (guillaumesmo)
+ - dlorek
+ - Dan Ordille (dordille)
+ - Marin Bînzari (spartakusmd)
+ - gr1ev0us
+ - Valentin
+ - Sam Malone
+ - DerStoffel
+ - Vadim Tyukov (vatson)
+ - wivaku
+ - PaoRuby
+ - Juan Mrad
+ - Andrey Ryaguzov
+ - Matěj Humpál
+ - voodooism
+ - Dennis Jaschinski (d.jaschinski)
+ - ReScO
+ - Antanas Arvasevicius
+ - misterx
+ - Caligone
+ - Amine Matmati
+ - Markus Klein
+ - Richard Čepas
+ - BiaDd
+ - Jon Cave
+ - Vladimir Sadicov (xtech)
+ - Mauro Foti (skler)
+ - Michał Strzelecki
+ - Jeroen
+ - Denis Kop
+ - Bjorn Twachtmann (dotbjorn)
+ - Rémi Blaise
+ - Florent Olivaud
+ - Nouhail AL FIDI (alfidi)
+ - Aharon Perkel
+ - Dan Brown
+ - craigmarvelley
+ - Ondřej Mirtes (mirtes)
+ - chillbram
+ - Anatol Belski
+ - Ronny López (ronnylt)
+ - Dmitry (staratel)
+ - Simon Mönch
+ - Christopher Georg (sky-chris)
+ - Kristen Gilden
+ - Jorrit Schippers (jorrit)
  - Ahmad Mayahi (ahmadmayahi)
- - Mohamed Karnichi (amiral)
- - Andrew Carter (andrewcarteruk)
- - Adam Elsodaney (archfizz)
+ - Pavel Golovin (pgolovin)
+ - Christian Kolb
+ - Marek Víger (freezy)
+ - Grégoire Hébert (gregoirehebert)
+ - Jordan de Laune (jdelaune)
+ - Vasily Khayrulin (sirian)
+ - Michal Trojanowski
+ - Дмитрий Пацура
+ - Alexander Zogheb
+ - Quentin Favrie
+ - David Lumaye (tux1124)
+ - Jonas Claes
+ - jfcixmedia
+ - Orestis
+ - Jules Matsounga (hyoa)
+ - Anton Kroshilin
+ - Billie Thompson
+ - Lajos Veres (vlajos)
+ - rkerner
+ - Gabriel Solomon (gabrielsolomon)
+ - Peter Smeets (darkspartan)
+ - Viktor Bajraktar (njutn95)
+ - Gilles Doge (gido)
+ - Martin Auswöger
+ - Bert Ramakers
+ - Marc Lemay (flug)
+ - rtek
+ - Jan Vernarsky
+ - Marcus
+ - Nicolas ASSING (nicolasassing)
+ - Christian Morgan
+ - Roman Tymoshyk (tymoshyk)
+ - demeritcowboy
+ - Steven Dubois
+ - Karolis
+ - Patrizio Bekerle
+ - tamcy
+ - David Stone
+ - muchafm
+ - Diego Aguiar (mollokhan)
+ - WoutervanderLoop.nl
+ - Romain Pierre
+ - Ettore Del Negro
+ - Vitali Tsyrkin
+ - Franck Ranaivo-Harisoa
+ - julien.galenski
+ - Rafał
+ - ShiraNai7
+ - Joao Paulo V Martins (jpjoao)
+ - Dmitriy Tkachenko (neka)
+ - Plamen Mishev (pmishev)
+ - Jeroen De Dauw (jeroendedauw)
+ - Martin Mandl (m2mtech)
+ - spdionis
+ - Andrea Quintino (dirk39)
+ - Benoit Garret
+ - Eric Grimois
+ - ZiYao54
+ - Michael Genereux
+ - Michael Pohlers (mick_the_big)
+ - Damien Vauchel (damien_vauchel)
+ - david perez (davidpv)
+ - Pavel Barton
+ - Taylan Kasap
+ - Stewart Malik
+ - Paul Mitchum (paul-m)
+ - JuntaTom (juntatom)
+ - Shaun Simmons
+ - nietonfir
+ - Mantas Urnieža
+ - Greg Korba
+ - Mei Gwilym (meigwilym)
+ - Peter Trebaticky
+ - Robert Queck
+ - Pierre Geyer (ptheg)
+ - AbdelatifAitBara
+ - boite
+ - martkop26
+ - Luis Galeas
+ - Robin Kanters (anddarerobin)
+ - Jeremy David (jeremy.david)
+ - Claude Dioudonnat
+ - koyolgecen
+ - gitlost
+ - Miłosz Guglas (miloszowi)
+ - Laurens Laman
+ - michal
+ - Alexandre Melard
+ - Oleg Sedinkin (akeylimepie)
+ - Denis Golubovskiy (bukashk0zzz)
+ - Juga Paazmaya
+ - Christian Schiffler
+ - Konstantin Chigakov
+ - Jörg Rühl
+ - Fraller Balázs (fracsi)
+ - InbarAbraham
+ - Tournoud (damientournoud)
+ - Daniel Iwaniec
+ - Nico Müller (nicomllr)
+ - Saif Eddin G
+ - wiseguy1394
+ - cilefen (cilefen)
+ - zors1
+ - Brandon Antonio Lorenzo
+ - Roromix
+ - Arrilot
+ - Shyim
+ - Konstantin Scheumann
+ - Benjamin Ellis
+ - Christoph Kappestein
+ - Pieter
+ - Dalibor Karlović
+ - Prasetyo Wicaksono (jowy)
+ - Brian Debuire
+ - Chris de Kok
+ - Jason Desrosiers
+ - Marco Jantke
+ - Raphaëll Roussel
+ - avi123
+ - Tom Hart
+ - enomotodev
+ - Atthaphon Urairat
+ - Stephan Wentz (temp)
+ - Javier
+ - Lebnik
+ - Timon van der Vorm
+ - Peter Bex
+ - Adamo Crespi (aerendir)
+ - Thomas Ferney (thomasf)
+ - Irmantas Šiupšinskas (irmantas)
+ - Gerrit Addiks
+ - Ryan Rogers
+ - Blackfelix
+ - mohammadreza honarkhah
+ - Waqas Ahmed
+ - Arend-Jan Tetteroo
+ - Charles Sanquer (csanquer)
+ - Jonathan Hedstrom
+ - Geoffrey Pécro (gpekz)
+ - Karim Miladi
+ - Matthew J Mucklo
+ - povilas
+ - Darius Leskauskas (darles)
+ - Oleg Golovakhin (doc_tr)
+ - Linnaea Von Lavia
+ - Sobhan Sharifi (50bhan)
+ - Mark de Haan (markdehaan)
+ - robin.de.croock
+ - Vladislav Nikolayev (luxemate)
+ - omniError
+ - Warwick
+ - none (nelexa)
+ - alanzarli
+ - Emmanuel Vella (emmanuel.vella)
+ - Matej Žilák (teo_sk)
+ - Toro Hill
+ - Quique Porta (quiqueporta)
+ - SOEDJEDE Felix (fsoedjede)
+ - darnel
+ - GurvanVgx
+ - Jonas Hünig
+ - Holger Lösken
+ - Rich Sage
+ - Romain Geissler
+ - Serhii Polishchuk (spolischook)
+ - Emmanuelpcg
+ - Romain Jacquart (romainjacquart)
+ - Nicolás Alonso
+ - Jeffrey Moelands (jeffreymoelands)
+ - Thomas Bibb
+ - Barthold Bos
+ - Jelle Kapitein
+ - Jonny Schmid (schmidjon)
+ - pizzaminded
+ - David Zuelke
+ - ssilatel
+ - Rafael Tovar
+ - Alex Vo (votanlean)
+ - Richard Trebichavský
+ - creiner
+ - Péter Buri (burci)
+ - Thomas Counsell
+ - RTUnreal
+ - Victor
+ - Şəhriyar İmanov (shehriyari)
+ - Markus Reinhold
+ - Gerard Berengue Llobera (bere)
+ - fbuchlak
+ - Christoph Vincent Schaefer (cvschaefer)
+ - Viacheslav Sychov
+ - Eric Hertwig
+ - Tobias Weinert (tweini)
+ - Jan Eichhorn (exeu)
+ - Alejandro Diaz Torres
+ - Jan Christoph Beyer
+ - Miloš Milutinović
+ - Shamimul Alam
+ - Lukas Naumann
+ - Wouter Diesveld
+ - Mikko Pesari
+ - steveYeah
+ - Gijs Kunze
+ - Wojciech Sznapka
+ - Daniel Kolvik (dkvk)
+ - AlbinoDrought
+ - Anna Filina (afilina)
+ - jack.shpartko
+ - Joris Garonian (grifx)
+ - mmokhi
+ - Angel Fernando Quiroz Campos (angelfqc)
+ - Evgeny Anisiforov
+ - Mamikon Arakelyan (mamikon)
+ - Aurélien MARTIN
+ - Mark Topper
+ - LHommet Nicolas (nicolaslh)
+ - Jonathan Gough
+ - Wing
+ - Joe
+ - Eric Krona
+ - Yohann Tilotti
+ - Makdessi Alex
+ - Marcel Berteler
+ - Joseph Deray
+ - Simon Sargeant
+ - Chansig
+ - Yannick Warnier (ywarnier)
+ - Marvin Petker
+ - Guillermo Gisinger (t3chn0r)
+ - Benoit Lévêque (benoit_leveque)
+ - Bernat Llibre Martín (bernatllibre)
+ - Sezil
+ - Bogdan Scordaliu
+ - Kai Eichinger
+ - tatankat
+ - Igor Tarasov (polosatus)
+ - Jiri Korenek
+ - Vincent Chalnot
+ - Thomas Decaux
+ - heccjj
+ - Maxime PINEAU
+ - matze
+ - David Wolter (davewww)
+ - Shane Preece (shane)
+ - Bartłomiej Zając
+ - Jorge Vahldick (jvahldick)
+ - Andriy Prokopenko (sleepyboy)
+ - Sander van der Vlugt (stranding)
+ - Tomas Kmieliauskas
+ - Aleksei Lebedev
+ - Boris Grishenko (arczinosek)
+ - Martin Komischke
+ - Daniel González Zaballos (dem3trio)
+ - Danil
+ - Nathanaël Martel (nathanaelmartel)
+ - George Dietrich
+ - Citia (citia)
+ - Nick Chiu
+ - g123456789l
+ - Bailey Parker
+ - Yuriy Potemkin
+ - taiiiraaa
+ - Charles-Henri Bruyand
+ - Foxprodev
+ - Adiel Cristo (arcristo)
+ - robmro27
+ - Ondřej Führer
+ - Zayan Goripov
+ - Nicolas Jourdan (nicolasjc)
+ - Martynas Narbutas
+ - Kevin Mian Kraiker
+ - Artem (digi)
+ - AUDUL
+ - Albert Bakker (babbert)
+ - Vladimir Sazhin
+ - Bruno Baguette
+ - Ener-Getick
+ - Nico Hiort af Ornäs
+ - Klaus Purer
+ - Jan Vernarsky
+ - nuncanada
+ - Olaf Klischat
+ - Andriy
+ - Pavel Starosek (octisher)
+ - Andrea Sprega (asprega)
+ - Florent Cailhol
+ - Wahyu Kristianto (kristories)
+ - kernig
+ - Kris Kelly
+ - Mateusz Żyła (plotkabytes)
+ - Ismail Özgün Turan (dadeather)
+ - Uladzimir Tsykun
+ - Artiom
+ - Skorney
+ - Lane Shukhov
+ - Matt Fields
+ - Ari Pringle (apringle)
+ - Flohw
+ - Marco Pfeiffer
+ - Gavin (gavin-markup)
+ - Miguel Vieira
+ - enekochan (enekochan)
+ - victor-prdh
+ - Laurent Legaz
+ - Arvids Godjuks (psihius)
+ - Eduardo Rocha
+ - Florian Pondepeyre
+ - Charles-Édouard Coste
+ - Alexandr Samuilov
+ - Benjamin Franzke
+ - Ilia Sergunin (maranqz)
+ - Vlad Gapanovich (gapik)
+ - dmitrijivanenko
+ - Your Name
+ - Max Baldanza
+ - Michel Krenz
+ - Florian Pondepeyre
+ - Benoit Mallo
+ - Belhassen
+ - Patrick Janzen
+ - Thomas Baccelli (atomiix)
+ - Mati Kochen (mtk)
+ - benkarrer-lab
+ - ged15
+ - Ellie Schaffer
+ - Mlanawo MBECHEZI
+ - Keri Henare (kerihenare)
+ - Peter van Dommelen
+ - dogedede
+ - Stan Jansen (stanjan)
+ - Sait KURT
+ - Gemorroj (gemorroj)
+ - Mohammad Eftekhari (bluemmb)
+ - Alexander Bauer (abauer)
+ - stefan.r
+ - Uwe Kleinmann
+ - JustDylan23
+ - Muhammad Elhwawshy
+ - czachor
+ - Olivier Laviale (olvlvl)
+ - Ali Sol
+ - Frank Dekker
+ - Guillaume Royer
+ - Marcus Jaschen
+ - Damian (baum)
+ - Norman Soetbeer
+ - Yoann MOROCUTTI
+ - Wojciech Skorodecki
+ - Simon Jamain
+ - Jorge P. Hernandez Lalcebo
+ - tante kinast (tante)
+ - dima-gr
+ - Benjamin Pick
+ - Daniel Bannert
+ - Szymon Tarasiński
+ - Christoforos Ntafos
+ - Marcin Twardowski
+ - Till Hörner
+ - Marcus Stöhr
+ - Marvin Bölsterli (marvinb)
+ - Julien Robic (nayte)
+ - Jean-François Morin-Abdullah
+ - dantleech
+ - Aleksey Prilipko
+ - Bertalan Attila
+ - Jm Aribau (jmaribau)
+ - Ángel Guzmán Maeso (shakaran)
+ - adenkejawen
+ - Chris Tiearney
+ - Orban Florin (forban)
+ - Àlex Fiestas
+ - gazi04
+ - Andrii Serdiuk (andreyserdjuk)
+ - Valentin PONS (valx76)
+ - henderkes
+ - Ivo Valchev
+ - Zoli Szabó (zoliszabo)
+ - Andreas Kleemann (andesk)
+ - Philippe Degeeter (pdegeeter)
+ - Anton Dyshkant
+ - Oz (import)
+ - Alexandru Patranescu
+ - Quentin Moreau (sheitak)
+ - Matthieu Prat
+ - Jelte Steijaert (jelte)
+ - Bart Reunes (metalarend)
+ - Jitendra Adhikari (adhocore)
+ - Mark Spink
+ - Timothy Anido (xanido)
+ - Arash Tabrizian (ghost098)
+ - botbotbot
+ - aetxebeste
+ - Markus Staab
+ - Reda DAOUDI
+ - cthulhu
+ - pthompson
+ - Marcin Kruk
+ - Kirill Nesmeyanov (serafim)
+ - Romeo
+ - ureimers
+ - Wang Jingyu
+ - Vincent QUATREVIEUX
+ - Raul Garcia Canet (juagarc4)
+ - Jeremiah VALERIE
+ - ibasaw
+ - Andreas Heigl (heiglandreas)
+ - Thierry Marianne
+ - James Michael DuPont
+ - Oncle Tom
+ - MGatner
+ - Jannik Zschiesche
+ - Anton Babenko (antonbabenko)
+ - SnakePin
+ - Kélian Bousquet (kells)
+ - Adoni Pavlakis (adoni)
+ - Mario Blažek (marioblazek)
+ - Peter Zwosta
+ - MiBo
+ - Malaney J. Hill
+ - Vitalii
+ - Ivan Yivoff
+ - Igor Kokhlov (verdet)
+ - Ninos
+ - Julien Boudry
+ - Pavel Witassek
+ - Taras Hinyk
+ - Pitchaya Boonsarngsuk
+ - Patrick Kaufmann
+ - Dan Kadera
+ - Bernhard Rusch
+ - Mostafa
+ - Urban Suppiger
+ - Antonio Torres
+ - shreyadenny
+ - Christian Seel
+ - Elias Häußler
+ - Nicolae Serban
+ - Peter Mead (petermead)
+ - Taylor Otwell
+ - Sergii Dolgushev (sergii-swds)
+ - Rudolf Ratusiński
+ - Robert Meijers
+ - G/
+ - qzylalala
+ - abluchet
+ - Lars Ambrosius Wallenborn (larsborn)
+ - Mohammad Ali Sarbanha (sarbanha)
+ - Nathanael d. Noblet
+ - gondo (gondo)
+ - Alexandre Jardin (alexandre.jardin)
  - Gregório Bonfante Borba (bonfante)
  - Bogdan Rancichi (devck)
- - Daniel Kolvik (dkvk)
- - Marc Lemay (flug)
- - Henne Van Och (hennevo)
- - Jeroen De Dauw (jeroendedauw)
- - Maxime COLIN (maximecolin)
- - Muharrem Demirci (mdemirci)
- - Evgeny Z (meze)
- - Pierre-Henry Soria 🌴 (pierrehenry)
- - Pierre Geyer (ptheg)
- - Thomas BERTRAND (sevrahk)
- - Vladislav (simpson)
- - Matej Žilák (teo_sk)
- - Vladislav Vlastovskiy (vlastv)
- - RENAUDIN Xavier (xorrox)
- - Yannick Vanhaeren (yvh)
+ - Andrei O
+ - Michael Schneider
+ - Alexis MARQUIS
+ - Pete Mitchell (peterjmit)
+ - db306
+ - Jason Schilling (chapterjason)
+ - Dmytro Liashko
+ - Till Krüss
+ - Mdsujansarkar
+ - Richard Quadling
+ - Nikita Popov (nikic)
+ - Simon Asika
+ - Sajad Torkamani
+ - Nardberjean
+ - Valentin
+ - Ivan Tse
+ - alekLexis
+ - andrey-tech
+ - Tristan Bessoussa (sf_tristanb)
+ - Dmitry Hordinky
+ - Ulrik McArdle
+ - Máximo Cuadros (mcuadros)
+ - alifanau
  - Zan Baldwin (zanderbaldwin)
+ - PatrickRedStar
+ - David Barratt
+ - Fabian Haase
+ - david-binda
+ - Malte Wunsch (maltewunsch)
+ - Balázs Benyó (duplabe)
+ - cmfcmf
+ - Martynas Sudintas (martiis)
+ - Ferran Vidal
+ - Yoann MOROCUTTI
+ - Mara Blaga
+ - Kevin Auivinet
+ - Ahmed Soliman (ahmedsoliman)
+ - Andrew Carter (andrewcarteruk)
+ - Radek Wionczek (rwionczek)
+ - Tyler Stroud
+ - Andy Stanberry
+ - Mikko Ala-Fossi
+ - Temuri Takalandze (abgeo)
+ - Tadas Gliaubicas (tadcka)
+ - Evrard Boulou
+ - fabios
+ - Xavier RENAUDIN
+ - nerdgod
+ - Alan Chen
+ - Guillem Fondin (guillemfondin)
+ - Matteo Galli
+ - Junaid Farooq (junaidfarooq)
+ - Matthias Neid
+ - Eugene Babushkin (warl)
+ - Nei Rauni Santos (nrauni)
+ - Adrian
+ - Lucas Matte
+ - Renato Mendes Figueiredo
+ - Ionut Cioflan
+ - Jakub Chábek
+ - Matt Farmer
+ - Joachim Krempel (jkrempel)
+ - Maxime AILLOUD (mailloud)
+ - Tischoi
+ - seho-nl
+ - Tom Kaminski
+ - Flo Gleixner (redflo)
+ - Will Donohoe
+ - tamar peled
+ - Marcel Pociot (mpociot)
+ - Brian Freytag
+ - Frank Jogeleit
+ - Kubicki Kamil (kubik)
+ - otsch
+ - Keith Maika
+ - Armando
+ - Mikkel Paulson
+ - ddegentesh
+ - Pierre Grimaud (pgrimaud)
+ - Maxime  P
+ - mark burdett
+ - tinect (tinect)
+ - Eduard Morcinek
+ - Tema Yud
+ - satalaondrej
+ - David Otton
+ - Helmut Januschka
+ - CDR
+ - A. Pauly
+ - David Christmann
+ - Peter Gribanov
+ - Rémi Faivre (rfv)
+ - Alex Olmos (alexolmos)
+ - Alexander Kurilo (kamazee)
+ - Patrick Daley (padrig)
+ - EXT - THERAGE Kevin
+ - Nicolas Valverde
+ - Dušan Kasan (dudo1904)
+ - Marco Wansinck (mwansinck)
+ - PierreRebeilleau
+ - Piet Steinhart
+ - Jakub Janata (janatjak)
+ - Xavier Amado (xamado)
+ - Nicolas Bastien (nicolas_bastien)
+ - Sema
+ - Mike Milano (mmilano)
+ - Jon Green (jontjs)
+ - Leonid Terentyev
+ - Mehdi Achour (machour)
+ - carlos-ea
+ - ChS
+ - dangkhoagms (dangkhoagms)
+ - Olexandr Kalaidzhy
+ - Piers Warmers
+ - Florian Cellier
+ - Sam Williams
+ - Michael Telgmann
+ - Christian Stocker
+ - Benjamin Laugueux
+ - Volker Killesreiter (ol0lll)
+ - Kevin Meijer
+ - Felicitus
+ - Michael Lively (mlivelyjr)
+ - Pierre Sv (rrr63)
+ - allison guilhem
+ - Julius Beckmann (h4cc)
+ - Victor Truhanovich (victor_truhanovich)
+ - Abdulkadir N. A.
+ - Peter van Dommelen
+ - Schvoy Norbert (schvoy)
+ - Erwin Dirks
+ - Lesnykh Ilia
+ - Ilya Biryukov (ibiryukov)
+ - Billie Thompson
+ - markusu49
+ - Stefano A. (stefano93)
+ - Marion Hurteau (marionleherisson)
+ - Luis Muñoz
+ - sdkawata
+ - Łukasz Chruściel (lchrusciel)
+ - Pierre-Henry Soria 🌴 (pierrehenry)
+ - Giuseppe Campanelli
+ - shreypuranik
+ - Vladimir Pakhomchik
+ - Jason Stephens
+ - Pierre Gasté (pierre_g)
+ - Ivan Pepelko (pepelko)
+ - Darryl Hein (xmmedia)
+ - Filippos Karailanidis
+ - Fabian Kropfhamer (fabiank)
+ - Ben Oman
+ - Rutger Hertogh
+ - Wojciech Błoszyk (wbloszyk)
+ - sebastian
+ - Lin Clark
+ - Rares Sebastian Moldovan (raresmldvn)
+ - Javier Núñez Berrocoso (javiernuber)
+ - Matteo Giachino (matteosister)
+ - Rémi Leclerc
+ - Janusz Jabłoński (yanoosh)
+ - ddebree
+ - Daniel Strøm
+ - Giuseppe Petraroli (gpetraroli)
+ - tirnanog06
+ - Michael Nelson
+ - Gerhard Seidel (gseidel)
+ - afaricamp
+ - Guillaume Loulier (guikingone)
+ - Berat Doğan
+ - Simon / Yami
+ - Maksym Romanowski (maxromanovsky)
+ - Nicolas Badey (nico-b)
+ - Carl Julian Sauter
+ - Roman Tyshyk
+ - Paul Ferrett
+ - Gavin Staniforth
+ - Serhii Smirnov
+ - lol768
+ - Juliano Petronetto
+ - Mario Young
+ - Nathan DIdier (icz)
+ - Alexandre Pavy
+ - Nicolas Schwartz (nicoschwartz)
+ - Jesper Søndergaard Pedersen (zerrvox)
+ - Michael Hudson-Doyle
+ - Eric J. Duran
+ - Antonio Mansilla
+ - Gerard
+ - Hans Höchtl (hhoechtl)
+ - Lucas Bustamante
+ - Szymon Kamiński (szk)
+ - michael.kubovic
+ - Dominic Tubach
+ - George Yiannoulopoulos
+ - Igor Timoshenko (igor.timoshenko)
+ - Rowan Manning
+ - Taras Girnyk
+ - takashiraki
+ - Valery Maslov (coderberg)
+ - Łukasz Makuch
+ - Sébastien COURJEAN
+ - Andrea Ruggiero (pupax)
+ - Walter Dal Mut (wdalmut)
+ - Thomas Chmielowiec
+ - Ondřej Frei
+ - Gert de Pagter
+ - Florian Heller
+ - Oleksii Bulba
+ - Agata
+ - karstennilsen
+ - Simone Ruggieri
+ - Peter Jaap Blaakmeer
+ - Sandro Hopf (senaria)
+ - Even André Fiskvik
+ - Rein Baarsma (solidwebcode)
+ - Ulugbek Miniyarov
+ - Stephen Lewis (tehanomalousone)
+ - Markus Tacker
+ - Sergey Fedotov
+ - Julien JANVIER (jjanvier)
+ - Thomas Dutrion (theocrite)
+ - Haikiri
+ - Jacek Kobus (jackks)
+ - Sam Ward
+ - alireza
+ - Pavel Stejskal (spajxo)
+ - Thomas Ploch
+ - Guile (guile)
+ - Sebastian Busch (sebu)
+ - JG (jege)
+ - Youpie
+ - tarlepp
+ - Ilia Lazarev (ilzrv)
+ - Sergei Gorjunov
+ - Remi Collet
+ - Ahmed EBEN HASSINE (famas23)
+ - Danish Translation Contributor
+ - Carlos Fernandes (carferdas)
+ - Andrii Boiko
+ - Jairo Pastor
+ - Brad Treloar
+ - Goran Juric
+ - Daniel Tschinder
+ - Philippe Pichet
+ - Łukasz Giza (destroyer)
+ - Pierre Schmitz
+ - Dawid Sajdak
+ - Geoff
+ - Julius Kiekbusch
+ - Frederik Schwan
+ - Nicolas A. Bérard-Nault
+ - Marcel Siegert
+ - Patricia Wagner
+ - Swen van Zanten
+ - Michael Orlitzky
+ - Thorsten Hallwas
+ - Piotr Zajac
+ - Julien BERNARD
+ - Gustavo Adrian
+ - Kamil Piwowarski (cyklista)
+ - Nicolas Le Goff (nlegoff)
+ - Maxwell Vandervelde
+ - michalmarcinkowski
+ - Roman Orlov
+ - Iliya Miroslavov Iliev (i.miroslavov)
+ - Matt Ketmo (mattketmo)
+ - Thomas Dubuffet (thomasdubuffet)
+ - Gusakov Nikita (hell0w0rd)
+ - Zakaria AMMOURA (zakariaamm)
+ - Edwin Hageman
+ - jc
+ - Daniil Gentili
+ - DerManoMann
+ - Evert Jan Hakvoort
+ - twifty
+ - Tim Ward
+ - Marcus Stöhr (dafish)
+ - ADmad
+ - Arnaud CHASSEUX
+ - Stefan Graupner (efrane)
+ - Sortex
+ - Eduardo García Sanz (coma)
+ - Karolis Daužickas (kdauzickas)
+ - Ramon Kleiss (akathos)
+ - Troy Crawford
+ - Arman
+ - Abudarham Yuval
+ - David Négrier (moufmouf)
+ - evgkord
+ - Daniel Mecke (daniel_mecke)
+ - Sjoerd Nuijten (sjoerdnuijten)
+ - Soha Jin
+ - wetternest
+ - Bradley Zeggelaar
+ - Vincent Vermeulen
+ - akimsko
+ - upchuk
+ - Adam Elsodaney (archfizz)
+ - Ben Gamra Housseine (hbgamra)
+ - Malte Schlüter
+ - Ruud Arentsen
+ - Patrick Luca Fazzi (ap3ir0n)
+ - Loenix
+ - Matheus Gontijo
+ - llupa
+ - Artfaith
+ - roog
+ - Radosław Kowalewski
+ - George Giannoulopoulos
+ - Rodolfo Ruiz
+ - Nicolas Lemoine
+ - Anne-Sophie Bachelard
+ - Christian Weiske
+ - Jens Hatlak
+ - Peter Simoncic
+ - Willem Verspyck
+ - Eric Stern
+ - Jeffrey Cafferata (jcidnl)
+ - Alex Silcock
+ - Michael
+ - Bizley
+ - j0k (j0k)
+ - Jose Manuel Gonzalez (jgonzalez)
+ - Philip Dahlstrøm
+ - Matthias Larisch
+ - Ilya Chekalsky
+ - Knallcharge
+ - Alex Teterin (errogaht)
+ - Attila Szeremi
+ - Ronny (big-r)
+ - Pablo Borowicz
+ - Zdeněk Drahoš
+ - rogamoore
+ - Walid BOUGHDIRI (walidboughdiri)
+ - Julien Bianchi (jubianchi)
+ - Matthias Bilger
+ - Abdelilah Jabri
+ - Valentin Barbu (jimie)
+ - Chris Shennan (chrisshennan)
+ - Ricardo de Vries (ricardodevries)
+ - es
+ - Dario Guarracino
+ - PabloKowalczyk
+ - Dominik Hajduk (dominikalp)
+ - Mike Gladysch
+ - Babichev Maxim (rez1dent3)
+ - Neophy7e
+ - Jessica F Martinez
+ - Shaun Simmons
+ - Oussama Elgoumri
+ - xaav
+ - Denis Yuzhanin
+ - downace
+ - Vladimir Vasilev (bobahvas)
+ - e-ivanov
+ - Philipp Hoffmann (philipphoffmann)
+ - Michael Zangerle
+ - Kuzia
+ - Sébastien Decrême (sebdec)
+ - Staormin
+ - Matthew Covey
+ - Phobetor
+ - Renan Taranto (renan-taranto)
+ - Bram Tweedegolf (bram_tweedegolf)
+ - Tatsuya Tsuruoka
+ - Ville Mattila
+ - Simon Müller (boscho)
+ - Maerlyn
+ - Marvin Butkereit
+ - tadas
+ - Marc Torres
+ - Stefan Moonen
+ - Yannick Vanhaeren (yvh)
+ - Andras Ratz
+ - Sorin Gitlan (forapathy)
+ - jdcook
+ - Benedict Massolle (bemas)
+ - Antoine (antoinela_adveris)
+ - Alexis
+ - Cyrille Jouineau (tuxosaurus)
+ - Stefan Kruppa
+ - Cyrille Bourgois (cyrilleb)
+ - Benjamin Dos Santos
+ - withbest
+ - Dennis Smink (dsmink)
+ - Freek Van der Herten (freekmurze)
+ - Cantepie
+ - Raphaël Droz
+ - Dmitry Danilson
+ - Max Voloshin (maxvoloshin)
+ - Bart Ruysseveldt
+ - RAHUL K JHA
+ - Jordi Llonch (jordillonch)
+ - Romain Dorgueil
+ - Ryan Rud
+ - Grayson Koonce
+ - Antonio Angelino
+ - Jeroen de Boer
+ - Noel Light-Hilary
+ - Thomas Chmielowiec (chmielot)
+ - Nathan PAGE (nathix)
+ - Mehrdad
+ - Abdouarrahmane FOUAD (fabdouarrahmane)
+ - Laurent G. (laurentg)
+ - Amirreza Shafaat (amirrezashafaat)
+ - Eddy
+ - fduch (fduch)
+ - Pawel Szczepanek (pauluz)
+ - Kirill Roskolii
+ - Guillaume Aveline
+ - Loïc Vernet (coil)
+ - Vladislav (simpson)
+ - Julien Moulin (lizjulien)
+ - Dalibor Karlović
+ - Jiri Velek
+ - Ernesto Domato
+ - John Espiritu (johnillo)
+ - Gordienko Vladislav
+ - parhs
+ - Michal Kurzeja (mkurzeja)
+ - Steffen Persch (n3o77)
+ - Enrico Schultz
+ - Philipp
+ - Vladislav Rastrusny (fractalizer)
+ - Anne-Julia Seitz
+ - Raphael Hardt
+ - RFreij
+ - Alexander Menk
+ - jean pasqualini (darkilliant)
+ - Luis Pabon (luispabon)
+ - Abdul.Mohsen B. A. A
+ - David Lima
+ - Maxime Corteel (mcorteel)
+ - Talha Zekeriya Durmuş
+ - Kamil Musial
+ - Matt Lehner
+ - Alexandre Tranchant (alexandre_t)
+ - Yurun
+ - azine
+ - Arkalo2
+ - Ser5
+ - Mathieu Ledru (matyo91)
+ - Reece Fowell (reecefowell)
+ - Signor Pedro
+ - Christoph König (chriskoenig)
+ - Artem Kolesnikov (tyomo4ka)
+ - Sander Goossens (sandergo90)
+ - Clément R. (clemrwan)
+ - Xavier REN
+ - rhel-eo
+ - Omar Yepez (oyepez003)
+ - Tiago Garcia (tiagojsag)
+ - devel
+ - Ala Eddine Khefifi (nayzo)
+ - Evgeny Ruban
+ - tomasz-kusy
+ - Antoine Leblanc
+ - riadh26
+ - Flinsch
+ - Muhammad Aakash
+ - Yann Rabiller (einenlum)
+ - Patrik Patie Gmitter
+ - tourze
+ - Gyula Szucs
+ - d.huethorst
+ - Hugo Fonseca (fonsecas72)
+ - Valmont Pehaut-Pietri (valmonzo)
+ - Eduard Bulava (nonanerz)
+ - Philipp Fritsche
+ - Tomasz Szymczyk (karion)
+ - karl.rixon
+ - Paul L McNeely (mcneely)
+ - Derek Stephen McLean
+ - Peter Gribanov
+ - M.Mahdi Mahmoodian
+ - Erika Heidi Reinaldo (erikaheidi)
+ - Benjamin RICHARD
+ - François Poguet
+ - Kim Laï Trinh
+ - Sébastien HOUZE
+ - timesince
+ - Daniel Kay (danielkay-cp)
+ - Elias Teutschländer
+ - Wouter Sioen (wouter_sioen)
+ - MatTheCat
+ - Nikita Starshinov (biji)
+ - Anton Zagorskii
+ - thib92
+ - AlberT
+ - Tim Strehle
+ - Justin Reherman (jreherman)
+ - szymek
+ - Vladimir Mantulo (mantulo)
+ - Mickael Perraud
+ - Thibaut Salanon
+ - Georgi Georgiev
+ - Benjamin Schultz (bschultz)
+ - Steve Frécinaux
+ - Matthias Meyer
+ - wesleyh
+ - Peter Potrowl
+ - Kamil Szalewski (szal1k)
+ - kaywalker
+ - Tugba Celebioglu
+ - Pavel Prischepa
+ - ju1ius
+ - Derek Lambert (dlambert)
+ - efeen
+ - scourgen hung (scourgen)
+ - Alexis BOYER
+ - Cédric Lahouste (rapotor)
+ - Pedro Silva
+ - Robert Korulczyk
+ - Ramazan APAYDIN (rapaydin)
+ - temperatur
+ - Ilya Vertakov
+ - Hans N. Hjort
+ - Luis Ramirez (luisdeimos)
+ - Andreas Streichardt
+ - Jan Marek (janmarek)
+ - Grzegorz Łukaszewicz (newicz)
+ - Pavel.Batanov
+ - Bart Baaten
+ - Erik van Wingerden
+ - George Sparrow
+ - Joeri Verdeyen (jverdeyen)
+ - Christopher Parotat
+ - 2manypeople
+ - Kevin Vergauwen (innocenzo)
+ - raplider
+ - zorn
+ - izenin
+ - Nicholas Ruunu (nicholasruunu)
+ - Alex Niedre
+ - J Bruni
+ - arduanov
+ - Marco Pfeiffer
+ - lerminou
+ - Asrorbek (asrorbek)
+ - Giorgio Premi
+ - dbrekelmans
+ - Juan Ases García (ases)
+ - Thanh Trần
+ - Halil Hakan Karabay (hhkrby)
+ - tsufeki
+ - casdal
+ - Vivien
+ - Ha Phan (haphan)
+ - Andrea Civita
+ - René Kerner
+ - Alan Bondarchuk
+ - Cas
+ - Hugo Posnic
+ - Raphael Davaillaud
+ - Frank Schulze (xit)
+ - Camille Islasse
+ - Ahmed HANNACHI (tiecoders)
+ - Danil Khaliullin (bifidokk)
+ - EdgarPE
+ - Adam Katz
+ - Michael Dowling (mtdowling)
+ - Joshua Behrens (joshuabehrens)
+ - Ivan Nemets
+ - ffd000
+ - Emre YILMAZ
+ - Aaron Stephens (astephens)
+ - valmonzo
+ - Juanmi Rodriguez Cerón
+ - Povilas S. (povilas)
+ - Jakub Sacha
+ - Ahmed Shamim Hassan (me_shaon)
+ - Nasim
+ - Jeremy Benoist
+ - Guillaume Lajarige (molkobain)
+ - Cesar Scur (cesarscur)
+ - Dominik Schwind (dominikschwind)
+ - Tero Alén (tero)
+ - Benjamin Franzke
+ - Rick Prent
+ - Christian Jul Jensen
+ - adnen chouibi
+ - Andrew Brown
+ - Manatsawin Hanmongkolchai
+ - Nicolas Fabre (nfabre)
+ - Cedrick Oka
+ - pf
+ - Silvio Ginter
+ - Muhammed Akbulut
+ - Léon Gersen
+ - Michael Olšavský
+ - David Vancl
+ - Siebe Vanden Eynden
+ - danilovict2
+ - ncou
+ - timaschew
+ - Dennis Fehr
+ - Ashura
+ - Rini Misini
+ - Arne Groskurth
+ - Peter Bouwdewijn
+ - Tim Lieberman
+ - Bouke Haarsma
+ - Lenar Lõhmus
+ - Robin Duval (robin-duval)
+ - Stephanie Trumtel (einahp)
+ - Sebastian Landwehr (dword123)
+ - neFAST
+ - Houziaux mike
+ - Raito Akehanareru (raito)
+ - Tristan Kretzer
+ - Marcin Szepczynski (szepczynski)
+ - Dennis Haarbrink
+ - Sander Marechal
+ - Tobias Feijten (tobias93)
+ - Sergio Santoro
+ - Pascal Woerde (pascalwoerde)
+ - Stephen
+ - Vladimir Chernyshev (volch)
+ - Michael J
+ - Gerben Wijnja
+ - abulford
+ - error56
+ - Kévin Gonella
+ - Mauricio Lopez (diaspar)
+ - Nikos Charalampidis
+ - amcastror
+ - Mehdi Mabrouk (mehdidev)
+ - Johannes Müller (johmue)
+ - Nicolas Appriou
+ - Marek Binkowski
+ - Gilles Gauthier
+ - James Sansbury
+ - David Stone
+ - Danilo Silva
+ - Alexey Popkov
+ - Stefan Hüsges (tronsha)
+ - Qingshan Luo
+ - Mikhail Prosalov (mprosalov)
+ - Frank Neff (fneff)
+ - Nacho Martin (nacmartin)
+ - Max Beutel
+ - Brooks Boyd
+ - Christian Wahler (christian)
+ - Kirk Madera
+ - fabi
+ - David Soria Parra
+ - Marc Bennewitz
+ - Choong Wei Tjeng (choonge)
+ - Jean-Baptiste Nahan
+ - Lance McNearney
+ - Markus Thielen
+ - Roberto Guido
+ - Mas Iting
+ - Matthias Derer
+ - Paweł Stasicki
+ - BenjaminBeck
+ - sensio
+ - Johan Wilfer (johanwilfer)
+ - Joel Marcey
+ - Nicolas Tallefourtané (nicolab)
+ - Andreas Frömer
+ - Ole Rößner (basster)
+ - jonmldr
+ - Georg Ringer (georgringer)
+ - Tobias Stöckler
+ - Sergey Yuferev
+ - Robert Gurau
+ - Tomáš Korec (tomkorec)
+ - Javier Alfonso Bellota de Frutos
+ - Rares Vlaseanu (raresvla)
+ - Yohan Giarelli (frequence-web)
+ - Tim van Densen
+ - VolCh
+ - Koray Zorluoglu
+ - Peter Potrowl
+ - Constantine Shtompel
+ - ghazy ben ahmed
+ - joris
+ - Andrew Marcinkevičius (ifdattic)
+ - Dan (dantleech)
+ - Hubert Moreau (hmoreau)
+ - Albin Kerouaton
+ - Jérémy (libertjeremy)
+ - Rainrider
+ - Flavien Knuchel (knuch)
+ - Andreas Allacher
+ - Denys Voronin (hurricane)
+ - Martijn Croonen
+ - André Filipe Gonçalves Neves (seven)
+ - Thomas Baumgartner (shoplifter)
+ - marbul
+ - Samuel Gordalina (gordalina)
+ - Aryel Tupinamba (dfkimera)
+ - Christian Flach (cmfcmf)
+ - Ken Marfilla (marfillaster)
+ - Arek Bochinski
+ - fruty
+ - David Soms
+ - Eric Schildkamp
+ - Tadcka
+ - johnstevenson
+ - Carlos Tasada
+ - Gustavo Adrian
+ - Vincent MOULENE (vints24)
+ - Dario Savella
+ - Marcello Mönkemeyer (marcello-moenkemeyer)
+ - Dan Blows
+ - Jérôme Dumas
+ - Sébastien HOUZÉ
+ - Alexander Pasichnik (alex_brizzz)
+ - Andrea Giannantonio
+ - Jaap van Otterdijk (jaapio)
+ - Peter Thompson (petert82)
+ - Monet Emilien
+ - Patricia
+ - GagnarTest (gagnartest)
+ - Krzysztof Przybyszewski (kprzybyszewski)
+ - Jesper Noordsij
+ - MightyBranch
+ - Juan Gonzalez Montes (juanwilde)
+ - julien_tempo1 (julien_tempo1)
+ - Karel Syrový
+ - georaldc
+ - andersmateusz
+ - emilienbouard (neime)
+ - Cas van Dongen
+ - Samael tomas
+ - thecaliskan
+ - Brian Graham (incognito)
+ - Pablo Monterde Perez (plebs)
+ - Rafael Villa Verde
+ - Cedric BERTOLINI (alsciende)
+ - pborreli
+ - Icode4Food (icode4food)
+ - Thibaut Arnoud (thibautarnoud)
+ - Jaymin G
+ - Randel Palu
+ - Courcier Marvin (helyakin)
+ - Andreas Hasenack
+ - Norbert Schultheisz
+ - Mykola Zyk
+ - Ludek Stepan
+ - Nowfel2501
+ - Patryk Kozłowski
+ - Adrien Chinour
+ - jersoe
+ - Antanas Arvasevicius
+ - Evgeniy Tetenchuk
+ - psampaz (psampaz)
+ - Verlhac Gaëtan (viviengaetan)
+ - Ph3nol
+ - Egor Gorbachev
+ - natechicago
+ - Wickex
+ - jamogon
+ - pawel-lewtak
+ - Raphaël Davaillaud
+ - Ismo Vuorinen
+ - Seyedramin Banihashemi (ramin)
+ - Tomáš Polívka (draczris)
+ - André Laugks
+ - Igor Plantaš
+ - Moritz Kraft (userfriendly)
+ - Jelle Bekker (jbekker)
+ - Mike Francis
+ - Amin Hosseini (aminh)
+ - Tim Jabs (rubinum)
+ - Sander Coolen (scoolen)
+ - qsz
+ - dropfen
+ - Nicolas Eeckeloo (neeckeloo)
+ - John VanDeWeghe
+ - mshavliuk
+ - Pieter Jordaan
+ - Andreas Forsblom (aforsblo)
+ - Pierre Dudoret
+ - Andreas
+ - Dmitry Simushev
+ - David Szkiba
+ - Julien Manganne (juuuuuu)
+ - Diego Campoy
+ - Thomas Jarrand
+ - Ivan Nemets
+ - Lance Chen
+ - Alberto Aldegheri
+ - Shrey Puranik
+ - ProgMiner
+ - Michael Dawart (mdawart)
+ - Kamil Madejski (kmadejski)
+ - Aleksandr Dankovtsev
+ - Wouter Ras
+ - Andrew Tch
+ - Cosmin-Romeo TANASE
+ - Paul Seiffert (seiffert)
+ - Gordienko Vladislav
+ - Roma (memphys)
+ - Alexis Lefebvre
+ - Valérian Galliat
+ - Michal Forbak
+ - BRAMILLE Sébastien (oktapodia)
+ - Angel Koilov (po_taka)
+ - Sergey Stavichenko (sergey_stavichenko)
+ - ollie harridge (ollietb)
+ - Enrico
+ - hamza
+ - MGDSoft
+ - Benny Born
+ - gndk
+ - kurozumi (kurozumi)
+ - Vacheslav Silyutin
+ - popnikos
+ - Ismail Turan
+ - Gerrit Drost
+ - Damien  Fayet (rainst0rm)
+ - Oriol Mangas Abellan (oriolman)
+ - Frankie Wittevrongel
+ - Jordan Hoff
+ - Julia
+ - Ibon Conesa (ibonkonesa)
+ - Steffen Keuper
+ - Ben Miller
+ - v.shevelev
+ - Emilie Lorenzo
+ - Arseny Razin
+ - fmarchalemisys
+ - baron (bastien)
+ - Marien Fressinaud
+ - Benjamin Long
+ - fh-github@fholzhauer.de
+ - Abdouni Karim (abdounikarim)
+ - Tobias Speicher
+ - Ross Tuck
+ - Mo Di (modi)
+ - Vladislav Vlastovskiy (vlastv)
+ - Karim Cassam Chenaï (ka)
+ - Zacharias Luiten
+ - Dawid Nowak
+ - Johannes
+ - Konrad
+ - David Courtey (david-crty)
+ - Alfonso Fernández García
+ - Nicolas Sauveur (baishu)
+ - Schuyler Jager (sjager)
+ - Claas Augner
+ - Roger Webb
+ - Martin Mayer (martin)
+ - Willem Mouwen
+ - Yann LUCAS (drixs6o9)
+ - AnotherSymfonyUser (arderyp)
+ - Arnaud
+ - Moritz Borgmann (mborgmann)
+ - David Joos (djoos)
+ - Léo VINCENT
+ - Sander Hagen
+ - Kevin Herrera (kherge)
+ - Juan Luis (juanlugb)
+ - Ivo Valchev
+ - Andrew (drew)
+ - Kevin Decherf
+ - Jérémy Jourdin (jjk801)
+ - Marc J. Schmidt (marcjs)
+ - Lyubomir Grozdanov (lubo13)
+ - Sergiy Sokolenko
+ - patrick-mcdougle
+ - eRIZ
+ - Brandon Kelly (brandonkelly)
+ - Maarten Nusteling (nusje2000)
+ - Michaël VEROUX
+ - mieszko4
+ - Valouleloup
+ - Jérémie Broutier
+ - Gaylord Poillon (gaylord_p)
+ - Vincent Bouzeran
+ - Ostrzyciel
+ - Misha Klomp (mishaklomp)
+ - Thanos Polymeneas (thanos)
+ - William Thomson (gauss)
+ - benatespina (benatespina)
+ - Success Go
+ - Hryhorii Hrebiniuk
+ - Andrejs Leonovs
+ - Lucas Bäuerle
+ - Stefanos Psarras (stefanos)
+ - tsilefy
+ - Tito Costa
+ - Chris McGehee
+ - Guillaume LECERF
+ - Nil Borodulia
+ - Edwin
+ - Bermon Clément (chou666)
+ - Haritz
+ - Jakub Kisielewski
+ - Ruud Seberechts
+ - stloyd
+ - youssef saoubou
+ - dantleech
+ - Bruno BOUTAREL
+ - Kirill Lazarev
+ - Pablo Ogando Ferreira
+ - curlycarla2004
+ - Oleh Korneliuk
+ - Jan Hort
+ - Francisco Facioni (fran6co)
+ - Kérian MONTES-MORIN (kerianmm)
+ - n-aleha
+ - Carlos Ortega Huetos
+ - luffy1727
+ - Tomaz Ahlin
+ - Samy D (dinduks)
+ - Gautier Deuette
+ - David de Boer (ddeboer)
+ - Alex Nostadt
+ - Dionysis Arvanitis
+ - Osayawe Ogbemudia Terry (terdia)
+ - Cristobal Dabed
+ - Yury (daffox)
+ - kwiateusz
+ - Kai Dederichs
+ - Dmitrii Lozhkin
+ - Joseph Maarek
+ - Cláudio Cesar
+ - Peter Breuls
+ - Ralf Kühnel (ralfkuehnel)
+ - Thomas Beaujean
+ - Michal Čihař
+ - elattariyassine
+ - Philip Frank
+ - Clement Herreman (clemherreman)
+ - Juan Traverso
+ - Fabrice Locher
+ - Andrew Coulton
+ - ChrisC
+ - Richard Hodgson
+ - Daniel Basten (axhm3a)
+ - Lesueurs Frédéric (fredlesueurs)
+ - Kevin Dew
+ - Hugo Sales
+ - Marcin Chwedziak
+ - Olatunbosun Egberinde
+ - Robert Meijers
+ - Artyum Petrov
+ - César Suárez (csuarez)
+ - Paweł Tomulik
+ - Guillaume Gammelin
+ - MaPePeR
+ - Luís Cobucci (lcobucci)
+ - Frédéric G. Marand (fgm)
+ - Geoffrey Monte (numerogeek)
+ - alsar
+ - Nick Stemerdink
+ - Axel Venet
+ - Raphael de Almeida (raphaeldealmeida)
+ - John Nickell (jrnickell)
+ - Alan ZARLI
+ - Tobias Genberg (lorceroth)
+ - Alessio Baglio (ioalessio)
+ - Sjors Ottjes
+ - Michael Simonson (mikes)
+ - Dan Ionut Dumitriu (danionut90)
+ - Johan de Ruijter
+ - Abdelhakim ABOULHAJ
+ - Normunds
+ - Ian Carroll
+ - Dmitri Petmanson
+ - Daniele Cesarini (ijanki)
+ - Giuseppe Arcuti
+ - David Legatt (dlegatt)
+ - Pchol
+ - Konrad Mohrfeldt
+ - sarah-eit
+ - Yorkie Chadwick (yorkie76)
+ - Rénald Casagraude (rcasagraude)
+ - James Cowgill
+ - Johan
+ - Javier Ledezma
+ - Matthieu
+ - anna-lena.waltinger
+ - Starfox64
+ - skalpa
+ - Bert ter Heide (bertterheide)
+ - Florian Bogey
+ - George Bateman
+ - Ciaran McNulty (ciaranmcnulty)
+ - pritasil
+ - wesign (inscrutable01)
+ - Adrian Philipp
+ - Vincent
+ - Filipe Guerra
+ - Andre Johnson
+ - Wojciech Zimoń
+ - Sepehr Lajevardi
+ - David Gorges (davidgorges)
+ - Simon Neidhold
+ - Damián Nohales (eagleoneraptor)
+ - everyx
+ - Kevin Nadin (kevinjhappy)
+ - uncaught
+ - Viet Pham
+ - Louis-Proffit
+ - chesteroni (chesteroni)
+ - agaktr
+ - Laurent Clouet
+ - Ondřej Frei
+ - David Grüner (vworldat)
+ - Adrian Olek (adrianolek)
+ - Oliver Hoff
+ - René Landgrebe
+ - Illia Antypenko (aivus)
+ - Alessandra Lai
+ - Julien Menth (cfjulien)
+ - remieuronews
+ - Tomas Javaisis
+ - Nicholas Byfleet (nickbyfleet)
+ - Vic D&#039;Elfant (vicdelfant)
+ - Diego Sapriza
+ - Vaidas Lažauskas
+ - Linas Ramanauskas
+ - Sven Fabricius
+ - Jean-Christophe Cuvelier [Artack]
+ - Žan V. Dragan
+ - Alexander Onatskiy
+ - Koalabaerchen
+ - Anton Sukhachev (mrsuh)
+ - Patrick Carlo-Hickman
+ - Pierre-Olivier Vares (povares)
+ - Damien Harper (damien.harper)
+ - Gabriel Moreira
+ - Edvinas Klovas
+ - Ibrahim Bougaoua
+ - Jos Elstgeest
+ - Pierre Tachoire
+ - Andrey Chernykh
+ - Markus Baumer
+ - Andre Eckardt (korve)
+ - Dominik Ritter (dritter)
+ - Jan Pintr
+ - Peter Orosz (ill_logical)
+ - Petr Jaroš (petajaros)
+ - paullallier
+ - Steeve Titeca (stiteca)
+ - Daniel Londero (dlondero)
+ - Daniel Rotter (danrot)
+ - Roy-Orbison
+ - Christian López Espínola (penyaskito)
+ - Gabi Udrescu
+ - Kasperki
+ - Nicolas Bondoux (nsbx)
+ - Kévin Gomez (kevin)
+ - Adrien Foulon
+ - klyk50
+ - Erfan Bahramali
+ - neghmurken
+ - Sergio
+ - Giovanni Albero (johntree)
+ - Florent SEVESTRE (aniki-taicho)
+ - Julius (sakalys)
+ - karolsojko
+ - Fabian Steiner (fabstei)
+ - Thomas Bibaut
+ - Craig Menning (cmenning)
+ - guangwu
+ - dinitrol
+ - Paul LE CORRE
+ - Maximilian Berghoff (electricmaxxx)
+ - Nikita Sklyarov
+ - Rafał Muszyński (rafmus90)
+ - Albert Ganiev (helios-ag)
+ - Simone Di  Maulo (toretto460)
+ - kshida
+ - joris de wit (jdewit)
+ - Jérôme Nadaud (jnadaud)
+ - Yendric
+ - Johannes Goslar
+ - Patrick Kuijvenhoven
+ - Thijs Reijgersberg
+ - RevZer0 (rav)
+ - Jure (zamzung)
+ - Markus Ramšak
+ - Farid Jalilov
+ - Carsten Eilers (fnc)
+ - Mark Beech (jaybizzle)
+ - Ganesh Chandrasekaran (gxc4795)
+ - Alessandro Tagliapietra (alex88)
+ - Rubén Calvo (rubencm)
+ - phc
+ - Emre Akinci (emre)
+ - Saem Ghani
+ - Gerd Christian Kunze (derdu)
+ - rvoisin
+ - Marek Šimeček (mssimi)
+ - Alexander Cheprasov
+ - Goran (gog)
+ - nuryagdy mustapayev (nueron)
+ - Eduardo Conceição
+ - Daniel Tiringer
+ - changmin.keum
+ - Juan Miguel Besada Vidal (soutlink)
+ - Till Klampaeckel (till)
+ - GK-302
+ - Markus
+ - Gabriel Birke
+ - Nico Hiort af Ornäs
+ - Philipp Kretzschmar
+ - Iwan van Staveren (istaveren)
+ - DaikiOnodera
+ - Matt Daum (daum)
+ - caalholm
+ - Gleb Sidora
+ - Hallison Boaventura (hallisonboaventura)
+ - rewrit3
+ - smokeybear87
+ - Mohamed Karnichi (amiral)
+ - abunch
+ - Przemysław Piechota (kibao)
+ - Trevor N. Suarez (rican7)
+ - Serhiy Lunak (slunak)
+ - Gilbertsoft
+ - Pascal Hofmann
+ - Frank Naegler
+ - Oleksii Svitiashchuk
+ - ElisDN
+ - Rik van der Heijden
+ - Lars Moelleken
+ - Marc Duboc (icemad)
+ - neodevcode
+ - wallach-game
+ - Owen Gray (otis)
+ - Stefan Oderbolz
+ - Paul Andrieux
+ - Albert Prat
+ - mousezheng
+ - Stefan Kleff (stefanxl)
+ - Neagu Cristian-Doru (cristian-neagu)
+ - Marko Vušak
+ - Clemens Krack
+ - Robert Kopera
+ - Vlad Dumitrache
+ - Jody Mickey (jwmickey)
+ - Wojciech Gorczyca
+ - Ruben Jansen
+ - Kevin Jansen
+ - Joel Lusavuvu (enigma97)
+ - Kajetan Kołtuniak (kajtii)
+ - Roman Igoshin (masterro)
+ - Yann (yann_eugone)
+ - Iain Cambridge
+ - Greg Szczotka (greg606)
+ - zcodes
+ - Luis Ramón López López (lrlopez)
+ - Camille Dejoye (cdejoye)
+ - Robert Worgul
+ - Radosław Benkel
+ - jannick-holm
+ - Marcos Quesada (marcos_quesada)
+ - Bernd Matzner (bmatzner)
+ - Max Summe
+ - G.R.Dalenoort
+ - Julian Krzefski
+ - Piergiuseppe Longo
+ - Rodrigo Díez Villamuera (rodrigodiez)
+ - Sergey Fokin (tyraelqp)
+ - Konstantin S. M. Möllers (ksmmoellers)
+ - Stanislav Gamaiunov (happyproff)
+ - Daniel Kozák
+ - Daniel Perez Pinazo (pitiflautico)
+ - Vladislav Iurciuc
+ - Simon Bouland (bouland)
+ - Pierrick Charron
+ - Bruno Rodrigues de Araujo (brunosinister)
+ - mantulo
+ - Rémy LESCALLIER
+ - Amine Yakoubi
+ - Stefan Koopmanschap
+ - DSeemiller
+ - Kirill Saksin
+ - Dan Patrick (mdpatrick)
+ - Klaas Naaijkens
+ - Malcolm Fell (emarref)
+ - Dominik Piekarski (dompie)
+ - Christoph Krapp
+ - Ashura
+ - Mathieu TUDISCO (mathieutu)
+ - Andras Debreczeni
+ - Adel ELHAIBA (eadel)
+ - Thibault G
+ - gstapinato
+ - MusikAnimal
+ - Anthony Moutte
+ - Michael Steininger
+ - František Maša
+ - Harald Tollefsen
+ - Michael Squires
+ - Ignacio Alveal
+ - Mathieu MARCHOIS (mmar)
+ - Claudiu Cristea
+ - Simone Fumagalli (hpatoio)
+ - Ariel J. Birnbaum
+ - Maks Rafalko (bornfree)
+ - Michel Bardelmeijer
+ - Sean Templeton
+ - Simon Frost
+ - Norman Soetbeer
+ - mwos
+ - Ismail Faizi (kanafghan)
+ - Matt Drollette (mdrollette)
+ - Alexander Menk
+ - Konstantinos Alexiou
+ - Tomáš Votruba
+ - Matthew Burns
+ - Kurt Thiemann
+ - Pablo Maria Martelletti (pmartelletti)
+ - Mikkel Paulson
+ - Yasmany Cubela Medina (bitgandtter)
+ - tuqqu
+ - Aurélien Fontaine
+ - Andrzej
+ - Harry Wiseman
+ - Menno Holtkamp
+ - samuel laulhau (lalop)
+ - Chris Tickner
+ - Mbechezi Nawo
+ - m.chwedziak
+ - Dariusz Ruminski
+ - Stano Turza
+ - developer-av
+ - AmsTaFF (amstaff)
+ - Pierre Tondereau
+ - adhamiamirhossein
+ - Ivan Tse
+ - pdragun
+ - Boris Betzholz
+ - Alex Plekhanov
+ - Nicolas Séverin
+ - Rafał Toboła
+ - Derek Bonner
+ - Hoffmann András
+ - Elliot Anderson (elliot)
+ - Milos Colakovic (project2481)
+ - Danijel Obradović
+ - andreabreu98
+ - j4nr6n (j4nr6n)
+ - Sebastian Göttschkes (sgoettschkes)
+ - Drew Butler
+ - Sjoerd Adema
+ - Phillip Look (plook)
+ - Arkadiusz Kondas (itcraftsmanpl)
+ - dsech
+ - Kris Buist
+ - Franz Wilding (killerpoke)
+ - Morimoto Ryosuke
+ - Jochen Mandl
+ - Alex Demchenko
+ - Jiri Falis
+ - Matthew Donadio
+ - Adrien Gallou (agallou)
+ - Dmitrii Baranov
+ - Pavol Tuka
+ - Jakub Caban (lustmored)
+ - Albion Bame (abame)
+ - Adria Lopez (adlpz)
+ - Jeremiah VALERIE
+ - Jan Dobrovodský (j-dobr)
+ - Athorcis
+ - Jens Schulze
+ - “teerasak”
+ - Vincent LEFORT (vlefort)
+ - Bikal Basnet
+ - Jorge Martin (jorgemartind)
+ - Kevin Frantz
+ - sauliusnord
+ - Gonzalo Míguez
+ - Thiago Melo
+ - sualko
+ - Xavier HAUSHERR
+ - parinz1234
+ - czachor
+ - Jozef Môstka (mostkaj)
+ - NothingWeAre
+ - Fabio Panaccione
+ - Nathan Sepulveda
+ - Tomasz (timitao)
+ - Karlos Presumido (oneko)
+ - Nathaniel Catchpole
+ - Arkadiusz Rzadkowolski (flies)
+ - Paul Matthews
+ - Luciano Mammino (loige)
+ - Jorge Maiden (jorgemaiden)
+ - Frédéric Bouchery (fbouchery)
+ - Camille Baronnet
+ - Elías Fernández
+ - Aaron Scherer (aequasi)
+ - ging-dev
+ - Daniel Bartoníček
+ - Curtis (ccorliss)
+ - cgonzalez
+ - Dan Wilga
+ - Andrew Clark (tqt_andrew_clark)
+ - Dylan
+ - jwaguet
+ - Christian Rishøj
+ - Gary Houbre (thegarious)
+ - Aaron Piotrowski (trowski)
+ - pkowalczyk
+ - Aaron Somi
+ - Mark Ogilvie
+ - vlechemin
+ - Almog Baku (almogbaku)
+ - Ulrik Nielsen (mrbase)
+ - divinity76
+ - Victor Prudhomme
+ - Matt Brunt
+ - Mahmoud Mostafa (mahmoud)
+ - Peter Schultz
+ - florian-michael-mast
+ - Ilya Bulakh
+ - Yevgen Kovalienia
+ - Pedro Magalhães (pmmaga)
+ - bokonet
+ - Gerry Vandermaesen (gerryvdm)
+ - Joas Schilling
+ - Bastien Clément (bastienclement)
+ - gedrox
+ - Valentin VALCIU
+ - Pierre Rebeilleau (pierrereb)
+ - Conrad Kleinespel (conradk)
+ - Dmitriy Derepko
+ - Dominic Luidold
+ - ttomor
+ - cybernet (cybernet2u)
+ - Floran Brutel (notFloran) (floran)
+ - Volodymyr Kupriienko (greeflas)
+ - sam-bee
+ - Saem Ghani
+ - Michal Gebauer
+ - Sorin Pop (sorinpop)
+ - WaiSkats
+ - Walther Lalk
+ - Anamarija Papić (anamarijapapic)
+ - Jay Severson
+ - Sebastian Utz
+ - Haritz Iturbe (hizai)
+ - alefranz
+ - Javan Eskander
+ - Dilek Erkut
+ - Bart Wach
+ - Cyril HERRERA
+ - dasmfm
+ - Marco
+ - NIRAV MUKUNDBHAI PATEL (niravpatel919)
+ - Guillaume Sainthillier (guillaume-sainthillier)
+ - Clément Bertillon (skigun)
+ - Sergey Novikov (s12v)
+ - Yannick
+ - Mihai Stancu
+ - Oliver Klee
+ - Safonov Nikita (ns3777k)
+ - Vedran Mihočinec (v-m-i)
+ - Wim Hendrikx
+ - Thomason, James
+ - Raul Rodriguez (raul782)
+ - detinkin
+ - André Matthies
+ - Pablo Schläpfer
+ - goabonga
+ - Emmanuel Dreyfus
+ - Mathieu Dewet (mdewet)
+ - Pierre LEJEUNE (darkanakin41)
+ - Boullé William (williamboulle)
+ - Victoria Quirante Ruiz (victoria)
+ - Arend Hummeling
+ - SuRiKmAn
+ - Max Grigorian (maxakawizard)
+ - Martijn Boers (plebian)
+ - Julien Pauli
+ - Tayfun Aydin
+ - Mathieu Morlon (glutamatt)
+ - Justin Rainbow (jrainbow)
+ - Bart Brouwer (bartbrouwer)
+ - Jeroen van den Nieuwenhuisen
+ - aim8604
+ - Nerijus Arlauskas (nercury)
+ - Ken Stanley
+ - insekticid
+ - alexpods
+ - Laurent Bachelier (laurentb)
+ - Valentin Nazarov
+ - Zachary Tong (polyfractal)
+ - Nicolas Roudaire
+ - Artem Lopata
+ - Helmer Aaviksoo
+ - Felipy Amorim (felipyamorim)
+ - Ross Motley (rossmotley)
+ - Grégory Pelletier (ip512)
+ - Dcp (decap94)
+ - SenTisso
+ - Jérémy CROMBEZ (jeremy)
+ - martijn
+ - Aarón Nieves Fernández
+ - Boris Medvedev
+ - V1nicius00
+ - Zoran Makrevski (zmakrevski)
+ - Víctor Mateo (victormateo)
+ - Yiorgos Kalligeros
+ - Florian Morello
+ - Rene de Lima Barbosa (renedelima)
+ - Mihai Nica (redecs)
+ - toxxxa

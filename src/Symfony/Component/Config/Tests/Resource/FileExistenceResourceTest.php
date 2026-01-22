@@ -16,9 +16,9 @@ use Symfony\Component\Config\Resource\FileExistenceResource;
 
 class FileExistenceResourceTest extends TestCase
 {
-    protected $resource;
-    protected $file;
-    protected $time;
+    protected FileExistenceResource $resource;
+    protected string $file;
+    protected int $time;
 
     protected function setUp(): void
     {
@@ -36,7 +36,7 @@ class FileExistenceResourceTest extends TestCase
 
     public function testToString()
     {
-        $this->assertSame($this->file, (string) $this->resource);
+        $this->assertSame('existence.'.$this->file, (string) $this->resource);
     }
 
     public function testGetResource()

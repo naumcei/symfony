@@ -32,13 +32,14 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
  */
 final class SignatureRememberMeHandler extends AbstractRememberMeHandler
 {
-    private SignatureHasher $signatureHasher;
-
-    public function __construct(SignatureHasher $signatureHasher, UserProviderInterface $userProvider, RequestStack $requestStack, array $options, LoggerInterface $logger = null)
-    {
+    public function __construct(
+        private SignatureHasher $signatureHasher,
+        UserProviderInterface $userProvider,
+        RequestStack $requestStack,
+        array $options,
+        ?LoggerInterface $logger = null,
+    ) {
         parent::__construct($userProvider, $requestStack, $options, $logger);
-
-        $this->signatureHasher = $signatureHasher;
     }
 
     public function createRememberMeCookie(UserInterface $user): void
@@ -46,8 +47,21 @@ final class SignatureRememberMeHandler extends AbstractRememberMeHandler
         $expires = time() + $this->options['lifetime'];
         $value = $this->signatureHasher->computeSignatureHash($user, $expires);
 
-        $details = new RememberMeDetails($user::class, $user->getUserIdentifier(), $expires, $value);
+        $details = new RememberMeDetails($user->getUserIdentifier(), $expires, $value);
         $this->createCookie($details);
+    }
+
+    public function consumeRememberMeCookie(RememberMeDetails $rememberMeDetails): UserInterface
+    {
+        try {
+            $this->signatureHasher->acceptSignatureHash($rememberMeDetails->getUserIdentifier(), $rememberMeDetails->getExpires(), $rememberMeDetails->getValue());
+        } catch (InvalidSignatureException $e) {
+            throw new AuthenticationException('The cookie\'s hash is invalid.', 0, $e);
+        } catch (ExpiredSignatureException $e) {
+            throw new AuthenticationException('The cookie has expired.', 0, $e);
+        }
+
+        return parent::consumeRememberMeCookie($rememberMeDetails);
     }
 
     public function processRememberMe(RememberMeDetails $rememberMeDetails, UserInterface $user): void

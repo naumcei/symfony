@@ -43,9 +43,9 @@ class ProjectServiceContainer extends Container
      *
      * @return \Foo
      */
-    protected function getFooService()
+    protected static function getFooService($container)
     {
-        return $this->services['foo'] = new \Foo();
+        return $container->services['foo'] = new \Foo();
     }
 
     /**
@@ -53,11 +53,9 @@ class ProjectServiceContainer extends Container
      *
      * @return \Bar
      */
-    protected function getServiceClosureService()
+    protected static function getServiceClosureService($container)
     {
-        return $this->services['service_closure'] = new \Bar(#[\Closure(name: 'foo', class: 'Foo')] function () {
-            return ($this->services['foo'] ??= new \Foo());
-        });
+        return $container->services['service_closure'] = new \Bar(#[\Closure(name: 'foo', class: 'Foo')] fn () => ($container->services['foo'] ??= new \Foo()));
     }
 
     /**
@@ -65,10 +63,8 @@ class ProjectServiceContainer extends Container
      *
      * @return \Bar
      */
-    protected function getServiceClosureInvalidService()
+    protected static function getServiceClosureInvalidService($container)
     {
-        return $this->services['service_closure_invalid'] = new \Bar(function () {
-            return NULL;
-        });
+        return $container->services['service_closure_invalid'] = new \Bar(fn () => NULL);
     }
 }

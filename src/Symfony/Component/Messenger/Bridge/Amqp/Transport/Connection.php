@@ -13,6 +13,7 @@ namespace Symfony\Component\Messenger\Bridge\Amqp\Transport;
 
 use Symfony\Component\Messenger\Exception\InvalidArgumentException;
 use Symfony\Component\Messenger\Exception\LogicException;
+use Symfony\Component\Messenger\Exception\TransportException;
 
 /**
  * An AMQP connection.
@@ -30,6 +31,7 @@ class Connection
         'x-max-length-bytes',
         'x-max-priority',
         'x-message-ttl',
+        'x-delivery-limit',
     ];
 
     /**
@@ -77,11 +79,9 @@ class Connection
         'default_publish_routing_key',
         'flags',
         'arguments',
+        'bindings',
     ];
 
-    private array $connectionOptions;
-    private array $exchangeOptions;
-    private array $queuesOptions;
     private AmqpFactory $amqpFactory;
     private mixed $autoSetupExchange;
     private mixed $autoSetupDelayExchange;
@@ -96,10 +96,14 @@ class Connection
     private \AMQPExchange $amqpDelayExchange;
     private int $lastActivityTime = 0;
 
-    public function __construct(array $connectionOptions, array $exchangeOptions, array $queuesOptions, AmqpFactory $amqpFactory = null)
-    {
+    public function __construct(
+        #[\SensitiveParameter] private array $connectionOptions,
+        private array $exchangeOptions,
+        private array $queuesOptions,
+        ?AmqpFactory $amqpFactory = null,
+    ) {
         if (!\extension_loaded('amqp')) {
-            throw new LogicException(sprintf('You cannot use the "%s" as the "amqp" extension is not installed.', __CLASS__));
+            throw new LogicException(\sprintf('You cannot use the "%s" as the "amqp" extension is not installed.', __CLASS__));
         }
 
         $this->connectionOptions = array_replace_recursive([
@@ -109,8 +113,6 @@ class Connection
             ],
         ], $connectionOptions);
         $this->autoSetupExchange = $this->autoSetupDelayExchange = $connectionOptions['auto_setup'] ?? true;
-        $this->exchangeOptions = $exchangeOptions;
-        $this->queuesOptions = $queuesOptions;
         $this->amqpFactory = $amqpFactory ?? new AmqpFactory();
     }
 
@@ -134,14 +136,18 @@ class Connection
      *     * flags: Queue flags (Default: AMQP_DURABLE)
      *     * arguments: Extra arguments
      *   * exchange:
-     *     * name: Name of the exchange
+     *     * name: Name of the exchange. An empty string (name: '') can be used to use the default exchange
      *     * type: Type of exchange (Default: fanout)
      *     * default_publish_routing_key: Routing key to use when publishing, if none is specified on the message
      *     * flags: Exchange flags (Default: AMQP_DURABLE)
      *     * arguments: Extra arguments
+     *     * bindings[name]: An array of the source exchanges to bind this exchange to, keyed by the name. Binding direction: source exchange -> this exchange
+     *       * binding_keys: The binding/routing keys to be used for the binding
+     *       * binding_arguments: Additional binding arguments
      *   * delay:
      *     * queue_name_pattern: Pattern to use to create the queues (Default: "delay_%exchange_name%_%routing_key%_%delay%")
      *     * exchange_name: Name of the exchange to be used for the delayed/retried messages (Default: "delays")
+     *     * arguments: array of extra delay queue arguments (for example:  ['x-queue-type' => 'classic', 'x-message-deduplication' => true,])
      *   * auto_setup: Enable or not the auto-setup of queues and exchanges (Default: true)
      *
      *   * Connection tuning options (see http://www.rabbitmq.com/amqp-0-9-1-reference.html#connection.tune for details):
@@ -160,26 +166,26 @@ class Connection
      *     * verify: Enable or disable peer verification. If peer verification is enabled then the common name in the
      *       server certificate must match the server name. Peer verification is enabled by default.
      */
-    public static function fromDsn(string $dsn, array $options = [], AmqpFactory $amqpFactory = null): self
+    public static function fromDsn(#[\SensitiveParameter] string $dsn, array $options = [], ?AmqpFactory $amqpFactory = null): self
     {
-        if (false === $parsedUrl = parse_url($dsn)) {
+        if (false === $params = parse_url($dsn)) {
             // this is a valid URI that parse_url cannot handle when you want to pass all parameters as options
-            if (!\in_array($dsn, ['amqp://', 'amqps://'])) {
-                throw new InvalidArgumentException(sprintf('The given AMQP DSN "%s" is invalid.', $dsn));
+            if (!\in_array($dsn, ['amqp://', 'amqps://'], true)) {
+                throw new InvalidArgumentException('The given AMQP DSN is invalid.');
             }
 
-            $parsedUrl = [];
+            $params = [];
         }
 
         $useAmqps = str_starts_with($dsn, 'amqps://');
-        $pathParts = isset($parsedUrl['path']) ? explode('/', trim($parsedUrl['path'], '/')) : [];
+        $pathParts = isset($params['path']) ? explode('/', trim($params['path'], '/')) : [];
         $exchangeName = $pathParts[1] ?? 'messages';
-        parse_str($parsedUrl['query'] ?? '', $parsedQuery);
+        parse_str($params['query'] ?? '', $parsedQuery);
         $port = $useAmqps ? 5671 : 5672;
 
         $amqpOptions = array_replace_recursive([
-            'host' => $parsedUrl['host'] ?? 'localhost',
-            'port' => $parsedUrl['port'] ?? $port,
+            'host' => $params['host'] ?? 'localhost',
+            'port' => $params['port'] ?? $port,
             'vhost' => isset($pathParts[0]) ? urldecode($pathParts[0]) : '/',
             'exchange' => [
                 'name' => $exchangeName,
@@ -188,12 +194,12 @@ class Connection
 
         self::validateOptions($amqpOptions);
 
-        if (isset($parsedUrl['user'])) {
-            $amqpOptions['login'] = urldecode($parsedUrl['user']);
+        if (isset($params['user'])) {
+            $amqpOptions['login'] = rawurldecode($params['user']);
         }
 
-        if (isset($parsedUrl['pass'])) {
-            $amqpOptions['password'] = urldecode($parsedUrl['pass']);
+        if (isset($params['pass'])) {
+            $amqpOptions['password'] = rawurldecode($params['pass']);
         }
 
         if (!isset($amqpOptions['queues'])) {
@@ -207,7 +213,7 @@ class Connection
             $amqpOptions['auto_setup'] = filter_var($amqpOptions['auto_setup'], \FILTER_VALIDATE_BOOL);
         }
 
-        $queuesOptions = array_map(function ($queueOptions) {
+        $queuesOptions = array_map(static function ($queueOptions) {
             if (!\is_array($queueOptions)) {
                 $queueOptions = [];
             }
@@ -232,7 +238,7 @@ class Connection
     private static function validateOptions(array $options): void
     {
         if (0 < \count($invalidOptions = array_diff(array_keys($options), self::AVAILABLE_OPTIONS))) {
-            throw new LogicException(sprintf('Invalid option(s) "%s" passed to the AMQP Messenger transport.', implode('", "', $invalidOptions)));
+            throw new LogicException(\sprintf('Invalid option(s) "%s" passed to the AMQP Messenger transport.', implode('", "', $invalidOptions)));
         }
 
         if (\is_array($options['queues'] ?? false)) {
@@ -242,14 +248,14 @@ class Connection
                 }
 
                 if (0 < \count($invalidQueueOptions = array_diff(array_keys($queue), self::AVAILABLE_QUEUE_OPTIONS))) {
-                    throw new LogicException(sprintf('Invalid queue option(s) "%s" passed to the AMQP Messenger transport.', implode('", "', $invalidQueueOptions)));
+                    throw new LogicException(\sprintf('Invalid queue option(s) "%s" passed to the AMQP Messenger transport.', implode('", "', $invalidQueueOptions)));
                 }
             }
         }
 
         if (\is_array($options['exchange'] ?? false)
             && 0 < \count($invalidExchangeOptions = array_diff(array_keys($options['exchange']), self::AVAILABLE_EXCHANGE_OPTIONS))) {
-            throw new LogicException(sprintf('Invalid exchange option(s) "%s" passed to the AMQP Messenger transport.', implode('", "', $invalidExchangeOptions)));
+            throw new LogicException(\sprintf('Invalid exchange option(s) "%s" passed to the AMQP Messenger transport.', implode('", "', $invalidExchangeOptions)));
         }
     }
 
@@ -261,7 +267,7 @@ class Connection
             }
 
             if (!is_numeric($arguments[$key])) {
-                throw new InvalidArgumentException(sprintf('Integer expected for queue argument "%s", "%s" given.', $key, get_debug_type($arguments[$key])));
+                throw new InvalidArgumentException(\sprintf('Integer expected for queue argument "%s", "%s" given.', $key, get_debug_type($arguments[$key])));
             }
 
             $arguments[$key] = (int) $arguments[$key];
@@ -278,7 +284,7 @@ class Connection
     /**
      * @throws \AMQPException
      */
-    public function publish(string $body, array $headers = [], int $delayInMs = 0, AmqpStamp $amqpStamp = null): void
+    public function publish(string $body, array $headers = [], int $delayInMs = 0, ?AmqpStamp $amqpStamp = null): void
     {
         $this->clearWhenDisconnected();
 
@@ -286,19 +292,21 @@ class Connection
             $this->setupExchangeAndQueues(); // also setup normal exchange for delayed messages so delay queue can DLX messages to it
         }
 
-        if (0 !== $delayInMs) {
-            $this->publishWithDelay($body, $headers, $delayInMs, $amqpStamp);
+        $this->withConnectionExceptionRetry(function () use ($body, $headers, $delayInMs, $amqpStamp) {
+            if (0 < $delayInMs) {
+                $this->publishWithDelay($body, $headers, $delayInMs, $amqpStamp);
 
-            return;
-        }
+                return;
+            }
 
-        $this->publishOnExchange(
-            $this->exchange(),
-            $body,
-            $this->getRoutingKeyForMessage($amqpStamp),
-            $headers,
-            $amqpStamp
-        );
+            $this->publishOnExchange(
+                $this->exchange(),
+                $body,
+                $this->getRoutingKeyForMessage($amqpStamp),
+                $headers,
+                $amqpStamp
+            );
+        });
     }
 
     /**
@@ -306,18 +314,16 @@ class Connection
      */
     public function countMessagesInQueues(): int
     {
-        return array_sum(array_map(function ($queueName) {
-            return $this->queue($queueName)->declareQueue();
-        }, $this->getQueueNames()));
+        return array_sum(array_map(fn ($queueName) => $this->queue($queueName)->declareQueue(), $this->getQueueNames()));
     }
 
     /**
      * @throws \AMQPException
      */
-    private function publishWithDelay(string $body, array $headers, int $delay, AmqpStamp $amqpStamp = null)
+    private function publishWithDelay(string $body, array $headers, int $delay, ?AmqpStamp $amqpStamp = null): void
     {
         $routingKey = $this->getRoutingKeyForMessage($amqpStamp);
-        $isRetryAttempt = $amqpStamp ? $amqpStamp->isRetryAttempt() : false;
+        $isRetryAttempt = $amqpStamp && $amqpStamp->isRetryAttempt();
 
         $this->setupDelay($delay, $routingKey, $isRetryAttempt);
 
@@ -330,7 +336,7 @@ class Connection
         );
     }
 
-    private function publishOnExchange(\AMQPExchange $exchange, string $body, string $routingKey = null, array $headers = [], AmqpStamp $amqpStamp = null)
+    private function publishOnExchange(\AMQPExchange $exchange, string $body, ?string $routingKey = null, array $headers = [], ?AmqpStamp $amqpStamp = null): void
     {
         $attributes = $amqpStamp ? $amqpStamp->getAttributes() : [];
         $attributes['headers'] = array_merge($attributes['headers'] ?? [], $headers);
@@ -351,7 +357,7 @@ class Connection
         }
     }
 
-    private function setupDelay(int $delay, ?string $routingKey, bool $isRetryAttempt)
+    private function setupDelay(int $delay, ?string $routingKey, bool $isRetryAttempt): void
     {
         if ($this->autoSetupDelayExchange) {
             $this->setupDelayExchange();
@@ -388,18 +394,18 @@ class Connection
         $queue = $this->amqpFactory->createQueue($this->channel());
         $queue->setName($this->getRoutingKeyForDelay($delay, $routingKey, $isRetryAttempt));
         $queue->setFlags(\AMQP_DURABLE);
-        $queue->setArguments([
+        $queue->setArguments(array_merge([
             'x-message-ttl' => $delay,
             // delete the delay queue 10 seconds after the message expires
             // publishing another message redeclares the queue which renews the lease
             'x-expires' => $delay + 10000,
-            // message should be broadcasted to all consumers during delay, but to only one queue during retry
+            // message should be broadcast to all consumers during delay, but to only one queue during retry
             // empty name is default direct exchange
             'x-dead-letter-exchange' => $isRetryAttempt ? '' : $this->exchangeOptions['name'],
             // after being released from to DLX, make sure the original routing key will be used
             // we must use an empty string instead of null for the argument to be picked up
             'x-dead-letter-routing-key' => $routingKey ?? '',
-        ]);
+        ], $this->connectionOptions['delay']['arguments'] ?? []));
 
         return $queue;
     }
@@ -437,12 +443,12 @@ class Connection
 
     public function ack(\AMQPEnvelope $message, string $queueName): bool
     {
-        return $this->queue($queueName)->ack($message->getDeliveryTag());
+        return $this->queue($queueName)->ack($message->getDeliveryTag()) ?? true;
     }
 
     public function nack(\AMQPEnvelope $message, string $queueName, int $flags = \AMQP_NOPARAM): bool
     {
-        return $this->queue($queueName)->nack($message->getDeliveryTag(), $flags);
+        return $this->queue($queueName)->nack($message->getDeliveryTag(), $flags) ?? true;
     }
 
     public function setup(): void
@@ -453,12 +459,26 @@ class Connection
 
     private function setupExchangeAndQueues(): void
     {
-        $this->exchange()->declareExchange();
+        $exchange = $this->exchange();
+        if ('' !== $this->exchangeOptions['name']) {
+            $exchange->declareExchange();
+        }
+
+        foreach ($this->exchangeOptions['bindings'] ?? [] as $exchangeName => $exchangeConfig) {
+            if (!\is_array($exchangeConfig['binding_keys'] ?? false) || !$exchangeConfig['binding_keys']) {
+                throw new InvalidArgumentException(\sprintf('The "binding_keys" option must be set to a non-empty array for exchange "%s".', $exchangeName));
+            }
+            foreach ($exchangeConfig['binding_keys'] as $bindingKey) {
+                $this->exchange()->bind($exchangeName, $bindingKey, $exchangeConfig['binding_arguments'] ?? []);
+            }
+        }
 
         foreach ($this->queuesOptions as $queueName => $queueConfig) {
             $this->queue($queueName)->declareQueue();
-            foreach ($queueConfig['binding_keys'] ?? [null] as $bindingKey) {
-                $this->queue($queueName)->bind($this->exchangeOptions['name'], $bindingKey, $queueConfig['binding_arguments'] ?? []);
+            if ('' !== $this->exchangeOptions['name']) {
+                foreach ($queueConfig['binding_keys'] ?? [null] as $bindingKey) {
+                    $this->queue($queueName)->bind($this->exchangeOptions['name'], $bindingKey, $queueConfig['binding_arguments'] ?? []);
+                }
             }
         }
         $this->autoSetupExchange = false;
@@ -494,12 +514,8 @@ class Connection
             if ('' !== ($this->connectionOptions['confirm_timeout'] ?? '')) {
                 $this->amqpChannel->confirmSelect();
                 $this->amqpChannel->setConfirmCallback(
-                    static function (): bool {
-                        return false;
-                    },
-                    static function (): bool {
-                        return false;
-                    }
+                    static fn (): bool => false,
+                    static fn () => throw new TransportException('Message publication failed due to a negative acknowledgment (nack) from the broker.'),
                 );
             }
 
@@ -515,7 +531,7 @@ class Connection
     public function queue(string $queueName): \AMQPQueue
     {
         if (!isset($this->amqpQueues[$queueName])) {
-            $queueConfig = $this->queuesOptions[$queueName];
+            $queueConfig = $this->queuesOptions[$queueName] ?? [];
 
             $amqpQueue = $this->amqpFactory->createQueue($this->channel());
             $amqpQueue->setName($queueName);
@@ -536,11 +552,14 @@ class Connection
         if (!isset($this->amqpExchange)) {
             $this->amqpExchange = $this->amqpFactory->createExchange($this->channel());
             $this->amqpExchange->setName($this->exchangeOptions['name']);
-            $this->amqpExchange->setType($this->exchangeOptions['type'] ?? \AMQP_EX_TYPE_FANOUT);
-            $this->amqpExchange->setFlags($this->exchangeOptions['flags'] ?? \AMQP_DURABLE);
+            $defaultExchangeType = '' !== $this->exchangeOptions['name'] ? \AMQP_EX_TYPE_FANOUT : \AMQP_EX_TYPE_DIRECT;
+            $this->amqpExchange->setType($this->exchangeOptions['type'] ?? $defaultExchangeType);
+            if ('' !== $this->exchangeOptions['name']) {
+                $this->amqpExchange->setFlags($this->exchangeOptions['flags'] ?? \AMQP_DURABLE);
 
-            if (isset($this->exchangeOptions['arguments'])) {
-                $this->amqpExchange->setArguments($this->exchangeOptions['arguments']);
+                if (isset($this->exchangeOptions['arguments'])) {
+                    $this->amqpExchange->setArguments($this->exchangeOptions['arguments']);
+                }
             }
         }
 
@@ -550,9 +569,14 @@ class Connection
     private function clearWhenDisconnected(): void
     {
         if (!$this->channel()->isConnected()) {
-            unset($this->amqpChannel, $this->amqpExchange, $this->amqpDelayExchange);
-            $this->amqpQueues = [];
+            $this->clear();
         }
+    }
+
+    public function clear(): void
+    {
+        unset($this->amqpChannel, $this->amqpExchange, $this->amqpDelayExchange);
+        $this->amqpQueues = [];
     }
 
     private function getDefaultPublishRoutingKey(): ?string
@@ -560,7 +584,7 @@ class Connection
         return $this->exchangeOptions['default_publish_routing_key'] ?? null;
     }
 
-    public function purgeQueues()
+    public function purgeQueues(): void
     {
         foreach ($this->getQueueNames() as $queueName) {
             $this->queue($queueName)->purge();
@@ -570,5 +594,24 @@ class Connection
     private function getRoutingKeyForMessage(?AmqpStamp $amqpStamp): ?string
     {
         return $amqpStamp?->getRoutingKey() ?? $this->getDefaultPublishRoutingKey();
+    }
+
+    private function withConnectionExceptionRetry(callable $callable): void
+    {
+        $maxRetries = 3;
+        $retries = 0;
+
+        retry:
+        try {
+            $callable();
+        } catch (\AMQPConnectionException $e) {
+            if (++$retries <= $maxRetries) {
+                $this->clear();
+
+                goto retry;
+            }
+
+            throw $e;
+        }
     }
 }

@@ -11,12 +11,15 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Tests\Controller;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\FrameworkBundle\Tests\TestCase;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBag;
 use Symfony\Component\DependencyInjection\ParameterBag\FrozenParameterBag;
+use Symfony\Component\Form\Flow\FormFlowBuilderInterface;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormConfigInterface;
@@ -40,13 +43,18 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\Authorization\AccessDecision;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\Vote;
+use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\InMemoryUser;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\WebLink\HttpHeaderSerializer;
 use Symfony\Component\WebLink\Link;
 use Twig\Environment;
+use Twig\Loader\ArrayLoader;
 
 class AbstractControllerTest extends TestCase
 {
@@ -72,6 +80,7 @@ class AbstractControllerTest extends TestCase
             'parameter_bag' => '?Symfony\\Component\\DependencyInjection\\ParameterBag\\ContainerBagInterface',
             'security.token_storage' => '?Symfony\\Component\\Security\\Core\\Authentication\\Token\\Storage\\TokenStorageInterface',
             'security.csrf.token_manager' => '?Symfony\\Component\\Security\\Csrf\\CsrfTokenManagerInterface',
+            'web_link.http_header_serializer' => '?Symfony\\Component\\WebLink\\HttpHeaderSerializer',
         ];
 
         $this->assertEquals($expectedServices, $subscribed, 'Subscribed core services in AbstractController have changed');
@@ -90,12 +99,13 @@ class AbstractControllerTest extends TestCase
 
     public function testMissingParameterBag()
     {
-        $this->expectException(ServiceNotFoundException::class);
-        $this->expectExceptionMessage('TestAbstractController::getParameter()" method is missing a parameter bag');
         $container = new Container();
 
         $controller = $this->createController();
         $controller->setContainer($container);
+
+        $this->expectException(ServiceNotFoundException::class);
+        $this->expectExceptionMessage('::getParameter()" method is missing a parameter bag');
 
         $controller->getParameter('foo');
     }
@@ -110,9 +120,7 @@ class AbstractControllerTest extends TestCase
         $requestStack->push($request);
 
         $kernel = $this->createMock(HttpKernelInterface::class);
-        $kernel->expects($this->once())->method('handle')->willReturnCallback(function (Request $request) {
-            return new Response($request->getRequestFormat().'--'.$request->getLocale());
-        });
+        $kernel->expects($this->once())->method('handle')->willReturnCallback(static fn (Request $request) => new Response($request->getRequestFormat().'--'.$request->getLocale()));
 
         $container = new Container();
         $container->set('request_stack', $requestStack);
@@ -146,11 +154,11 @@ class AbstractControllerTest extends TestCase
 
     public function testGetUserWithEmptyContainer()
     {
-        $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('The SecurityBundle is not registered in your application.');
-
         $controller = $this->createController();
         $controller->setContainer(new Container());
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('The SecurityBundle is not registered in your application.');
 
         $controller->getUser();
     }
@@ -223,16 +231,47 @@ class AbstractControllerTest extends TestCase
         $this->assertEquals('{}', $response->getContent());
     }
 
+    public function testJsonNull()
+    {
+        $controller = $this->createController();
+        $controller->setContainer(new Container());
+
+        $response = $controller->json(null);
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $this->assertSame('null', $response->getContent());
+    }
+
+    public function testJsonNullWithSerializer()
+    {
+        $container = new Container();
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer
+            ->expects($this->once())
+            ->method('serialize')
+            ->with(null, 'json', ['json_encode_options' => JsonResponse::DEFAULT_ENCODING_OPTIONS])
+            ->willReturn('null');
+
+        $container->set('serializer', $serializer);
+
+        $controller = $this->createController();
+        $controller->setContainer($container);
+
+        $response = $controller->json(null);
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $this->assertSame('null', $response->getContent());
+    }
+
     public function testFile()
     {
         $container = new Container();
-        $kernel = $this->createMock(HttpKernelInterface::class);
+        $kernel = $this->createStub(HttpKernelInterface::class);
         $container->set('http_kernel', $kernel);
 
         $controller = $this->createController();
         $controller->setContainer($container);
 
-        /* @var BinaryFileResponse $response */
+        /** @var BinaryFileResponse $response */
         $response = $controller->file(new File(__FILE__));
         $this->assertInstanceOf(BinaryFileResponse::class, $response);
         $this->assertSame(200, $response->getStatusCode());
@@ -247,7 +286,7 @@ class AbstractControllerTest extends TestCase
     {
         $controller = $this->createController();
 
-        /* @var BinaryFileResponse $response */
+        /** @var BinaryFileResponse $response */
         $response = $controller->file(new File(__FILE__), null, ResponseHeaderBag::DISPOSITION_INLINE);
 
         $this->assertInstanceOf(BinaryFileResponse::class, $response);
@@ -263,7 +302,7 @@ class AbstractControllerTest extends TestCase
     {
         $controller = $this->createController();
 
-        /* @var BinaryFileResponse $response */
+        /** @var BinaryFileResponse $response */
         $fileName = 'test.php';
         $response = $controller->file(new File(__FILE__), $fileName);
 
@@ -280,7 +319,7 @@ class AbstractControllerTest extends TestCase
     {
         $controller = $this->createController();
 
-        /* @var BinaryFileResponse $response */
+        /** @var BinaryFileResponse $response */
         $fileName = 'test.php';
         $response = $controller->file(new File(__FILE__), $fileName, ResponseHeaderBag::DISPOSITION_INLINE);
 
@@ -297,7 +336,7 @@ class AbstractControllerTest extends TestCase
     {
         $controller = $this->createController();
 
-        /* @var BinaryFileResponse $response */
+        /** @var BinaryFileResponse $response */
         $response = $controller->file(__FILE__);
 
         $this->assertInstanceOf(BinaryFileResponse::class, $response);
@@ -313,7 +352,7 @@ class AbstractControllerTest extends TestCase
     {
         $controller = $this->createController();
 
-        /* @var BinaryFileResponse $response */
+        /** @var BinaryFileResponse $response */
         $response = $controller->file(__FILE__, 'test.php');
 
         $this->assertInstanceOf(BinaryFileResponse::class, $response);
@@ -327,9 +366,9 @@ class AbstractControllerTest extends TestCase
 
     public function testFileWhichDoesNotExist()
     {
-        $this->expectException(FileNotFoundException::class);
-
         $controller = $this->createController();
+
+        $this->expectException(FileNotFoundException::class);
 
         $controller->file('some-file.txt', 'test.php');
     }
@@ -350,10 +389,18 @@ class AbstractControllerTest extends TestCase
 
     public function testdenyAccessUnlessGranted()
     {
-        $this->expectException(AccessDeniedException::class);
-
         $authorizationChecker = $this->createMock(AuthorizationCheckerInterface::class);
-        $authorizationChecker->expects($this->once())->method('isGranted')->willReturn(false);
+        $authorizationChecker
+            ->expects($this->once())
+            ->method('isGranted')
+            ->willReturnCallback(function ($attribute, $subject, ?AccessDecision $accessDecision = null) {
+                $this->assertInstanceOf(AccessDecision::class, $accessDecision);
+                $accessDecision->votes[] = $vote = new Vote();
+                $vote->result = VoterInterface::ACCESS_DENIED;
+                $vote->reasons[] = 'Why should I.';
+
+                return false;
+            });
 
         $container = new Container();
         $container->set('security.authorization_checker', $authorizationChecker);
@@ -361,7 +408,48 @@ class AbstractControllerTest extends TestCase
         $controller = $this->createController();
         $controller->setContainer($container);
 
-        $controller->denyAccessUnlessGranted('foo');
+        $this->expectException(AccessDeniedException::class);
+        $this->expectExceptionMessage('Access Denied. Why should I.');
+
+        try {
+            $controller->denyAccessUnlessGranted('foo');
+        } catch (AccessDeniedException $e) {
+            $this->assertFalse($e->getAccessDecision()->isGranted);
+
+            throw $e;
+        }
+    }
+
+    #[DataProvider('provideDenyAccessUnlessGrantedSetsAttributesAsArray')]
+    public function testdenyAccessUnlessGrantedSetsAttributesAsArray($attribute, $exceptionAttributes)
+    {
+        $authorizationChecker = $this->createStub(AuthorizationCheckerInterface::class);
+        $authorizationChecker->method('isGranted')->willReturn(false);
+
+        $container = new Container();
+        $container->set('security.authorization_checker', $authorizationChecker);
+
+        $controller = $this->createController();
+        $controller->setContainer($container);
+
+        try {
+            $controller->denyAccessUnlessGranted($attribute);
+            $this->fail('there was no exception to check');
+        } catch (AccessDeniedException $e) {
+            $this->assertSame($exceptionAttributes, $e->getAttributes());
+        }
+    }
+
+    public static function provideDenyAccessUnlessGrantedSetsAttributesAsArray(): array
+    {
+        $obj = new \stdClass();
+        $obj->foo = 'bar';
+
+        return [
+            'string attribute' => ['foo', ['foo']],
+            'array attribute' => [[1, 3, 3, 7], [[1, 3, 3, 7]]],
+            'object attribute' => [$obj, [$obj]],
+        ];
     }
 
     public function testRenderViewTwig()
@@ -396,7 +484,7 @@ class AbstractControllerTest extends TestCase
     {
         $formView = new FormView();
 
-        $form = $this->getMockBuilder(FormInterface::class)->getMock();
+        $form = $this->createMock(FormInterface::class);
         $form->expects($this->once())->method('createView')->willReturn($formView);
 
         $twig = $this->getMockBuilder(Environment::class)->disableOriginalConstructor()->getMock();
@@ -417,7 +505,7 @@ class AbstractControllerTest extends TestCase
     {
         $formView = new FormView();
 
-        $form = $this->getMockBuilder(FormInterface::class)->getMock();
+        $form = $this->createMock(FormInterface::class);
         $form->expects($this->once())->method('createView')->willReturn($formView);
         $form->expects($this->once())->method('isSubmitted')->willReturn(true);
         $form->expects($this->once())->method('isValid')->willReturn(false);
@@ -437,64 +525,10 @@ class AbstractControllerTest extends TestCase
         $this->assertSame('bar', $response->getContent());
     }
 
-    /**
-     * @group legacy
-     */
-    public function testRenderForm()
-    {
-        $formView = new FormView();
-
-        $form = $this->getMockBuilder(FormInterface::class)->getMock();
-        $form->expects($this->once())->method('createView')->willReturn($formView);
-
-        $twig = $this->getMockBuilder(Environment::class)->disableOriginalConstructor()->getMock();
-        $twig->expects($this->once())->method('render')->with('foo', ['bar' => $formView])->willReturn('bar');
-
-        $container = new Container();
-        $container->set('twig', $twig);
-
-        $controller = $this->createController();
-        $controller->setContainer($container);
-
-        $response = $controller->renderForm('foo', ['bar' => $form]);
-
-        $this->assertTrue($response->isSuccessful());
-        $this->assertSame('bar', $response->getContent());
-    }
-
-    /**
-     * @group legacy
-     */
-    public function testRenderFormSubmittedAndInvalid()
-    {
-        $formView = new FormView();
-
-        $form = $this->getMockBuilder(FormInterface::class)->getMock();
-        $form->expects($this->once())->method('createView')->willReturn($formView);
-        $form->expects($this->once())->method('isSubmitted')->willReturn(true);
-        $form->expects($this->once())->method('isValid')->willReturn(false);
-
-        $twig = $this->getMockBuilder(Environment::class)->disableOriginalConstructor()->getMock();
-        $twig->expects($this->once())->method('render')->with('foo', ['bar' => $formView])->willReturn('bar');
-
-        $container = new Container();
-        $container->set('twig', $twig);
-
-        $controller = $this->createController();
-        $controller->setContainer($container);
-
-        $response = $controller->renderForm('foo', ['bar' => $form]);
-
-        $this->assertSame(422, $response->getStatusCode());
-        $this->assertSame('bar', $response->getContent());
-    }
-
     public function testStreamTwig()
     {
-        $twig = $this->createMock(Environment::class);
-
         $container = new Container();
-        $container->set('twig', $twig);
+        $container->set('twig', new Environment(new ArrayLoader()));
 
         $controller = $this->createController();
         $controller->setContainer($container);
@@ -519,14 +553,11 @@ class AbstractControllerTest extends TestCase
         $this->assertSame(302, $response->getStatusCode());
     }
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testAddFlash()
     {
         $flashBag = new FlashBag();
-        $session = $this->createMock(Session::class);
-        $session->expects($this->once())->method('getFlashBag')->willReturn($flashBag);
+        $session = new Session(null, null, $flashBag);
 
         $request = new Request();
         $request->setSession($session);
@@ -597,7 +628,7 @@ class AbstractControllerTest extends TestCase
 
     public function testCreateForm()
     {
-        $config = $this->createMock(FormConfigInterface::class);
+        $config = $this->createStub(FormConfigInterface::class);
         $config->method('getInheritData')->willReturn(false);
         $config->method('getName')->willReturn('');
 
@@ -617,7 +648,7 @@ class AbstractControllerTest extends TestCase
 
     public function testCreateFormBuilder()
     {
-        $formBuilder = $this->createMock(FormBuilderInterface::class);
+        $formBuilder = $this->createStub(FormBuilderInterface::class);
 
         $formFactory = $this->createMock(FormFactoryInterface::class);
         $formFactory->expects($this->once())->method('createBuilder')->willReturn($formBuilder);
@@ -629,6 +660,22 @@ class AbstractControllerTest extends TestCase
         $controller->setContainer($container);
 
         $this->assertEquals($formBuilder, $controller->createFormBuilder('foo'));
+    }
+
+    public function testCreateFormFlowBuilder()
+    {
+        $formFlowBuilder = $this->createStub(FormFlowBuilderInterface::class);
+
+        $formFactory = $this->createMock(FormFactoryInterface::class);
+        $formFactory->expects($this->once())->method('createBuilder')->willReturn($formFlowBuilder);
+
+        $container = new Container();
+        $container->set('form.factory', $formFactory);
+
+        $controller = $this->createController();
+        $controller->setContainer($container);
+
+        $this->assertEquals($formFlowBuilder, $controller->createFormFlowBuilder('foo'));
     }
 
     public function testAddLink()
@@ -644,5 +691,21 @@ class AbstractControllerTest extends TestCase
         $links = $request->attributes->get('_links')->getLinks();
         $this->assertContains($link1, $links);
         $this->assertContains($link2, $links);
+    }
+
+    public function testSendEarlyHints()
+    {
+        $container = new Container();
+        $container->set('web_link.http_header_serializer', new HttpHeaderSerializer());
+
+        $controller = $this->createController();
+        $controller->setContainer($container);
+
+        $response = $controller->sendEarlyHints([
+            (new Link(href: '/style.css'))->withAttribute('as', 'stylesheet'),
+            (new Link(href: '/script.js'))->withAttribute('as', 'script'),
+        ]);
+
+        $this->assertSame('</style.css>; rel="preload"; as="stylesheet",</script.js>; rel="preload"; as="script"', $response->headers->get('Link'));
     }
 }

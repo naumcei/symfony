@@ -11,12 +11,10 @@
 
 namespace Symfony\Component\Semaphore\Tests\Store;
 
-use PHPUnit\Framework\SkippedTestSuiteError;
-
 /**
  * @author Jérémy Derussé <jeremy@derusse.com>
  */
-class PredisStoreTest extends AbstractRedisStoreTest
+class PredisStoreTest extends AbstractRedisStoreTestCase
 {
     public static function setUpBeforeClass(): void
     {
@@ -24,7 +22,7 @@ class PredisStoreTest extends AbstractRedisStoreTest
         try {
             $redis->connect();
         } catch (\Exception $e) {
-            throw new SkippedTestSuiteError($e->getMessage());
+            self::markTestSkipped($e->getMessage());
         }
     }
 

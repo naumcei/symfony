@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Console\Tests\Completion;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,9 +20,7 @@ use Symfony\Component\Console\Input\InputOption;
 
 class CompletionInputTest extends TestCase
 {
-    /**
-     * @dataProvider provideBindData
-     */
+    #[DataProvider('provideBindData')]
     public function testBind(CompletionInput $input, string $expectedType, ?string $expectedName, string $expectedValue)
     {
         $definition = new InputDefinition([
@@ -39,7 +38,7 @@ class CompletionInputTest extends TestCase
         $this->assertEquals($expectedValue, $input->getCompletionValue(), 'Unexpected value');
     }
 
-    public function provideBindData()
+    public static function provideBindData()
     {
         // option names
         yield 'optname-minimal-input' => [CompletionInput::fromTokens(['bin/console', '-'], 1), CompletionInput::TYPE_OPTION_NAME, null, '-'];
@@ -74,9 +73,7 @@ class CompletionInputTest extends TestCase
         yield 'end' => [CompletionInput::fromTokens(['bin/console', 'symfony', 'sensiolabs'], 3), CompletionInput::TYPE_NONE, null, ''];
     }
 
-    /**
-     * @dataProvider provideBindWithLastArrayArgumentData
-     */
+    #[DataProvider('provideBindWithLastArrayArgumentData')]
     public function testBindWithLastArrayArgument(CompletionInput $input, ?string $expectedValue)
     {
         $definition = new InputDefinition([
@@ -90,7 +87,7 @@ class CompletionInputTest extends TestCase
         $this->assertEquals($expectedValue, $input->getCompletionValue(), 'Unexpected value');
     }
 
-    public function provideBindWithLastArrayArgumentData()
+    public static function provideBindWithLastArrayArgumentData()
     {
         yield [CompletionInput::fromTokens(['bin/console'], 1), null];
         yield [CompletionInput::fromTokens(['bin/console', 'symfony', 'sensiolabs'], 3), null];
@@ -111,9 +108,7 @@ class CompletionInputTest extends TestCase
         $this->assertEquals('', $input->getCompletionValue(), 'Unexpected value');
     }
 
-    /**
-     * @dataProvider provideFromStringData
-     */
+    #[DataProvider('provideFromStringData')]
     public function testFromString($inputStr, array $expectedTokens)
     {
         $input = CompletionInput::fromString($inputStr, 1);
@@ -123,7 +118,7 @@ class CompletionInputTest extends TestCase
         $this->assertEquals($expectedTokens, $tokensProperty->getValue($input));
     }
 
-    public function provideFromStringData()
+    public static function provideFromStringData()
     {
         yield ['bin/console cache:clear', ['bin/console', 'cache:clear']];
         yield ['bin/console --env prod', ['bin/console', '--env', 'prod']];
@@ -131,5 +126,20 @@ class CompletionInputTest extends TestCase
         yield ['bin/console -eprod', ['bin/console', '-eprod']];
         yield ['bin/console cache:clear "multi word string"', ['bin/console', 'cache:clear', '"multi word string"']];
         yield ['bin/console cache:clear \'multi word string\'', ['bin/console', 'cache:clear', '\'multi word string\'']];
+    }
+
+    public function testToString()
+    {
+        $input = CompletionInput::fromTokens(['foo', 'bar', 'baz'], 0);
+        $this->assertSame('foo| bar baz', (string) $input);
+
+        $input = CompletionInput::fromTokens(['foo', 'bar', 'baz'], 1);
+        $this->assertSame('foo bar| baz', (string) $input);
+
+        $input = CompletionInput::fromTokens(['foo', 'bar', 'baz'], 2);
+        $this->assertSame('foo bar baz|', (string) $input);
+
+        $input = CompletionInput::fromTokens(['foo', 'bar', 'baz'], 11);
+        $this->assertSame('foo bar baz |', (string) $input);
     }
 }

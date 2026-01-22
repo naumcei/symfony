@@ -11,6 +11,8 @@
 
 namespace Symfony\Bundle\WebProfilerBundle\Tests\Controller;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Bundle\WebProfilerBundle\Controller\ProfilerController;
@@ -27,20 +29,20 @@ use Symfony\Component\HttpKernel\Profiler\Profile;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
+use Twig\Loader\ArrayLoader;
 use Twig\Loader\LoaderInterface;
-use Twig\Loader\SourceContextLoaderInterface;
 
 class ProfilerControllerTest extends WebTestCase
 {
     public function testHomeActionWithProfilerDisabled()
     {
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+
+        $controller = new ProfilerController($urlGenerator, null, new Environment(new ArrayLoader()), []);
+
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('The profiler must be enabled.');
 
-        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
-        $twig = $this->createMock(Environment::class);
-
-        $controller = new ProfilerController($urlGenerator, null, $twig, []);
         $controller->homeAction();
     }
 
@@ -110,32 +112,55 @@ class ProfilerControllerTest extends WebTestCase
 
     public function testToolbarActionWithProfilerDisabled()
     {
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+
+        $controller = new ProfilerController($urlGenerator, null, new Environment(new ArrayLoader()), []);
+
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('The profiler must be enabled.');
 
-        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
-        $twig = $this->createMock(Environment::class);
-
-        $controller = new ProfilerController($urlGenerator, null, $twig, []);
         $controller->toolbarAction(Request::create('/_wdt/foo-token'), null);
     }
 
-    /**
-     * @dataProvider getEmptyTokenCases
-     */
+    #[DataProvider('getEmptyTokenCases')]
     public function testToolbarActionWithEmptyToken($token)
     {
-        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
-        $twig = $this->createMock(Environment::class);
-        $profiler = $this->createMock(Profiler::class);
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+        $profiler = $this->createStub(Profiler::class);
 
-        $controller = new ProfilerController($urlGenerator, $profiler, $twig, []);
+        $controller = new ProfilerController($urlGenerator, $profiler, new Environment(new ArrayLoader()), []);
 
         $response = $controller->toolbarAction(Request::create('/_wdt/empty'), $token);
         $this->assertEquals(200, $response->getStatusCode());
     }
 
-    public function getEmptyTokenCases()
+    public function testToolbarStylesheetActionWithProfilerDisabled()
+    {
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+
+        $controller = new ProfilerController($urlGenerator, null, new Environment(new ArrayLoader()), []);
+
+        $this->expectException(NotFoundHttpException::class);
+        $this->expectExceptionMessage('The profiler must be enabled.');
+
+        $controller->toolbarStylesheetAction();
+    }
+
+    public function testToolbarStylesheetAction()
+    {
+        $kernel = new WebProfilerBundleKernel();
+        $client = new KernelBrowser($kernel);
+
+        $client->request('GET', '/_wdt/styles');
+
+        $response = $client->getResponse();
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('text/css; charset=UTF-8', $response->headers->get('Content-Type'));
+        $this->assertSame('max-age=600, private', $response->headers->get('Cache-Control'));
+    }
+
+    public static function getEmptyTokenCases()
     {
         return [
             [null],
@@ -144,19 +169,17 @@ class ProfilerControllerTest extends WebTestCase
         ];
     }
 
-    /**
-     * @dataProvider getOpenFileCases
-     */
+    #[DataProvider('getOpenFileCases')]
     public function testOpeningDisallowedPaths($path, $isAllowed)
     {
-        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
-        $twig = $this->createMock(Environment::class);
-        $profiler = $this->createMock(Profiler::class);
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+        $twig = $this->createStub(Environment::class);
+        $profiler = $this->createStub(Profiler::class);
 
         $controller = new ProfilerController($urlGenerator, $profiler, $twig, [], null, __DIR__.'/../..');
 
         try {
-            $response = $controller->openAction(Request::create('/_wdt/open', Request::METHOD_GET, ['file' => $path]));
+            $response = $controller->openAction(Request::create('/_wdt/open', 'GET', ['file' => $path]));
             $this->assertEquals(200, $response->getStatusCode());
             $this->assertTrue($isAllowed);
         } catch (NotFoundHttpException $e) {
@@ -164,7 +187,7 @@ class ProfilerControllerTest extends WebTestCase
         }
     }
 
-    public function getOpenFileCases()
+    public static function getOpenFileCases()
     {
         return [
             ['README.md', true],
@@ -177,20 +200,16 @@ class ProfilerControllerTest extends WebTestCase
         ];
     }
 
-    /**
-     * @dataProvider provideCspVariants
-     */
+    #[DataProvider('provideCspVariants')]
     public function testReturns404onTokenNotFound($withCsp)
     {
-        $twig = $this->createMock(Environment::class);
+        $twig = $this->createStub(Environment::class);
         $profiler = $this->createMock(Profiler::class);
 
         $profiler
             ->expects($this->exactly(2))
             ->method('loadProfile')
-            ->willReturnCallback(function ($token) {
-                return 'found' == $token ? new Profile($token) : null;
-            })
+            ->willReturnCallback(static fn ($token) => 'found' == $token ? new Profile($token) : null)
         ;
 
         $controller = $this->createController($profiler, $twig, $withCsp);
@@ -204,13 +223,13 @@ class ProfilerControllerTest extends WebTestCase
 
     public function testSearchBarActionWithProfilerDisabled()
     {
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+
+        $controller = new ProfilerController($urlGenerator, null, new Environment(new ArrayLoader()), []);
+
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('The profiler must be enabled.');
 
-        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
-        $twig = $this->createMock(Environment::class);
-
-        $controller = new ProfilerController($urlGenerator, null, $twig, []);
         $controller->searchBarAction(Request::create('/_profiler/search_bar'));
     }
 
@@ -224,13 +243,11 @@ class ProfilerControllerTest extends WebTestCase
         $this->assertSame(200, $client->getResponse()->getStatusCode());
 
         foreach (['ip', 'status_code', 'url', 'token', 'start', 'end'] as $searchCriteria) {
-            $this->assertSame('', $crawler->filter(sprintf('form input[name="%s"]', $searchCriteria))->text());
+            $this->assertSame('', $crawler->filter(\sprintf('form input[name="%s"]', $searchCriteria))->text());
         }
     }
 
-    /**
-     * @dataProvider provideCspVariants
-     */
+    #[DataProvider('provideCspVariants')]
     public function testSearchResultsAction($withCsp)
     {
         $twig = $this->createMock(Environment::class);
@@ -247,6 +264,7 @@ class ProfilerControllerTest extends WebTestCase
                 'time' => 0,
                 'parent' => null,
                 'status_code' => 200,
+                'virtual_type' => 'request',
             ],
             [
                 'token' => 'token2',
@@ -256,6 +274,7 @@ class ProfilerControllerTest extends WebTestCase
                 'time' => 0,
                 'parent' => null,
                 'status_code' => 404,
+                'virtual_type' => 'request',
             ],
         ];
         $profiler
@@ -287,6 +306,7 @@ class ProfilerControllerTest extends WebTestCase
                 'request' => $request,
                 'csp_script_nonce' => $withCsp ? 'dummy_nonce' : null,
                 'csp_style_nonce' => $withCsp ? 'dummy_nonce' : null,
+                'profile_type' => 'request',
             ]));
 
         $response = $controller->searchResultsAction($request, 'empty');
@@ -295,13 +315,13 @@ class ProfilerControllerTest extends WebTestCase
 
     public function testSearchActionWithProfilerDisabled()
     {
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+
+        $controller = new ProfilerController($urlGenerator, null, new Environment(new ArrayLoader()), []);
+
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('The profiler must be enabled.');
 
-        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
-        $twig = $this->createMock(Environment::class);
-
-        $controller = new ProfilerController($urlGenerator, null, $twig, []);
         $controller->searchBarAction(Request::create('/_profiler/search'));
     }
 
@@ -329,19 +349,19 @@ class ProfilerControllerTest extends WebTestCase
         $client->request('GET', '/_profiler/search?ip=&method=GET&status_code=&url=&token=&start=&end=&limit=10');
 
         $this->assertStringContainsString('results found', $client->getResponse()->getContent());
-        $this->assertStringContainsString(sprintf('<a href="/_profiler/%s">%s</a>', $token, $token), $client->getResponse()->getContent());
+        $this->assertStringContainsString(\sprintf('<a href="/_profiler/%s">%s</a>', $token, $token), $client->getResponse()->getContent());
     }
 
     public function testPhpinfoActionWithProfilerDisabled()
     {
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+
+        $controller = new ProfilerController($urlGenerator, null, new Environment(new ArrayLoader()), []);
+
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('The profiler must be enabled.');
 
-        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
-        $twig = $this->createMock(Environment::class);
-
-        $controller = new ProfilerController($urlGenerator, null, $twig, []);
-        $controller->phpinfoAction(Request::create('/_profiler/phpinfo'));
+        $controller->phpinfoAction();
     }
 
     public function testPhpinfoAction()
@@ -354,7 +374,43 @@ class ProfilerControllerTest extends WebTestCase
         $this->assertStringContainsString('PHP License', $client->getResponse()->getContent());
     }
 
-    public function provideCspVariants()
+    public function testFontActionWithProfilerDisabled()
+    {
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+
+        $controller = new ProfilerController($urlGenerator, null, new Environment(new ArrayLoader()), []);
+
+        $this->expectException(NotFoundHttpException::class);
+        $this->expectExceptionMessage('The profiler must be enabled.');
+
+        $controller->fontAction('JetBrainsMono');
+    }
+
+    public function testFontActionWithInvalidFontName()
+    {
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+        $profiler = $this->createStub(Profiler::class);
+
+        $controller = new ProfilerController($urlGenerator, $profiler, new Environment(new ArrayLoader()), []);
+
+        $this->expectException(NotFoundHttpException::class);
+        $this->expectExceptionMessage('Font file "InvalidFontName.woff2" not found.');
+
+        $controller->fontAction('InvalidFontName');
+    }
+
+    public function testDownloadFontAction()
+    {
+        $kernel = new WebProfilerBundleKernel();
+        $client = new KernelBrowser($kernel);
+
+        $client->request('GET', '/_profiler/font/JetBrainsMono.woff2');
+
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertStringContainsString('font/woff2', $client->getResponse()->headers->get('content-type'));
+    }
+
+    public static function provideCspVariants(): array
     {
         return [
             [true],
@@ -362,10 +418,98 @@ class ProfilerControllerTest extends WebTestCase
         ];
     }
 
-    /**
-     * @dataProvider defaultPanelProvider
-     */
+    #[DataProvider('defaultPanelProvider')]
     public function testDefaultPanel(string $expectedPanel, Profile $profile)
+    {
+        $this->assertDefaultPanel($expectedPanel, $profile);
+    }
+
+    public static function defaultPanelProvider(): \Generator
+    {
+        // Test default behavior
+        $profile = new Profile('xxxxxx');
+        $profile->addCollector($requestDataCollector = new RequestDataCollector());
+        yield [$requestDataCollector->getName(), $profile];
+
+        // Test exception
+        $profile = new Profile('xxxxxx');
+        $profile->addCollector($exceptionDataCollector = new ExceptionDataCollector());
+        $exceptionDataCollector->collect(new Request(), new Response(), new \DomainException());
+        yield [$exceptionDataCollector->getName(), $profile];
+    }
+
+    private function createController($profiler, $twig, $withCSP, array $templates = []): ProfilerController
+    {
+        $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
+
+        if ($withCSP) {
+            $nonceGenerator = $this->createStub(NonceGenerator::class);
+            $nonceGenerator->method('generate')->willReturn('dummy_nonce');
+
+            return new ProfilerController($urlGenerator, $profiler, $twig, $templates, new ContentSecurityPolicyHandler($nonceGenerator));
+        }
+
+        return new ProfilerController($urlGenerator, $profiler, $twig, $templates);
+    }
+
+    public function testDumpPanelExceptionPriority()
+    {
+        $exceptionDataCollector = new ExceptionDataCollector();
+        $exceptionDataCollector->collect(new Request(), new Response(), new \DomainException());
+
+        $dumpDataCollector = $this->createDumpDataCollector();
+
+        $profile = new Profile('xxxxxx');
+        $profile->setCollectors([$exceptionDataCollector, $dumpDataCollector]);
+
+        $this->assertDefaultPanel($exceptionDataCollector->getName(), $profile);
+    }
+
+    public function testDumpPanelWhenDefinedAfterwards()
+    {
+        $exceptionDataCollector = new ExceptionDataCollector();
+        $exceptionDataCollector->collect(new Request(), new Response(), new \DomainException());
+
+        $dumpDataCollector = $this->createDumpDataCollector();
+        $dumpDataCollector
+            ->expects($this->atLeastOnce())
+            ->method('getDumpsCount')
+            ->willReturn(1)
+        ;
+
+        $profile = new Profile('xxxxxx');
+        $profile->setCollectors([$dumpDataCollector, $exceptionDataCollector]);
+
+        $this->assertDefaultPanel($exceptionDataCollector->getName(), $profile);
+    }
+
+    public function testDumpPanel()
+    {
+        $dumpDataCollector = $this->createDumpDataCollector();
+        $dumpDataCollector
+            ->expects($this->atLeastOnce())
+            ->method('getDumpsCount')
+            ->willReturn(1)
+        ;
+
+        $profile = new Profile('xxxxxx');
+        $profile->addCollector($dumpDataCollector);
+
+        $this->assertDefaultPanel($dumpDataCollector->getName(), $profile);
+    }
+
+    private function createDumpDataCollector(): MockObject&DumpDataCollector
+    {
+        $dumpDataCollector = $this->createMock(DumpDataCollector::class);
+        $dumpDataCollector
+            ->expects($this->atLeastOnce())
+            ->method('getName')
+            ->willReturn('dump');
+
+        return $dumpDataCollector;
+    }
+
+    private function assertDefaultPanel(string $expectedPanel, Profile $profile)
     {
         $profiler = $this->createMock(Profiler::class);
         $profiler
@@ -384,16 +528,12 @@ class ProfilerControllerTest extends WebTestCase
 
         $expectedTemplate = 'expected_template.html.twig';
 
-        if (Environment::MAJOR_VERSION > 1) {
-            $loader = $this->createMock(LoaderInterface::class);
-            $loader
-                ->expects($this->atLeastOnce())
-                ->method('exists')
-                ->with($this->logicalXor($expectedTemplate, 'other_template.html.twig'))
-                ->willReturn(true);
-        } else {
-            $loader = $this->createMock(SourceContextLoaderInterface::class);
-        }
+        $loader = $this->createMock(LoaderInterface::class);
+        $loader
+            ->expects($this->atLeastOnce())
+            ->method('exists')
+            ->with($this->logicalXor($expectedTemplate, 'other_template.html.twig'))
+            ->willReturn(true);
 
         $twig = $this->createMock(Environment::class);
         $twig
@@ -406,7 +546,7 @@ class ProfilerControllerTest extends WebTestCase
             ->with($expectedTemplate);
 
         $this
-            ->createController($profiler, $twig, false, array_map(function (string $collectorName) use ($expectedPanel, $expectedTemplate): array {
+            ->createController($profiler, $twig, false, array_map(static function (string $collectorName) use ($expectedPanel, $expectedTemplate): array {
                 if ($collectorName === $expectedPanel) {
                     return [$expectedPanel, $expectedTemplate];
                 }
@@ -414,57 +554,5 @@ class ProfilerControllerTest extends WebTestCase
                 return [$collectorName, 'other_template.html.twig'];
             }, $collectorsNames))
             ->panelAction(new Request(), $profile->getToken());
-    }
-
-    public function defaultPanelProvider(): \Generator
-    {
-        // Test default behavior
-        $profile = new Profile('xxxxxx');
-        $profile->addCollector($requestDataCollector = new RequestDataCollector());
-        yield [$requestDataCollector->getName(), $profile];
-
-        // Test exception
-        $profile = new Profile('xxxxxx');
-        $profile->addCollector($exceptionDataCollector = new ExceptionDataCollector());
-        $exceptionDataCollector->collect(new Request(), new Response(), new \DomainException());
-        yield [$exceptionDataCollector->getName(), $profile];
-
-        // Test exception priority
-        $dumpDataCollector = $this->createMock(DumpDataCollector::class);
-        $dumpDataCollector
-            ->expects($this->atLeastOnce())
-            ->method('getName')
-            ->willReturn('dump');
-        $dumpDataCollector
-            ->expects($this->atLeastOnce())
-            ->method('getDumpsCount')
-            ->willReturn(1);
-        $profile = new Profile('xxxxxx');
-        $profile->setCollectors([$exceptionDataCollector, $dumpDataCollector]);
-        yield [$exceptionDataCollector->getName(), $profile];
-
-        // Test exception priority when defined afterwards
-        $profile = new Profile('xxxxxx');
-        $profile->setCollectors([$dumpDataCollector, $exceptionDataCollector]);
-        yield [$exceptionDataCollector->getName(), $profile];
-
-        // Test dump
-        $profile = new Profile('xxxxxx');
-        $profile->addCollector($dumpDataCollector);
-        yield [$dumpDataCollector->getName(), $profile];
-    }
-
-    private function createController($profiler, $twig, $withCSP, array $templates = []): ProfilerController
-    {
-        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
-
-        if ($withCSP) {
-            $nonceGenerator = $this->createMock(NonceGenerator::class);
-            $nonceGenerator->method('generate')->willReturn('dummy_nonce');
-
-            return new ProfilerController($urlGenerator, $profiler, $twig, $templates, new ContentSecurityPolicyHandler($nonceGenerator));
-        }
-
-        return new ProfilerController($urlGenerator, $profiler, $twig, $templates);
     }
 }

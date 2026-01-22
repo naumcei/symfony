@@ -29,7 +29,6 @@ final class ControllerEvent extends KernelEvent
 {
     private string|array|object $controller;
     private \ReflectionFunctionAbstract $controllerReflector;
-    private array $attributes;
 
     public function __construct(HttpKernelInterface $kernel, callable $controller, Request $request, ?int $requestType)
     {
@@ -49,12 +48,21 @@ final class ControllerEvent extends KernelEvent
     }
 
     /**
-     * @param array<class-string, list<object>>|null $attributes
+     * @param list<object>|null $attributes
      */
-    public function setController(callable $controller, array $attributes = null): void
+    public function setController(callable $controller, ?array $attributes = null): void
     {
         if (null !== $attributes) {
-            $this->attributes = $attributes;
+            if (!array_is_list($flattenAttributes = $attributes)) {
+                trigger_deprecation('symfony/http-kernel', '8.1', 'Passing an array of attributes grouped by class name to "%s()" is deprecated. Pass a flat list of attributes instead.', __METHOD__);
+                $flattenAttributes = [];
+                foreach ($attributes as $attributes) {
+                    foreach (\is_array($attributes) ? $attributes : [$attributes] as $attribute) {
+                        $flattenAttributes[] = $attribute;
+                    }
+                }
+            }
+            $this->getRequest()->attributes->set('_controller_attributes', $flattenAttributes);
         }
 
         if (isset($this->controller) && ($controller instanceof \Closure ? $controller == $this->controller : $controller === $this->controller)) {
@@ -64,44 +72,57 @@ final class ControllerEvent extends KernelEvent
         }
 
         if (null === $attributes) {
-            unset($this->attributes);
+            $this->getRequest()->attributes->remove('_controller_attributes');
         }
 
-        if (\is_array($controller) && method_exists(...$controller)) {
-            $this->controllerReflector = new \ReflectionMethod(...$controller);
-        } elseif (\is_string($controller) && false !== $i = strpos($controller, '::')) {
-            $this->controllerReflector = new \ReflectionMethod($controller);
-        } else {
-            $this->controllerReflector = new \ReflectionFunction($controller(...));
-        }
+        $this->controllerReflector = match (true) {
+            \is_array($controller) && method_exists(...$controller) => new \ReflectionMethod(...$controller),
+            \is_string($controller) && str_contains($controller, '::') => new \ReflectionMethod(...explode('::', $controller, 2)),
+            default => new \ReflectionFunction($controller(...)),
+        };
 
         $this->controller = $controller;
     }
 
     /**
-     * @return array<class-string, list<object>>
+     * @template T of object
+     *
+     * @param class-string<T>|'*'|null $className
+     *
+     * @return ($className is null ? array<class-string, list<object>> : ($className is '*' ? list<object> : list<T>))
      */
-    public function getAttributes(): array
+    public function getAttributes(?string $className = null): array
     {
-        if (isset($this->attributes)) {
-            return $this->attributes;
-        }
+        if (null === $attributes = $this->getRequest()->attributes->get('_controller_attributes')) {
+            $class = match (true) {
+                \is_array($this->controller) && method_exists(...$this->controller) => new \ReflectionClass($this->controller[0]),
+                \is_string($this->controller) && false !== $i = strpos($this->controller, '::') => new \ReflectionClass(substr($this->controller, 0, $i)),
+                $this->controllerReflector instanceof \ReflectionFunction => $this->controllerReflector->isAnonymous() ? null : $this->controllerReflector->getClosureCalledClass(),
+            };
+            $attributes = [];
 
-        if (\is_array($this->controller) && method_exists(...$this->controller)) {
-            $class = new \ReflectionClass($this->controller[0]);
-        } elseif (\is_string($this->controller) && false !== $i = strpos($this->controller, '::')) {
-            $class = new \ReflectionClass(substr($this->controller, 0, $i));
-        } else {
-            $class = str_contains($this->controllerReflector->name, '{closure}') ? null : (\PHP_VERSION_ID >= 80111 ? $this->controllerReflector->getClosureCalledClass() : $this->controllerReflector->getClosureScopeClass());
-        }
-        $this->attributes = [];
-
-        foreach (array_merge($class?->getAttributes() ?? [], $this->controllerReflector->getAttributes()) as $attribute) {
-            if (class_exists($attribute->getName())) {
-                $this->attributes[$attribute->getName()][] = $attribute->newInstance();
+            foreach (array_merge($class?->getAttributes() ?? [], $this->controllerReflector->getAttributes()) as $attribute) {
+                if (class_exists($attribute->getName())) {
+                    $attributes[] = $attribute->newInstance();
+                }
             }
+
+            $this->getRequest()->attributes->set('_controller_attributes', $attributes);
         }
 
-        return $this->attributes;
+        if ('*' === $className) {
+            return $attributes;
+        }
+
+        if (null !== $className) {
+            return array_values(array_filter($attributes, static fn ($attr) => $attr instanceof $className));
+        }
+
+        $grouped = [];
+        foreach ($attributes as $attribute) {
+            $grouped[$attribute::class][] = $attribute;
+        }
+
+        return $grouped;
     }
 }

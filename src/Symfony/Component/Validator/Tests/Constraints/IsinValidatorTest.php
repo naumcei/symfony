@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Validator\Tests\Constraints;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Validator\Constraints\Isin;
 use Symfony\Component\Validator\Constraints\IsinValidator;
 use Symfony\Component\Validator\Constraints\Luhn;
@@ -37,9 +38,7 @@ class IsinValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    /**
-     * @dataProvider getValidIsin
-     */
+    #[DataProvider('getValidIsin')]
     public function testValidIsin($isin)
     {
         $this->validator->validate($isin, new Isin());
@@ -47,7 +46,7 @@ class IsinValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    public function getValidIsin()
+    public static function getValidIsin()
     {
         return [
             ['XS2125535901'], // Goldman Sachs International
@@ -63,15 +62,13 @@ class IsinValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    /**
-     * @dataProvider getIsinWithInvalidLenghFormat
-     */
+    #[DataProvider('getIsinWithInvalidLenghFormat')]
     public function testIsinWithInvalidFormat($isin)
     {
         $this->assertViolationRaised($isin, Isin::INVALID_LENGTH_ERROR);
     }
 
-    public function getIsinWithInvalidLenghFormat()
+    public static function getIsinWithInvalidLenghFormat()
     {
         return [
             ['X'],
@@ -88,15 +85,13 @@ class IsinValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    /**
-     * @dataProvider getIsinWithInvalidPattern
-     */
+    #[DataProvider('getIsinWithInvalidPattern')]
     public function testIsinWithInvalidPattern($isin)
     {
         $this->assertViolationRaised($isin, Isin::INVALID_PATTERN_ERROR);
     }
 
-    public function getIsinWithInvalidPattern()
+    public static function getIsinWithInvalidPattern()
     {
         return [
             ['X12155696679'],
@@ -106,16 +101,14 @@ class IsinValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    /**
-     * @dataProvider getIsinWithValidFormatButIncorrectChecksum
-     */
+    #[DataProvider('getIsinWithValidFormatButIncorrectChecksum')]
     public function testIsinWithValidFormatButIncorrectChecksum($isin)
     {
         $this->expectViolationsAt(0, $isin, new Luhn());
         $this->assertViolationRaised($isin, Isin::INVALID_CHECKSUM_ERROR);
     }
 
-    public function getIsinWithValidFormatButIncorrectChecksum()
+    public static function getIsinWithValidFormatButIncorrectChecksum()
     {
         return [
             ['XS2112212144'],
@@ -130,9 +123,7 @@ class IsinValidatorTest extends ConstraintValidatorTestCase
 
     private function assertViolationRaised($isin, $code)
     {
-        $constraint = new Isin([
-            'message' => 'myMessage',
-        ]);
+        $constraint = new Isin(message: 'myMessage');
 
         $this->validator->validate($isin, $constraint);
 

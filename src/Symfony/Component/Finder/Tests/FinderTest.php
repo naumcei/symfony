@@ -11,11 +11,16 @@
 
 namespace Symfony\Component\Finder\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\ExpectationFailedException;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 class FinderTest extends Iterator\RealIteratorTestCase
 {
+    use Iterator\VfsIteratorTestTrait;
+
     public function testCreate()
     {
         $this->assertInstanceOf(Finder::class, Finder::create());
@@ -295,9 +300,7 @@ class FinderTest extends Iterator\RealIteratorTestCase
         ]), $finder->in(self::$tmpDir)->getIterator());
     }
 
-    /**
-     * @dataProvider getRegexNameTestData
-     */
+    #[DataProvider('getRegexNameTestData')]
     public function testRegexName($regex)
     {
         $finder = $this->buildFinder();
@@ -480,35 +483,6 @@ class FinderTest extends Iterator\RealIteratorTestCase
             'gitignore/git_root/search_root/dir/a.txt',
             'gitignore/git_root/search_root/dir/c.txt',
         ]), $finder->in(self::toAbsolute('gitignore/git_root/search_root'))->getIterator());
-    }
-
-    /**
-     * @runInSeparateProcess
-     */
-    public function testIgnoreVCSIgnoredWithOpenBasedir()
-    {
-        if (\ini_get('open_basedir')) {
-            $this->markTestSkipped('Cannot test when open_basedir is set');
-        }
-
-        $finder = $this->buildFinder();
-        $this->assertSame(
-            $finder,
-            $finder
-                ->ignoreVCS(true)
-                ->ignoreDotFiles(true)
-                ->ignoreVCSIgnored(true)
-        );
-
-        $this->iniSet('open_basedir', \dirname(__DIR__, 5).\PATH_SEPARATOR.self::toAbsolute('gitignore/search_root'));
-
-        $this->assertIterator(self::toAbsolute([
-            'gitignore/search_root/b.txt',
-            'gitignore/search_root/c.txt',
-            'gitignore/search_root/dir',
-            'gitignore/search_root/dir/a.txt',
-            'gitignore/search_root/dir/c.txt',
-        ]), $finder->in(self::toAbsolute('gitignore/search_root'))->getIterator());
     }
 
     public function testIgnoreVCSCanBeDisabledAfterFirstIteration()
@@ -958,7 +932,7 @@ class FinderTest extends Iterator\RealIteratorTestCase
     public function testSort()
     {
         $finder = $this->buildFinder();
-        $this->assertSame($finder, $finder->sort(function (\SplFileInfo $a, \SplFileInfo $b) { return strcmp($a->getRealPath(), $b->getRealPath()); }));
+        $this->assertSame($finder, $finder->sort(static fn (\SplFileInfo $a, \SplFileInfo $b) => strcmp($a->getRealPath(), $b->getRealPath())));
         $this->assertOrderedIterator($this->toAbsolute([
             'Zephire.php',
             'foo',
@@ -990,12 +964,8 @@ class FinderTest extends Iterator\RealIteratorTestCase
             ])
             ->depth(0)
             ->files()
-            ->filter(static function (\SplFileInfo $file): bool {
-                return '' !== $file->getExtension();
-            })
-            ->sort(static function (\SplFileInfo $a, \SplFileInfo $b): int {
-                return strcmp($a->getExtension(), $b->getExtension()) ?: strcmp($a->getFilename(), $b->getFilename());
-            })
+            ->filter(static fn (\SplFileInfo $file): bool => '' !== $file->getExtension())
+            ->sort(static fn (\SplFileInfo $a, \SplFileInfo $b): int => strcmp($a->getExtension(), $b->getExtension()) ?: strcmp($a->getFilename(), $b->getFilename()))
         ;
 
         $this->assertOrderedIterator($this->toAbsolute([
@@ -1018,8 +988,74 @@ class FinderTest extends Iterator\RealIteratorTestCase
     public function testFilter()
     {
         $finder = $this->buildFinder();
-        $this->assertSame($finder, $finder->filter(function (\SplFileInfo $f) { return str_contains($f, 'test'); }));
+        $this->assertSame($finder, $finder->filter(static fn (\SplFileInfo $f) => str_contains($f, 'test')));
         $this->assertIterator($this->toAbsolute(['test.php', 'test.py']), $finder->in(self::$tmpDir)->getIterator());
+    }
+
+    public function testFilterPrune()
+    {
+        $this->setupVfsProvider([
+            'x' => [
+                'a.php' => '',
+                'b.php' => '',
+                'd' => [
+                    'u.php' => '',
+                ],
+                'x' => [
+                    'd' => [
+                        'u2.php' => '',
+                    ],
+                ],
+            ],
+            'y' => [
+                'c.php' => '',
+            ],
+        ]);
+
+        $finder = $this->buildFinder();
+        $finder
+            ->in($this->vfsScheme.'://x')
+            ->filter(static fn (): bool => true, true) // does nothing
+            ->filter(function (\SplFileInfo $file): bool {
+                $path = $this->stripSchemeFromVfsPath($file->getPathname());
+
+                $res = 'x/d' !== $path;
+
+                $this->vfsLog[] = [$path, 'exclude_filter', $res];
+
+                return $res;
+            }, true)
+            ->filter(static fn (): bool => true, true); // does nothing
+
+        $this->assertSameVfsIterator([
+            'x/a.php',
+            'x/b.php',
+            'x/x',
+            'x/x/d',
+            'x/x/d/u2.php',
+        ], $finder->getIterator());
+
+        // "x/d" directory must be pruned early
+        // "x/x/d" directory must not be pruned
+        $this->assertSame([
+            ['x', 'is_dir', true],
+            ['x', 'list_dir_open', ['a.php', 'b.php', 'd', 'x']],
+            ['x/a.php', 'is_dir', false],
+            ['x/a.php', 'exclude_filter', true],
+            ['x/b.php', 'is_dir', false],
+            ['x/b.php', 'exclude_filter', true],
+            ['x/d', 'is_dir', true],
+            ['x/d', 'exclude_filter', false],
+            ['x/x', 'is_dir', true],
+            ['x/x', 'exclude_filter', true], // from ExcludeDirectoryFilterIterator::accept() (prune directory filter)
+            ['x/x', 'exclude_filter', true], // from CustomFilterIterator::accept() (regular filter)
+            ['x/x', 'list_dir_open', ['d']],
+            ['x/x/d', 'is_dir', true],
+            ['x/x/d', 'exclude_filter', true],
+            ['x/x/d', 'list_dir_open', ['u2.php']],
+            ['x/x/d/u2.php', 'is_dir', false],
+            ['x/x/d/u2.php', 'exclude_filter', true],
+        ], $this->vfsLog);
     }
 
     public function testFollowLinks()
@@ -1060,6 +1096,7 @@ class FinderTest extends Iterator\RealIteratorTestCase
             self::$tmpDir.\DIRECTORY_SEPARATOR.'Zephire.php',
             self::$tmpDir.\DIRECTORY_SEPARATOR.'test.php',
             __DIR__.\DIRECTORY_SEPARATOR.'GitignoreTest.php',
+            __DIR__.\DIRECTORY_SEPARATOR.'FinderOpenBasedirTest.php',
             __DIR__.\DIRECTORY_SEPARATOR.'FinderTest.php',
             __DIR__.\DIRECTORY_SEPARATOR.'GlobTest.php',
             self::$tmpDir.\DIRECTORY_SEPARATOR.'qux_0_1.php',
@@ -1260,6 +1297,121 @@ class FinderTest extends Iterator\RealIteratorTestCase
         $this->assertIterator($this->toAbsolute(['foo', 'foo/bar.tmp', 'toto']), $finder->getIterator());
     }
 
+    public function testAppendStandardizesItemsToBeSymfonySplFileInfo()
+    {
+        $finder1 = $this->buildFinder();
+        $finder1->files()->in(self::$tmpDir.\DIRECTORY_SEPARATOR.'foo');
+
+        $finder2 = $this->buildFinder();
+        $finder2->directories()->in(self::$tmpDir);
+
+        $finder1->append($finder2);
+        $finder1->append($this->toAbsolute(['foo']));
+        $finder1->append(array_map(static fn ($item) => new \SplFileInfo($item), $this->toAbsolute(['toto'])));
+
+        foreach ($finder1 as $item) {
+            $this->assertInstanceOf(SplFileInfo::class, $item);
+        }
+    }
+
+    public function testRelativePathOfAppendedItems()
+    {
+        $this->setupVfsProvider([
+            'a' => [
+                'a1' => '',
+                'a2' => '',
+                'b' => [
+                    'b1' => '',
+                    'b2' => '',
+                    'c' => [
+                        'c1' => '',
+                        'c2' => '',
+                    ],
+                ],
+            ],
+        ]);
+
+        $formatForAssert = static function (Finder $finder) {
+            $data = [];
+            foreach ($finder as $key => $value) {
+                $data[] = ['key' => $key, 'relativePathname' => $value->getRelativePathname()];
+            }
+
+            return $data;
+        };
+
+        $dir = $this->vfsScheme.'://';
+
+        // no append
+        $finder = Finder::create()->sortByName()->in($dir.'a/b');
+        $this->assertSame(
+            [
+                ['key' => $dir.'a/b/b1', 'relativePathname' => 'b1'],
+                ['key' => $dir.'a/b/b2', 'relativePathname' => 'b2'],
+                ['key' => $dir.'a/b/c', 'relativePathname' => 'c'],
+                ['key' => $dir.'a/b/c/c1', 'relativePathname' => 'c/c1'],
+                ['key' => $dir.'a/b/c/c2', 'relativePathname' => 'c/c2'],
+            ],
+            $formatForAssert($finder),
+        );
+
+        // appending another Finder with parent directory
+        $finder = Finder::create()->sortByName()->in($dir.'a/b');
+        $finder->append(Finder::create()->sortByName()->in($dir.'a'));
+        $this->assertSame(
+            [
+                ['key' => $dir.'a/a1', 'relativePathname' => 'a1'],
+                ['key' => $dir.'a/a2', 'relativePathname' => 'a2'],
+                ['key' => $dir.'a/b', 'relativePathname' => 'b'],
+                ['key' => $dir.'a/b/b1', 'relativePathname' => 'b/b1'],
+                ['key' => $dir.'a/b/b2', 'relativePathname' => 'b/b2'],
+                ['key' => $dir.'a/b/c', 'relativePathname' => 'b/c'],
+                ['key' => $dir.'a/b/c/c1', 'relativePathname' => 'b/c/c1'],
+                ['key' => $dir.'a/b/c/c2', 'relativePathname' => 'b/c/c2'],
+            ],
+            $formatForAssert($finder),
+        );
+
+        // appending another Finder with child directory
+        $finder = Finder::create()->sortByName()->in($dir.'a/b');
+        $finder->append(Finder::create()->sortByName()->in($dir.'a/b/c'));
+        $this->assertSame(
+            [
+                ['key' => $dir.'a/b/b1', 'relativePathname' => 'b1'],
+                ['key' => $dir.'a/b/b2', 'relativePathname' => 'b2'],
+                ['key' => $dir.'a/b/c', 'relativePathname' => 'c'],
+                ['key' => $dir.'a/b/c/c1', 'relativePathname' => 'c1'],
+                ['key' => $dir.'a/b/c/c2', 'relativePathname' => 'c2'],
+            ],
+            $formatForAssert($finder),
+        );
+
+        // appending file paths
+        $finder = Finder::create()->sortByName()->in($dir.'a/b');
+        $finder->append([$dir.'a/a1', $dir.'a/b/c/c1']);
+        $this->assertSame(
+            [
+                ['key' => $dir.'a/a1', 'relativePathname' => $dir.'a/a1'],
+                ['key' => $dir.'a/b/b1', 'relativePathname' => 'b1'],
+                ['key' => $dir.'a/b/b2', 'relativePathname' => 'b2'],
+                ['key' => $dir.'a/b/c', 'relativePathname' => 'c'],
+                ['key' => $dir.'a/b/c/c1', 'relativePathname' => $dir.'a/b/c/c1'],
+                ['key' => $dir.'a/b/c/c2', 'relativePathname' => 'c/c2'],
+            ],
+            $formatForAssert($finder),
+        );
+
+        // appending with to empty Finder
+        $finder = Finder::create()->sortByName();
+        $finder->append([$dir.'a/a1']);
+        $this->assertSame(
+            [
+                ['key' => $dir.'a/a1', 'relativePathname' => $dir.'a/a1'],
+            ],
+            $formatForAssert($finder),
+        );
+    }
+
     public function testAppendReturnsAFinder()
     {
         $this->assertInstanceOf(Finder::class, Finder::create()->append([]));
@@ -1331,9 +1483,7 @@ class FinderTest extends Iterator\RealIteratorTestCase
         $this->assertFalse($finder->hasResults());
     }
 
-    /**
-     * @dataProvider getContainsTestData
-     */
+    #[DataProvider('getContainsTestData')]
     public function testContains($matchPatterns, $noMatchPatterns, $expected)
     {
         $finder = $this->buildFinder();
@@ -1436,7 +1586,7 @@ class FinderTest extends Iterator\RealIteratorTestCase
         $this->assertIterator($this->toAbsoluteFixtures($expected), $finder);
     }
 
-    public function getContainsTestData()
+    public static function getContainsTestData()
     {
         return [
             ['', '', []],
@@ -1454,7 +1604,7 @@ class FinderTest extends Iterator\RealIteratorTestCase
         ];
     }
 
-    public function getRegexNameTestData()
+    public static function getRegexNameTestData()
     {
         return [
             ['~.*t\\.p.+~i'],
@@ -1462,9 +1612,7 @@ class FinderTest extends Iterator\RealIteratorTestCase
         ];
     }
 
-    /**
-     * @dataProvider getTestPathData
-     */
+    #[DataProvider('getTestPathData')]
     public function testPath($matchPatterns, $noMatchPatterns, array $expected)
     {
         $finder = $this->buildFinder();
@@ -1475,7 +1623,7 @@ class FinderTest extends Iterator\RealIteratorTestCase
         $this->assertIterator($this->toAbsoluteFixtures($expected), $finder);
     }
 
-    public function getTestPathData()
+    public static function getTestPathData()
     {
         return [
             ['', '', []],
@@ -1558,7 +1706,7 @@ class FinderTest extends Iterator\RealIteratorTestCase
 
         // make 'foo' directory non-readable
         $testDir = self::$tmpDir.\DIRECTORY_SEPARATOR.'foo';
-        chmod($testDir, 0333);
+        chmod($testDir, 0o333);
 
         if (false === $couldRead = is_readable($testDir)) {
             try {
@@ -1566,8 +1714,8 @@ class FinderTest extends Iterator\RealIteratorTestCase
                 $this->fail('Finder should throw an exception when opening a non-readable directory.');
             } catch (\Exception $e) {
                 $expectedExceptionClass = 'Symfony\\Component\\Finder\\Exception\\AccessDeniedException';
-                if ($e instanceof \PHPUnit\Framework\ExpectationFailedException) {
-                    $this->fail(sprintf("Expected exception:\n%s\nGot:\n%s\nWith comparison failure:\n%s", $expectedExceptionClass, 'PHPUnit\Framework\ExpectationFailedException', $e->getComparisonFailure()->getExpectedAsString()));
+                if ($e instanceof ExpectationFailedException) {
+                    $this->fail(\sprintf("Expected exception:\n%s\nGot:\n%s\nWith comparison failure:\n%s", $expectedExceptionClass, 'PHPUnit\Framework\ExpectationFailedException', $e->getComparisonFailure()->getExpectedAsString()));
                 }
 
                 $this->assertInstanceOf($expectedExceptionClass, $e);
@@ -1575,7 +1723,7 @@ class FinderTest extends Iterator\RealIteratorTestCase
         }
 
         // restore original permissions
-        chmod($testDir, 0777);
+        chmod($testDir, 0o777);
         clearstatcache(true, $testDir);
 
         if ($couldRead) {
@@ -1594,7 +1742,7 @@ class FinderTest extends Iterator\RealIteratorTestCase
 
         // make 'foo' directory non-readable
         $testDir = self::$tmpDir.\DIRECTORY_SEPARATOR.'foo';
-        chmod($testDir, 0333);
+        chmod($testDir, 0o333);
 
         if (false === ($couldRead = is_readable($testDir))) {
             $this->assertIterator($this->toAbsolute([
@@ -1611,12 +1759,12 @@ class FinderTest extends Iterator\RealIteratorTestCase
                 'qux_10_2.php',
                 'qux_12_0.php',
                 'qux_2_0.php',
-                ]
+            ]
             ), $finder->getIterator());
         }
 
         // restore original permissions
-        chmod($testDir, 0777);
+        chmod($testDir, 0o777);
         clearstatcache(true, $testDir);
 
         if ($couldRead) {
@@ -1627,14 +1775,5 @@ class FinderTest extends Iterator\RealIteratorTestCase
     protected function buildFinder()
     {
         return Finder::create()->exclude('gitignore');
-    }
-
-    protected function iniSet(string $varName, string $newValue): void
-    {
-        if ('open_basedir' === $varName && $deprecationsFile = getenv('SYMFONY_DEPRECATIONS_SERIALIZE')) {
-            $newValue .= \PATH_SEPARATOR.$deprecationsFile;
-        }
-
-        parent::iniSet('open_basedir', $newValue);
     }
 }

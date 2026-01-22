@@ -19,68 +19,74 @@ use Symfony\Component\RateLimiter\Storage\CacheStorage;
 
 class CacheStorageTest extends TestCase
 {
-    private $pool;
-    private $storage;
-
-    protected function setUp(): void
-    {
-        $this->pool = $this->createMock(CacheItemPoolInterface::class);
-        $this->storage = new CacheStorage($this->pool);
-    }
-
     public function testSave()
     {
+        $pool = $this->createMock(CacheItemPoolInterface::class);
+        $storage = new CacheStorage($pool);
+
         $cacheItem = $this->createMock(CacheItemInterface::class);
         $cacheItem->expects($this->exactly(2))->method('expiresAfter')->with(10);
 
-        $this->pool->expects($this->any())->method('getItem')->with(sha1('test'))->willReturn($cacheItem);
-        $this->pool->expects($this->exactly(2))->method('save')->with($cacheItem);
+        $pool->expects($this->any())->method('getItem')->with(sha1('test'))->willReturn($cacheItem);
+        $pool->expects($this->exactly(2))->method('save')->with($cacheItem);
 
         $window = new Window('test', 10, 20);
-        $this->storage->save($window);
+        $storage->save($window);
 
         $window = unserialize(serialize($window));
-        $this->storage->save($window);
+        $storage->save($window);
     }
 
     public function testFetchExistingState()
     {
-        $cacheItem = $this->createMock(CacheItemInterface::class);
+        $pool = $this->createStub(CacheItemPoolInterface::class);
+        $storage = new CacheStorage($pool);
+
+        $cacheItem = $this->createStub(CacheItemInterface::class);
         $window = new Window('test', 10, 20);
-        $cacheItem->expects($this->any())->method('get')->willReturn($window);
-        $cacheItem->expects($this->any())->method('isHit')->willReturn(true);
+        $cacheItem->method('get')->willReturn($window);
+        $cacheItem->method('isHit')->willReturn(true);
 
-        $this->pool->expects($this->any())->method('getItem')->with(sha1('test'))->willReturn($cacheItem);
+        $pool->method('getItem')->with(sha1('test'))->willReturn($cacheItem);
 
-        $this->assertEquals($window, $this->storage->fetch('test'));
+        $this->assertEquals($window, $storage->fetch('test'));
     }
 
     public function testFetchExistingJunk()
     {
-        $cacheItem = $this->createMock(CacheItemInterface::class);
+        $pool = $this->createStub(CacheItemPoolInterface::class);
+        $storage = new CacheStorage($pool);
 
-        $cacheItem->expects($this->any())->method('get')->willReturn('junk');
-        $cacheItem->expects($this->any())->method('isHit')->willReturn(true);
+        $cacheItem = $this->createStub(CacheItemInterface::class);
 
-        $this->pool->expects($this->any())->method('getItem')->with(sha1('test'))->willReturn($cacheItem);
+        $cacheItem->method('get')->willReturn('junk');
+        $cacheItem->method('isHit')->willReturn(true);
 
-        $this->assertNull($this->storage->fetch('test'));
+        $pool->method('getItem')->with(sha1('test'))->willReturn($cacheItem);
+
+        $this->assertNull($storage->fetch('test'));
     }
 
     public function testFetchNonExistingState()
     {
-        $cacheItem = $this->createMock(CacheItemInterface::class);
-        $cacheItem->expects($this->any())->method('isHit')->willReturn(false);
+        $pool = $this->createStub(CacheItemPoolInterface::class);
+        $storage = new CacheStorage($pool);
 
-        $this->pool->expects($this->any())->method('getItem')->with(sha1('test'))->willReturn($cacheItem);
+        $cacheItem = $this->createStub(CacheItemInterface::class);
+        $cacheItem->method('isHit')->willReturn(false);
 
-        $this->assertNull($this->storage->fetch('test'));
+        $pool->method('getItem')->with(sha1('test'))->willReturn($cacheItem);
+
+        $this->assertNull($storage->fetch('test'));
     }
 
     public function testDelete()
     {
-        $this->pool->expects($this->once())->method('deleteItem')->with(sha1('test'))->willReturn(true);
+        $pool = $this->createMock(CacheItemPoolInterface::class);
+        $storage = new CacheStorage($pool);
 
-        $this->storage->delete('test');
+        $pool->expects($this->once())->method('deleteItem')->with(sha1('test'))->willReturn(true);
+
+        $storage->delete('test');
     }
 }

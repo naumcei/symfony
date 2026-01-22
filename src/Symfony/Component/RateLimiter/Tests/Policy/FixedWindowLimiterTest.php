@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\RateLimiter\Tests\Policy;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\PhpUnit\ClockMock;
 use Symfony\Component\RateLimiter\Policy\FixedWindowLimiter;
@@ -20,12 +22,10 @@ use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
 use Symfony\Component\RateLimiter\Tests\Resources\DummyWindow;
 use Symfony\Component\RateLimiter\Util\TimeUtil;
 
-/**
- * @group time-sensitive
- */
+#[Group('time-sensitive')]
 class FixedWindowLimiterTest extends TestCase
 {
-    private $storage;
+    private InMemoryStorage $storage;
 
     protected function setUp(): void
     {
@@ -37,6 +37,7 @@ class FixedWindowLimiterTest extends TestCase
 
     public function testConsume()
     {
+        $now = time();
         $limiter = $this->createLimiter();
 
         // fill 9 tokens in 45 seconds
@@ -51,11 +52,12 @@ class FixedWindowLimiterTest extends TestCase
         $rateLimit = $limiter->consume();
         $this->assertFalse($rateLimit->isAccepted());
         $this->assertSame(10, $rateLimit->getLimit());
+        // Window ends after 1 minute
+        $retryAfter = \DateTimeImmutable::createFromFormat('U', $now + 60);
+        $this->assertEquals($retryAfter, $rateLimit->getRetryAfter());
     }
 
-    /**
-     * @dataProvider provideConsumeOutsideInterval
-     */
+    #[DataProvider('provideConsumeOutsideInterval')]
     public function testConsumeOutsideInterval(string $dateIntervalString)
     {
         $limiter = $this->createLimiter($dateIntervalString);
@@ -119,10 +121,24 @@ class FixedWindowLimiterTest extends TestCase
             $rateLimit = $limiter->consume(0);
             $this->assertSame(10, $rateLimit->getLimit());
             $this->assertTrue($rateLimit->isAccepted());
+            $this->assertEquals(
+                \DateTimeImmutable::createFromFormat('U', (string) floor(microtime(true))),
+                $rateLimit->getRetryAfter()
+            );
         }
+
+        $limiter->consume();
+
+        $rateLimit = $limiter->consume(0);
+        $this->assertEquals(0, $rateLimit->getRemainingTokens());
+        $this->assertTrue($rateLimit->isAccepted());
+        $this->assertEquals(
+            \DateTimeImmutable::createFromFormat('U', (string) floor(microtime(true) + 60)),
+            $rateLimit->getRetryAfter()
+        );
     }
 
-    public function provideConsumeOutsideInterval(): \Generator
+    public static function provideConsumeOutsideInterval(): \Generator
     {
         yield ['PT15S'];
 

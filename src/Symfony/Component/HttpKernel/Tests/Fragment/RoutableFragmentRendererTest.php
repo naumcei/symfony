@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\HttpKernel\Tests\Fragment;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ControllerReference;
@@ -18,23 +19,19 @@ use Symfony\Component\HttpKernel\Fragment\RoutableFragmentRenderer;
 
 class RoutableFragmentRendererTest extends TestCase
 {
-    /**
-     * @dataProvider getGenerateFragmentUriData
-     */
+    #[DataProvider('getGenerateFragmentUriData')]
     public function testGenerateFragmentUri($uri, $controller)
     {
         $this->assertEquals($uri, $this->callGenerateFragmentUriMethod($controller, Request::create('/')));
     }
 
-    /**
-     * @dataProvider getGenerateFragmentUriData
-     */
+    #[DataProvider('getGenerateFragmentUriData')]
     public function testGenerateAbsoluteFragmentUri($uri, $controller)
     {
         $this->assertEquals('http://localhost'.$uri, $this->callGenerateFragmentUriMethod($controller, Request::create('/'), true));
     }
 
-    public function getGenerateFragmentUriData()
+    public static function getGenerateFragmentUriData()
     {
         return [
             ['/_fragment?_path=_format%3Dhtml%26_locale%3Den%26_controller%3Dcontroller', new ControllerReference('controller', [], [])],
@@ -56,16 +53,14 @@ class RoutableFragmentRendererTest extends TestCase
         $this->assertEquals('/_fragment?_path=_format%3Djson%26_locale%3Dfr%26_controller%3Dcontroller', $this->callGenerateFragmentUriMethod($controller, $request));
     }
 
-    /**
-     * @dataProvider getGenerateFragmentUriDataWithNonScalar
-     */
+    #[DataProvider('getGenerateFragmentUriDataWithNonScalar')]
     public function testGenerateFragmentUriWithNonScalar($controller)
     {
         $this->expectException(\LogicException::class);
         $this->callGenerateFragmentUriMethod($controller, Request::create('/'));
     }
 
-    public function getGenerateFragmentUriDataWithNonScalar()
+    public static function getGenerateFragmentUriDataWithNonScalar()
     {
         return [
             [new ControllerReference('controller', ['foo' => new Foo(), 'bar' => 'bar'], [])],
@@ -75,7 +70,7 @@ class RoutableFragmentRendererTest extends TestCase
 
     private function callGenerateFragmentUriMethod(ControllerReference $reference, Request $request, $absolute = false)
     {
-        $renderer = $this->getMockForAbstractClass(RoutableFragmentRenderer::class);
+        $renderer = $this->createStub(RoutableFragmentRenderer::class);
         $r = new \ReflectionObject($renderer);
         $m = $r->getMethod('generateFragmentUri');
 

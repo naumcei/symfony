@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Validator\Tests\DependencyInjection;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Validator\DependencyInjection\AddAutoMappingConfigurationPass;
@@ -36,9 +37,7 @@ class AddAutoMappingConfigurationPassTest extends TestCase
         $this->assertCount(1, $container->getDefinitions());
     }
 
-    /**
-     * @dataProvider mappingProvider
-     */
+    #[DataProvider('mappingProvider')]
     public function testProcess(string $namespace, array $services, string $expectedRegexp)
     {
         $container = new ContainerBuilder();
@@ -60,7 +59,7 @@ class AddAutoMappingConfigurationPassTest extends TestCase
         $this->assertCount(\count($services), $container->getDefinition('validator.builder')->getMethodCalls());
     }
 
-    public function mappingProvider(): array
+    public static function mappingProvider(): array
     {
         return [
             ['Foo\\', ['foo', 'baz'], '{^App\\\\|^Foo\\\\}'],

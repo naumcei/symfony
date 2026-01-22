@@ -1,6 +1,23 @@
 CHANGELOG
 =========
 
+7.4
+---
+
+ * Bump ext-redis to 6.1 and ext-relay to 0.12 minimum
+
+7.3
+---
+
+ * Implement the `CloseableTransportInterface` to allow closing the Redis connection
+ * Implement the `KeepaliveReceiverInterface` to enable asynchronously notifying Redis that the job is still being processed, in order to avoid timeouts
+ * Add support for `valkey:` / `valkeys:` schemes
+
+6.3
+---
+
+ * Add support for Relay PHP extension for Redis
+
 6.1
 ---
 

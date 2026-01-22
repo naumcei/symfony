@@ -11,30 +11,29 @@
 
 namespace Symfony\Bridge\Twig\Tests\Extension;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Twig\Extension\RoutingExtension;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
-use Twig\Loader\LoaderInterface;
+use Twig\Loader\ArrayLoader;
 use Twig\Node\Expression\FilterExpression;
 use Twig\Source;
 
 class RoutingExtensionTest extends TestCase
 {
-    /**
-     * @dataProvider getEscapingTemplates
-     */
+    #[DataProvider('getEscapingTemplates')]
     public function testEscaping($template, $mustBeEscaped)
     {
-        $twig = new Environment($this->createMock(LoaderInterface::class), ['debug' => true, 'cache' => false, 'autoescape' => 'html', 'optimizations' => 0]);
-        $twig->addExtension(new RoutingExtension($this->createMock(UrlGeneratorInterface::class)));
+        $twig = new Environment(new ArrayLoader(), ['debug' => true, 'cache' => false, 'autoescape' => 'html', 'optimizations' => 0]);
+        $twig->addExtension(new RoutingExtension($this->createStub(UrlGeneratorInterface::class)));
 
         $nodes = $twig->parse($twig->tokenize(new Source($template, '')));
 
         $this->assertSame($mustBeEscaped, $nodes->getNode('body')->getNode(0)->getNode('expr') instanceof FilterExpression);
     }
 
-    public function getEscapingTemplates()
+    public static function getEscapingTemplates()
     {
         return [
             ['{{ path("foo") }}', false],

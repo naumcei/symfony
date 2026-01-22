@@ -11,24 +11,21 @@
 
 namespace Symfony\Component\Config\Tests\Definition;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidTypeException;
 use Symfony\Component\Config\Definition\FloatNode;
 
 class FloatNodeTest extends TestCase
 {
-    /**
-     * @dataProvider getValidValues
-     */
+    #[DataProvider('getValidValues')]
     public function testNormalize(int|float $value)
     {
         $node = new FloatNode('test');
         $this->assertSame($value, $node->normalize($value));
     }
 
-    /**
-     * @dataProvider getValidValues
-     */
+    #[DataProvider('getValidValues')]
     public function testValidNonEmptyValues(int|float $value)
     {
         $node = new FloatNode('test');
@@ -37,7 +34,7 @@ class FloatNodeTest extends TestCase
         $this->assertSame($value, $node->finalize($value));
     }
 
-    public function getValidValues(): array
+    public static function getValidValues(): array
     {
         return [
             [1798.0],
@@ -51,17 +48,17 @@ class FloatNodeTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider getInvalidValues
-     */
+    #[DataProvider('getInvalidValues')]
     public function testNormalizeThrowsExceptionOnInvalidValues($value)
     {
-        $this->expectException(InvalidTypeException::class);
         $node = new FloatNode('test');
+
+        $this->expectException(InvalidTypeException::class);
+
         $node->normalize($value);
     }
 
-    public function getInvalidValues(): array
+    public static function getInvalidValues(): array
     {
         return [
             [null],

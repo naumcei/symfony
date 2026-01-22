@@ -20,21 +20,13 @@ use Symfony\Component\Intl\Data\Util\LocaleScanner;
  */
 class LocaleScannerTest extends TestCase
 {
-    private $directory;
-
-    /**
-     * @var Filesystem
-     */
-    private $filesystem;
-
-    /**
-     * @var LocaleScanner
-     */
-    private $scanner;
+    private string $directory;
+    private Filesystem $filesystem;
+    private LocaleScanner $scanner;
 
     protected function setUp(): void
     {
-        $this->directory = sys_get_temp_dir().'/LocaleScannerTest/'.mt_rand(1000, 9999);
+        $this->directory = sys_get_temp_dir().'/LocaleScannerTest/'.random_int(1000, 9999);
         $this->filesystem = new Filesystem();
         $this->scanner = new LocaleScanner();
 

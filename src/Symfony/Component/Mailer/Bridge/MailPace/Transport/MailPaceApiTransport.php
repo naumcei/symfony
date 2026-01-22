@@ -31,18 +31,18 @@ final class MailPaceApiTransport extends AbstractApiTransport
 {
     private const HOST = 'app.mailpace.com/api/v1';
 
-    private string $key;
-
-    public function __construct(string $key, HttpClientInterface $client = null, EventDispatcherInterface $dispatcher = null, LoggerInterface $logger = null)
-    {
-        $this->key = $key;
-
+    public function __construct(
+        #[\SensitiveParameter] private string $key,
+        ?HttpClientInterface $client = null,
+        ?EventDispatcherInterface $dispatcher = null,
+        ?LoggerInterface $logger = null,
+    ) {
         parent::__construct($client, $dispatcher, $logger);
     }
 
     public function __toString(): string
     {
-        return sprintf('mailpace+api://%s', $this->getEndpoint());
+        return \sprintf('mailpace+api://%s', $this->getEndpoint());
     }
 
     protected function doSendApi(SentMessage $sentMessage, Email $email, Envelope $envelope): ResponseInterface
@@ -61,13 +61,26 @@ final class MailPaceApiTransport extends AbstractApiTransport
             $statusCode = $response->getStatusCode();
             $result = $response->toArray(false);
         } catch (DecodingExceptionInterface $e) {
-            throw new HttpTransportException('Unable to send an email: '.$response->getContent(false).sprintf(' (code %d).', $statusCode), $response, 0, $e);
+            throw new HttpTransportException('Unable to send an email: '.$response->getContent(false).\sprintf(' (code %d).', $statusCode), $response, 0, $e);
         } catch (TransportExceptionInterface $e) {
             throw new HttpTransportException('Could not reach the remote MailPace endpoint.', $response, 0, $e);
         }
 
         if (200 !== $statusCode) {
-            throw new HttpTransportException('Unable to send an email: '.$result['Message'].sprintf(' (code %d).', $result['ErrorCode']), $response);
+            $errorMessage = 'Unable to send an email: ';
+            if (isset($result['error'])) {
+                $errorMessage .= $result['error'];
+            } elseif (isset($result['errors'])) {
+                $errors = [];
+                foreach ($result['errors'] as $key => $val) {
+                    $errors[] = $key.': '.implode(' & ', $val);
+                }
+                $errorMessage .= implode('; ', $errors);
+            } else {
+                $errorMessage .= 'unknown error';
+            }
+            $errorMessage .= \sprintf(' (code %d).', $statusCode);
+            throw new HttpTransportException($errorMessage, $response);
         }
 
         $sentMessage->setMessageId($result['id']);
@@ -90,10 +103,8 @@ final class MailPaceApiTransport extends AbstractApiTransport
             'tags' => [],
         ];
 
-        $headersToBypass = ['from', 'to', 'cc', 'bcc', 'subject', 'content-type', 'sender', 'reply-to'];
-
         foreach ($email->getHeaders()->all() as $name => $header) {
-            if (\in_array($name, $headersToBypass, true)) {
+            if (\in_array($name, ['from', 'to', 'cc', 'bcc', 'subject', 'content-type', 'sender', 'reply-to'], true)) {
                 continue;
             }
 

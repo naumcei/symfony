@@ -9,24 +9,29 @@
  * file that was distributed with this source code.
  */
 
-namespace Security\RememberMe;
+namespace Symfony\Bridge\Doctrine\Tests\Security\RememberMe;
 
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
+use Doctrine\ORM\ORMSetup;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\Security\RememberMe\DoctrineTokenProvider;
 use Symfony\Component\Security\Core\Authentication\RememberMe\PersistentToken;
 use Symfony\Component\Security\Core\Exception\TokenNotFoundException;
 
-/**
- * @requires extension pdo_sqlite
- */
+#[RequiresPhpExtension('pdo_sqlite')]
 class DoctrineTokenProviderTest extends TestCase
 {
     public function testCreateNewToken()
     {
         $provider = $this->bootstrapProvider();
 
-        $token = new PersistentToken('someClass', 'someUser', 'someSeries', 'tokenValue', new \DateTime('2013-01-26T18:23:51'));
+        if (method_exists(PersistentToken::class, 'getClass')) {
+            $token = new PersistentToken('someClass', 'someUser', 'someSeries', 'tokenValue', new \DateTimeImmutable('2013-01-26T18:23:51'), false);
+        } else {
+            $token = new PersistentToken('someUser', 'someSeries', 'tokenValue', new \DateTimeImmutable('2013-01-26T18:23:51'));
+        }
         $provider->createNewToken($token);
 
         $this->assertEquals($provider->loadTokenBySeries('someSeries'), $token);
@@ -44,7 +49,12 @@ class DoctrineTokenProviderTest extends TestCase
     {
         $provider = $this->bootstrapProvider();
 
-        $token = new PersistentToken('someClass', 'someUser', 'someSeries', 'tokenValue', new \DateTime('2013-01-26T18:23:51'));
+        if (method_exists(PersistentToken::class, 'getClass')) {
+            $token = new PersistentToken('someClass', 'someUser', 'someSeries', 'tokenValue', new \DateTimeImmutable('2013-01-26T18:23:51'), false);
+        } else {
+            $token = new PersistentToken('someUser', 'someSeries', 'tokenValue', new \DateTimeImmutable('2013-01-26T18:23:51'));
+        }
+
         $provider->createNewToken($token);
         $provider->updateToken('someSeries', 'newValue', $lastUsed = new \DateTime('2014-06-26T22:03:46'));
         $token = $provider->loadTokenBySeries('someSeries');
@@ -56,7 +66,11 @@ class DoctrineTokenProviderTest extends TestCase
     public function testDeleteToken()
     {
         $provider = $this->bootstrapProvider();
-        $token = new PersistentToken('someClass', 'someUser', 'someSeries', 'tokenValue', new \DateTime('2013-01-26T18:23:51'));
+        if (method_exists(PersistentToken::class, 'getClass')) {
+            $token = new PersistentToken('someClass', 'someUser', 'someSeries', 'tokenValue', new \DateTimeImmutable('2013-01-26T18:23:51'), false);
+        } else {
+            $token = new PersistentToken('someUser', 'someSeries', 'tokenValue', new \DateTimeImmutable('2013-01-26T18:23:51'));
+        }
         $provider->createNewToken($token);
         $provider->deleteTokenBySeries('someSeries');
 
@@ -73,11 +87,15 @@ class DoctrineTokenProviderTest extends TestCase
         $newValue = 'newValue';
 
         // setup existing token
-        $token = new PersistentToken('someClass', 'someUser', $series, $oldValue, new \DateTime('2013-01-26T18:23:51'));
+        if (method_exists(PersistentToken::class, 'getClass')) {
+            $token = new PersistentToken('someClass', 'someUser', $series, $oldValue, new \DateTimeImmutable('2013-01-26T18:23:51'), false);
+        } else {
+            $token = new PersistentToken('someUser', $series, $oldValue, new \DateTimeImmutable('2013-01-26T18:23:51'));
+        }
         $provider->createNewToken($token);
 
         // new request comes in requiring remember-me auth, which updates the token
-        $provider->updateExistingToken($token, $newValue, new \DateTime('-5 seconds'));
+        $provider->updateExistingToken($token, $newValue, new \DateTimeImmutable('-5 seconds'));
         $provider->updateToken($series, $newValue, new \DateTime('-5 seconds'));
 
         // parallel request comes in with the old remember-me cookie and session, which also requires reauth
@@ -98,11 +116,15 @@ class DoctrineTokenProviderTest extends TestCase
         $newValue = 'newValue';
 
         // setup existing token
-        $token = new PersistentToken('someClass', 'someUser', $series, $oldValue, new \DateTime('2013-01-26T18:23:51'));
+        if (method_exists(PersistentToken::class, 'getClass')) {
+            $token = new PersistentToken('someClass', 'someUser', $series, $oldValue, new \DateTimeImmutable('2013-01-26T18:23:51'), false);
+        } else {
+            $token = new PersistentToken('someUser', $series, $oldValue, new \DateTimeImmutable('2013-01-26T18:23:51'));
+        }
         $provider->createNewToken($token);
 
         // new request comes in requiring remember-me auth, which updates the token
-        $provider->updateExistingToken($token, $newValue, new \DateTime('-61 seconds'));
+        $provider->updateExistingToken($token, $newValue, new \DateTimeImmutable('-61 seconds'));
         $provider->updateToken($series, $newValue, new \DateTime('-5 seconds'));
 
         // parallel request comes in with the old remember-me cookie and session, which also requires reauth
@@ -115,16 +137,17 @@ class DoctrineTokenProviderTest extends TestCase
         $this->assertFalse($provider->verifyToken($token, $oldValue));
     }
 
-    /**
-     * @return DoctrineTokenProvider
-     */
-    private function bootstrapProvider()
+    protected function bootstrapProvider(): DoctrineTokenProvider
     {
+        $config = ORMSetup::createConfiguration(true);
+        $config->setSchemaManagerFactory(new DefaultSchemaManagerFactory());
+        $config->enableNativeLazyObjects(true);
+
         $connection = DriverManager::getConnection([
             'driver' => 'pdo_sqlite',
-            'url' => 'sqlite:///:memory:',
-        ]);
-        $connection->{method_exists($connection, 'executeStatement') ? 'executeStatement' : 'executeUpdate'}(<<< 'SQL'
+            'memory' => true,
+        ], $config);
+        $connection->executeStatement(<<< 'SQL'
             CREATE TABLE rememberme_token (
                 series   char(88)     UNIQUE PRIMARY KEY NOT NULL,
                 value    char(88)     NOT NULL,
@@ -132,7 +155,7 @@ class DoctrineTokenProviderTest extends TestCase
                 class    varchar(100) NOT NULL,
                 username varchar(200) NOT NULL
             );
-SQL
+            SQL
         );
 
         return new DoctrineTokenProvider($connection);

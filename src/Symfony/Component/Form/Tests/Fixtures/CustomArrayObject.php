@@ -17,9 +17,9 @@ namespace Symfony\Component\Form\Tests\Fixtures;
  */
 class CustomArrayObject implements \ArrayAccess, \IteratorAggregate, \Countable
 {
-    private $array;
+    private array $array;
 
-    public function __construct(array $array = null)
+    public function __construct(?array $array = null)
     {
         $this->array = $array ?: [];
     }

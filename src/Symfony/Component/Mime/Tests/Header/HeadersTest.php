@@ -69,6 +69,7 @@ class HeadersTest extends TestCase
     {
         $headers = new Headers();
         $headers->addHeader('from', ['from@example.com']);
+        $headers->addHeader('reply-to', 'reply@example.com');
         $headers->addHeader('return-path', 'return@example.com');
         $headers->addHeader('foo', 'bar');
         $headers->addHeader('date', $now = new \DateTimeImmutable());
@@ -77,6 +78,9 @@ class HeadersTest extends TestCase
         $this->assertInstanceOf(MailboxListHeader::class, $headers->get('from'));
         $this->assertEquals([new Address('from@example.com')], $headers->get('from')->getBody());
 
+        $this->assertInstanceOf(MailboxListHeader::class, $headers->get('reply-to'));
+        $this->assertEquals([new Address('reply@example.com')], $headers->get('reply-to')->getBody());
+
         $this->assertInstanceOf(PathHeader::class, $headers->get('return-path'));
         $this->assertEquals(new Address('return@example.com'), $headers->get('return-path')->getBody());
 
@@ -84,7 +88,7 @@ class HeadersTest extends TestCase
         $this->assertSame('bar', $headers->get('foo')->getBody());
 
         $this->assertInstanceOf(DateHeader::class, $headers->get('date'));
-        $this->assertSame($now, $headers->get('date')->getBody());
+        $this->assertEquals($now, $headers->get('date')->getBody());
 
         $this->assertInstanceOf(IdentificationHeader::class, $headers->get('message-id'));
         $this->assertSame(['id@id'], $headers->get('message-id')->getBody());
@@ -341,5 +345,13 @@ class HeadersTest extends TestCase
 
         $this->expectException(\LogicException::class);
         $headers->setHeaderParameter('Content-Disposition', 'name', 'foo');
+    }
+
+    public function testPathHeaderHasNoName()
+    {
+        $headers = new Headers();
+
+        $headers->addPathHeader('Return-Path', new Address('some@path', 'any ignored name'));
+        $this->assertSame('<some@path>', $headers->get('Return-Path')->getBodyAsString());
     }
 }

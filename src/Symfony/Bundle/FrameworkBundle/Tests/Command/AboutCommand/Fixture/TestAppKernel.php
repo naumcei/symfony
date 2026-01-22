@@ -30,16 +30,14 @@ class TestAppKernel extends Kernel
         return __DIR__.'/test';
     }
 
-    public function registerContainerConfiguration(LoaderInterface $loader)
+    public function registerContainerConfiguration(LoaderInterface $loader): void
     {
         $loader->load(static function (ContainerBuilder $container) {
-            $container->loadFromExtension('framework', [
-                'http_method_override' => false,
-            ]);
+            $container->loadFromExtension('framework', []);
         });
     }
 
-    protected function build(ContainerBuilder $container)
+    protected function build(ContainerBuilder $container): void
     {
     }
 }

@@ -11,15 +11,14 @@
 
 namespace Symfony\Bundle\WebProfilerBundle\Tests\DependencyInjection;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\WebProfilerBundle\DependencyInjection\Configuration;
 use Symfony\Component\Config\Definition\Processor;
 
 class ConfigurationTest extends TestCase
 {
-    /**
-     * @dataProvider getDebugModes
-     */
+    #[DataProvider('getDebugModes')]
     public function testConfigTree(array $options, array $expectedResult)
     {
         $processor = new Processor();
@@ -29,14 +28,17 @@ class ConfigurationTest extends TestCase
         $this->assertEquals($expectedResult, $config);
     }
 
-    public function getDebugModes()
+    public static function getDebugModes()
     {
         return [
             [
                 'options' => [],
                 'expectedResult' => [
                     'intercept_redirects' => false,
-                    'toolbar' => false,
+                    'toolbar' => [
+                        'enabled' => false,
+                        'ajax_replace' => false,
+                    ],
                     'excluded_ajax_paths' => '^/((index|app(_[\w]+)?)\.php/)?_wdt',
                 ],
             ],
@@ -44,7 +46,10 @@ class ConfigurationTest extends TestCase
                 'options' => ['toolbar' => true],
                 'expectedResult' => [
                     'intercept_redirects' => false,
-                    'toolbar' => true,
+                    'toolbar' => [
+                        'enabled' => true,
+                        'ajax_replace' => false,
+                    ],
                     'excluded_ajax_paths' => '^/((index|app(_[\w]+)?)\.php/)?_wdt',
                 ],
             ],
@@ -52,16 +57,28 @@ class ConfigurationTest extends TestCase
                 'options' => ['excluded_ajax_paths' => 'test'],
                 'expectedResult' => [
                     'intercept_redirects' => false,
-                    'toolbar' => false,
+                    'toolbar' => [
+                        'enabled' => false,
+                        'ajax_replace' => false,
+                    ],
                     'excluded_ajax_paths' => 'test',
+                ],
+            ],
+            [
+                'options' => ['toolbar' => ['ajax_replace' => true]],
+                'expectedResult' => [
+                    'intercept_redirects' => false,
+                    'toolbar' => [
+                        'enabled' => true,
+                        'ajax_replace' => true,
+                    ],
+                    'excluded_ajax_paths' => '^/((index|app(_[\w]+)?)\.php/)?_wdt',
                 ],
             ],
         ];
     }
 
-    /**
-     * @dataProvider getInterceptRedirectsConfiguration
-     */
+    #[DataProvider('getInterceptRedirectsConfiguration')]
     public function testConfigTreeUsingInterceptRedirects(bool $interceptRedirects, array $expectedResult)
     {
         $processor = new Processor();
@@ -71,14 +88,17 @@ class ConfigurationTest extends TestCase
         $this->assertEquals($expectedResult, $config);
     }
 
-    public function getInterceptRedirectsConfiguration()
+    public static function getInterceptRedirectsConfiguration()
     {
         return [
             [
                 'interceptRedirects' => true,
                 'expectedResult' => [
                     'intercept_redirects' => true,
-                    'toolbar' => false,
+                    'toolbar' => [
+                        'enabled' => false,
+                        'ajax_replace' => false,
+                    ],
                     'excluded_ajax_paths' => '^/((index|app(_[\w]+)?)\.php/)?_wdt',
                 ],
             ],
@@ -86,7 +106,10 @@ class ConfigurationTest extends TestCase
                 'interceptRedirects' => false,
                 'expectedResult' => [
                     'intercept_redirects' => false,
-                    'toolbar' => false,
+                    'toolbar' => [
+                        'enabled' => false,
+                        'ajax_replace' => false,
+                    ],
                     'excluded_ajax_paths' => '^/((index|app(_[\w]+)?)\.php/)?_wdt',
                 ],
             ],

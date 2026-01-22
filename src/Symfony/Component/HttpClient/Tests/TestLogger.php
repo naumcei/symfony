@@ -15,10 +15,10 @@ use Psr\Log\AbstractLogger;
 
 class TestLogger extends AbstractLogger
 {
-    public $logs = [];
+    public array $logs = [];
 
     public function log($level, $message, array $context = []): void
     {
-        $this->logs[] = $message;
+        $this->logs[] = preg_replace_callback('!\{([^\}\s]++)\}!', static fn ($m) => $context[$m[1]] ?? $m[0], $message);
     }
 }

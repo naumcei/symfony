@@ -11,6 +11,7 @@
 
 namespace Symfony\Bridge\Twig\Tests\Extension;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Twig\Extension\HttpFoundationExtension;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,9 +21,7 @@ use Symfony\Component\Routing\RequestContext;
 
 class HttpFoundationExtensionTest extends TestCase
 {
-    /**
-     * @dataProvider getGenerateAbsoluteUrlData
-     */
+    #[DataProvider('getGenerateAbsoluteUrlData')]
     public function testGenerateAbsoluteUrl($expected, $path, $pathinfo)
     {
         $stack = new RequestStack();
@@ -32,7 +31,7 @@ class HttpFoundationExtensionTest extends TestCase
         $this->assertEquals($expected, $extension->generateAbsoluteUrl($path));
     }
 
-    public function getGenerateAbsoluteUrlData()
+    public static function getGenerateAbsoluteUrlData()
     {
         return [
             ['http://localhost/foo.png', '/foo.png', '/foo/bar.html'],
@@ -55,9 +54,7 @@ class HttpFoundationExtensionTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider getGenerateAbsoluteUrlRequestContextData
-     */
+    #[DataProvider('getGenerateAbsoluteUrlRequestContextData')]
     public function testGenerateAbsoluteUrlWithRequestContext($path, $baseUrl, $host, $scheme, $httpPort, $httpsPort, $expected)
     {
         $requestContext = new RequestContext($baseUrl, 'GET', $host, $scheme, $httpPort, $httpsPort, $path);
@@ -66,17 +63,15 @@ class HttpFoundationExtensionTest extends TestCase
         $this->assertEquals($expected, $extension->generateAbsoluteUrl($path));
     }
 
-    /**
-     * @dataProvider getGenerateAbsoluteUrlRequestContextData
-     */
-    public function testGenerateAbsoluteUrlWithoutRequestAndRequestContext($path)
+    #[DataProvider('getGenerateAbsoluteUrlRequestContextData')]
+    public function testGenerateAbsoluteUrlWithoutRequestAndRequestContext($path, $baseUrl, $host, $scheme, $httpPort, $httpsPort, $expected)
     {
         $extension = new HttpFoundationExtension(new UrlHelper(new RequestStack()));
 
         $this->assertEquals($path, $extension->generateAbsoluteUrl($path));
     }
 
-    public function getGenerateAbsoluteUrlRequestContextData()
+    public static function getGenerateAbsoluteUrlRequestContextData()
     {
         return [
             ['/foo.png', '/foo', 'localhost', 'http', 80, 443, 'http://localhost/foo.png'],
@@ -105,9 +100,7 @@ class HttpFoundationExtensionTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider getGenerateRelativePathData
-     */
+    #[DataProvider('getGenerateRelativePathData')]
     public function testGenerateRelativePath($expected, $path, $pathinfo)
     {
         $stack = new RequestStack();
@@ -117,7 +110,7 @@ class HttpFoundationExtensionTest extends TestCase
         $this->assertEquals($expected, $extension->generateRelativePath($path));
     }
 
-    public function getGenerateRelativePathData()
+    public static function getGenerateRelativePathData()
     {
         return [
             ['../foo.png', '/foo.png', '/foo/bar.html'],

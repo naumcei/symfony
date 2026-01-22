@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Serializer\Tests\Context\Encoder;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Context\Encoder\JsonEncoderContextBuilder;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
@@ -29,10 +30,9 @@ class JsonEncoderContextBuilderTest extends TestCase
     }
 
     /**
-     * @dataProvider withersDataProvider
-     *
      * @param array<string, mixed> $values
      */
+    #[DataProvider('withersDataProvider')]
     public function testWithers(array $values)
     {
         $context = $this->contextBuilder
@@ -48,7 +48,7 @@ class JsonEncoderContextBuilderTest extends TestCase
     /**
      * @return iterable<array{0: array<string, mixed>|}>
      */
-    public function withersDataProvider(): iterable
+    public static function withersDataProvider(): iterable
     {
         yield 'With values' => [[
             JsonEncode::OPTIONS => \JSON_PRETTY_PRINT,

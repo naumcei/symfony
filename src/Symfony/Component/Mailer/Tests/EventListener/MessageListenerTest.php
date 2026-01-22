@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Mailer\Tests\EventListener;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\Event\MessageEvent;
@@ -23,9 +24,7 @@ use Symfony\Component\Mime\Message;
 
 class MessageListenerTest extends TestCase
 {
-    /**
-     * @dataProvider provideHeaders
-     */
+    #[DataProvider('provideHeaders')]
     public function testHeaders(Headers $initialHeaders, Headers $defaultHeaders, Headers $expectedHeaders, array $rules = MessageListener::DEFAULT_RULES)
     {
         $message = new Message($initialHeaders);
@@ -36,7 +35,7 @@ class MessageListenerTest extends TestCase
         $this->assertEquals($expectedHeaders, $event->getMessage()->getHeaders());
     }
 
-    public function provideHeaders(): iterable
+    public static function provideHeaders(): iterable
     {
         $initialHeaders = new Headers();
         $defaultHeaders = (new Headers())

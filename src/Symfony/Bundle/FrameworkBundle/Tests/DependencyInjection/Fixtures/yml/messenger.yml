@@ -1,5 +1,5 @@
 framework:
-    http_method_override: false
+    scheduler: true
     messenger:
         routing:
             'Symfony\Bundle\FrameworkBundle\Tests\Fixtures\Messenger\FooMessage': ['sender.bar', 'sender.biz']

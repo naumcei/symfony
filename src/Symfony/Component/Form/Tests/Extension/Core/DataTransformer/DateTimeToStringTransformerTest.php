@@ -11,13 +11,14 @@
 
 namespace Symfony\Component\Form\Tests\Extension\Core\DataTransformer;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Component\Form\Extension\Core\DataTransformer\BaseDateTimeTransformer;
 use Symfony\Component\Form\Extension\Core\DataTransformer\DateTimeToStringTransformer;
 
-class DateTimeToStringTransformerTest extends BaseDateTimeTransformerTest
+class DateTimeToStringTransformerTest extends BaseDateTimeTransformerTestCase
 {
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             ['Y-m-d H:i:s', '2010-02-03 16:05:06', '2010-02-03 16:05:06 UTC'],
@@ -64,9 +65,7 @@ class DateTimeToStringTransformerTest extends BaseDateTimeTransformerTest
         ];
     }
 
-    /**
-     * @dataProvider dataProvider
-     */
+    #[DataProvider('dataProvider')]
     public function testTransform($format, $output, $input)
     {
         $transformer = new DateTimeToStringTransformer('UTC', 'UTC', $format);
@@ -114,9 +113,7 @@ class DateTimeToStringTransformerTest extends BaseDateTimeTransformerTest
         $transformer->transform('1234');
     }
 
-    /**
-     * @dataProvider dataProvider
-     */
+    #[DataProvider('dataProvider')]
     public function testReverseTransform($format, $input, $output)
     {
         $reverseTransformer = new DateTimeToStringTransformer('UTC', 'UTC', $format);
@@ -131,6 +128,19 @@ class DateTimeToStringTransformerTest extends BaseDateTimeTransformerTest
         $reverseTransformer = new DateTimeToStringTransformer();
 
         $this->assertNull($reverseTransformer->reverseTransform(''));
+    }
+
+    public function testReverseTransformWithNullBytes()
+    {
+        $transformer = new DateTimeToStringTransformer();
+
+        $nullByte = \chr(0);
+        $value = '2024-03-15 21:11:00'.$nullByte;
+
+        $this->expectException(TransformationFailedException::class);
+        $this->expectExceptionMessage('Null bytes not allowed');
+
+        $transformer->reverseTransform($value);
     }
 
     public function testReverseTransformWithDifferentTimezones()
@@ -171,7 +181,7 @@ class DateTimeToStringTransformerTest extends BaseDateTimeTransformerTest
         $reverseTransformer->reverseTransform('2010-04-31');
     }
 
-    protected function createDateTimeTransformer(string $inputTimezone = null, string $outputTimezone = null): BaseDateTimeTransformer
+    protected function createDateTimeTransformer(?string $inputTimezone = null, ?string $outputTimezone = null): BaseDateTimeTransformer
     {
         return new DateTimeToStringTransformer($inputTimezone, $outputTimezone);
     }

@@ -11,6 +11,9 @@
 
 namespace Symfony\Component\Console\Tests\Helper;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\TestWith;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\MissingInputException;
@@ -26,11 +29,11 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Terminal;
 use Symfony\Component\Console\Tester\ApplicationTester;
+use Symfony\Component\Process\Exception\ProcessSignaledException;
+use Symfony\Component\Process\Process;
 
-/**
- * @group tty
- */
-class QuestionHelperTest extends AbstractQuestionHelperTest
+#[Group('tty')]
+class QuestionHelperTest extends AbstractQuestionHelperTestCase
 {
     public function testAskChoice()
     {
@@ -186,6 +189,45 @@ class QuestionHelperTest extends AbstractQuestionHelperTest
         $this->assertEquals('What time is it?', stream_get_contents($output->getStream()));
     }
 
+    public function testAskTimeout()
+    {
+        $dialog = new QuestionHelper();
+
+        $question = new Question('What is your name?');
+        $question->setTimeout(1);
+
+        $this->expectException(MissingInputException::class);
+        $this->expectExceptionMessage('Timed out after waiting for input for 1 second.');
+
+        try {
+            $startTime = microtime(true);
+            $dialog->ask($this->createStreamableInputInterfaceMock(\STDIN), $this->createOutputInterface(), $question);
+        } finally {
+            $elapsedTime = microtime(true) - $startTime;
+            self::assertGreaterThanOrEqual(1, $elapsedTime, 'The question should timeout after 1 second');
+        }
+    }
+
+    public function testAskTimeoutWithIncompatibleStream()
+    {
+        $dialog = new QuestionHelper();
+        $inputStream = $this->getInputStream('');
+
+        $question = new Question('What is your name?');
+        $question->setTimeout(1);
+
+        $this->expectException(MissingInputException::class);
+        $this->expectExceptionMessage('Aborted.');
+
+        try {
+            $startTime = microtime(true);
+            $dialog->ask($this->createStreamableInputInterfaceMock($inputStream), $this->createOutputInterface(), $question);
+        } finally {
+            $elapsedTime = microtime(true) - $startTime;
+            self::assertLessThan(1, $elapsedTime, 'Question should not wait for input on a non-interactive stream');
+        }
+    }
+
     public function testAskWithAutocomplete()
     {
         if (!Terminal::hasSttyAvailable()) {
@@ -279,16 +321,14 @@ class QuestionHelperTest extends AbstractQuestionHelperTest
         //
         // No effort is made to avoid irrelevant suggestions, as this is handled
         // by the autocomplete function.
-        $callback = function ($input) {
+        $callback = static function ($input) {
             $knownWords = ['Carrot', 'Creme', 'Curry', 'Parsnip', 'Pie', 'Potato', 'Tart'];
             $inputWords = explode(' ', $input);
             array_pop($inputWords);
             $suggestionBase = $inputWords ? implode(' ', $inputWords).' ' : '';
 
             return array_map(
-                function ($word) use ($suggestionBase) {
-                    return $suggestionBase.$word.' ';
-                },
+                static fn ($word) => $suggestionBase.$word.' ',
                 $knownWords
             );
         };
@@ -340,7 +380,7 @@ class QuestionHelperTest extends AbstractQuestionHelperTest
         $this->assertSame('b', $dialog->ask($this->createStreamableInputInterfaceMock($inputStream), $this->createOutputInterface(), $question));
     }
 
-    public function getInputs()
+    public static function getInputs()
     {
         return [
             ['$'], // 1 byte character
@@ -350,9 +390,7 @@ class QuestionHelperTest extends AbstractQuestionHelperTest
         ];
     }
 
-    /**
-     * @dataProvider getInputs
-     */
+    #[DataProvider('getInputs')]
     public function testAskWithAutocompleteWithMultiByteCharacter($character)
     {
         if (!Terminal::hasSttyAvailable()) {
@@ -375,6 +413,24 @@ class QuestionHelperTest extends AbstractQuestionHelperTest
         $question->setMaxAttempts(1);
 
         $this->assertSame($character, $dialog->ask($this->createStreamableInputInterfaceMock($inputStream), $this->createOutputInterface(), $question));
+    }
+
+    public function testAutocompleteWithSpaceAfterPartialMatch()
+    {
+        if (!Terminal::hasSttyAvailable()) {
+            $this->markTestSkipped('`stty` is required to test autocomplete functionality');
+        }
+
+        // a<SPACE><TAB><NEWLINE>
+        $inputStream = $this->getInputStream("a \t\n");
+
+        $dialog = new QuestionHelper();
+        $dialog->setHelperSet(new HelperSet([new FormatterHelper()]));
+
+        $question = new ChoiceQuestion('Please select a choice', ['a test', 'another choice']);
+        $question->setMaxAttempts(1);
+
+        $this->assertSame('a test', $dialog->ask($this->createStreamableInputInterfaceMock($inputStream), $this->createOutputInterface(), $question));
     }
 
     public function testAutocompleteWithTrailingBackslash()
@@ -430,7 +486,7 @@ class QuestionHelperTest extends AbstractQuestionHelperTest
         $this->assertEquals('8AM', $dialog->ask($this->createStreamableInputInterfaceMock($this->getInputStream("8AM\n")), $this->createOutputInterface(), $question));
     }
 
-    public function testAskHiddenResponseTrimmed()
+    public function testAskHiddenResponseNotTrimmed()
     {
         if ('\\' === \DIRECTORY_SEPARATOR) {
             $this->markTestSkipped('This test is not supported on Windows');
@@ -442,20 +498,20 @@ class QuestionHelperTest extends AbstractQuestionHelperTest
         $question->setHidden(true);
         $question->setTrimmable(false);
 
-        $this->assertEquals(' 8AM', $dialog->ask($this->createStreamableInputInterfaceMock($this->getInputStream(' 8AM')), $this->createOutputInterface(), $question));
+        $this->assertEquals(' 8AM'.\PHP_EOL, $dialog->ask($this->createStreamableInputInterfaceMock($this->getInputStream(' 8AM'.\PHP_EOL)), $this->createOutputInterface(), $question));
     }
 
     public function testAskMultilineResponseWithEOF()
     {
         $essay = <<<'EOD'
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque pretium lectus quis suscipit porttitor. Sed pretium bibendum vestibulum.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque pretium lectus quis suscipit porttitor. Sed pretium bibendum vestibulum.
 
-Etiam accumsan, justo vitae imperdiet aliquet, neque est sagittis mauris, sed interdum massa leo id leo.
+            Etiam accumsan, justo vitae imperdiet aliquet, neque est sagittis mauris, sed interdum massa leo id leo.
 
-Aliquam rhoncus, libero ac blandit convallis, est sapien hendrerit nulla, vitae aliquet tellus orci a odio. Aliquam gravida ante sit amet massa lacinia, ut condimentum purus venenatis.
+            Aliquam rhoncus, libero ac blandit convallis, est sapien hendrerit nulla, vitae aliquet tellus orci a odio. Aliquam gravida ante sit amet massa lacinia, ut condimentum purus venenatis.
 
-Vivamus et erat dictum, euismod neque in, laoreet odio. Aenean vitae tellus at leo vestibulum auctor id eget urna.
-EOD;
+            Vivamus et erat dictum, euismod neque in, laoreet odio. Aenean vitae tellus at leo vestibulum auctor id eget urna.
+            EOD;
 
         $response = $this->getInputStream($essay);
 
@@ -507,11 +563,11 @@ EOD;
     public function testAskMultilineResponseWithWithCursorInMiddleOfSeekableInputStream()
     {
         $input = <<<EOD
-This
-is
-some
-input
-EOD;
+            This
+            is
+            some
+            input
+            EOD;
         $response = $this->getInputStream($input);
         fseek($response, 8);
 
@@ -521,12 +577,10 @@ EOD;
         $question->setMultiline(true);
 
         $this->assertSame("some\ninput", $dialog->ask($this->createStreamableInputInterfaceMock($response), $this->createOutputInterface(), $question));
-        $this->assertSame(8, ftell($response));
+        $this->assertSame(18, ftell($response));
     }
 
-    /**
-     * @dataProvider getAskConfirmationData
-     */
+    #[DataProvider('getAskConfirmationData')]
     public function testAskConfirmation($question, $expected, $default = true)
     {
         $dialog = new QuestionHelper();
@@ -536,7 +590,7 @@ EOD;
         $this->assertEquals($expected, $dialog->ask($this->createStreamableInputInterfaceMock($inputStream), $this->createOutputInterface(), $question), 'confirmation question should '.($expected ? 'pass' : 'cancel'));
     }
 
-    public function getAskConfirmationData()
+    public static function getAskConfirmationData()
     {
         return [
             ['', true],
@@ -566,8 +620,8 @@ EOD;
         $dialog->setHelperSet($helperSet);
 
         $error = 'This is not a color!';
-        $validator = function ($color) use ($error) {
-            if (!\in_array($color, ['white', 'black'])) {
+        $validator = static function ($color) use ($error) {
+            if (!\in_array($color, ['white', 'black'], true)) {
                 throw new \InvalidArgumentException($error);
             }
 
@@ -590,9 +644,7 @@ EOD;
         }
     }
 
-    /**
-     * @dataProvider simpleAnswerProvider
-     */
+    #[DataProvider('simpleAnswerProvider')]
     public function testSelectChoiceFromSimpleChoices($providedAnswer, $expectedValue)
     {
         $possibleChoices = [
@@ -612,7 +664,7 @@ EOD;
         $this->assertSame($expectedValue, $answer);
     }
 
-    public function simpleAnswerProvider()
+    public static function simpleAnswerProvider()
     {
         return [
             [0, 'My environment 1'],
@@ -624,9 +676,7 @@ EOD;
         ];
     }
 
-    /**
-     * @dataProvider specialCharacterInMultipleChoice
-     */
+    #[DataProvider('specialCharacterInMultipleChoice')]
     public function testSpecialCharacterChoiceFromMultipleChoiceList($providedAnswer, $expectedValue)
     {
         $possibleChoices = [
@@ -647,7 +697,7 @@ EOD;
         $this->assertSame($expectedValue, $answer);
     }
 
-    public function specialCharacterInMultipleChoice()
+    public static function specialCharacterInMultipleChoice()
     {
         return [
             ['.', ['.']],
@@ -655,9 +705,7 @@ EOD;
         ];
     }
 
-    /**
-     * @dataProvider answerProvider
-     */
+    #[DataProvider('answerProvider')]
     public function testSelectChoiceFromChoiceList($providedAnswer, $expectedValue)
     {
         $possibleChoices = [
@@ -679,8 +727,6 @@ EOD;
 
     public function testAmbiguousChoiceFromChoicelist()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('The provided answer is ambiguous. Value should be one of "env_2" or "env_3".');
         $possibleChoices = [
             'env_1' => 'My first environment',
             'env_2' => 'My environment',
@@ -694,10 +740,13 @@ EOD;
         $question = new ChoiceQuestion('Please select the environment to load', $possibleChoices);
         $question->setMaxAttempts(1);
 
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The provided answer is ambiguous. Value should be one of "env_2" or "env_3".');
+
         $dialog->ask($this->createStreamableInputInterfaceMock($this->getInputStream("My environment\n")), $this->createOutputInterface(), $question);
     }
 
-    public function answerProvider()
+    public static function answerProvider(): array
     {
         return [
             ['env_1', 'env_1'],
@@ -745,30 +794,29 @@ EOD;
     {
         $this->expectException(MissingInputException::class);
         $this->expectExceptionMessage('Aborted.');
-        $dialog = new QuestionHelper();
-        $dialog->ask($this->createStreamableInputInterfaceMock($this->getInputStream('')), $this->createOutputInterface(), new Question('What\'s your name?'));
+        (new QuestionHelper())->ask($this->createStreamableInputInterfaceMock($this->getInputStream('')), $this->createOutputInterface(), new Question('What\'s your name?'));
     }
 
     public function testAskThrowsExceptionOnMissingInputForChoiceQuestion()
     {
         $this->expectException(MissingInputException::class);
-        $this->expectExceptionMessage('Aborted.');
-        $dialog = new QuestionHelper();
-        $dialog->ask($this->createStreamableInputInterfaceMock($this->getInputStream('')), $this->createOutputInterface(), new ChoiceQuestion('Choice', ['a', 'b']));
+        $this->expectExceptionMessage('Aborted while asking: Choice');
+        (new QuestionHelper())->ask($this->createStreamableInputInterfaceMock($this->getInputStream('')), $this->createOutputInterface(), new ChoiceQuestion('Choice', ['a', 'b']));
     }
 
     public function testAskThrowsExceptionOnMissingInputWithValidator()
     {
-        $this->expectException(MissingInputException::class);
-        $this->expectExceptionMessage('Aborted.');
         $dialog = new QuestionHelper();
 
         $question = new Question('What\'s your name?');
-        $question->setValidator(function ($value) {
+        $question->setValidator(static function ($value) {
             if (!$value) {
                 throw new \Exception('A value is required.');
             }
         });
+
+        $this->expectException(MissingInputException::class);
+        $this->expectExceptionMessage('Aborted.');
 
         $dialog->ask($this->createStreamableInputInterfaceMock($this->getInputStream('')), $this->createOutputInterface(), $question);
     }
@@ -779,9 +827,9 @@ EOD;
         $application = new Application();
         $application->setAutoExit(false);
         $application->register('question')
-            ->setCode(function ($input, $output) use (&$tries) {
+            ->setCode(static function (InputInterface $input, OutputInterface $output) use (&$tries): int {
                 $question = new Question('This is a promptable question');
-                $question->setValidator(function ($value) use (&$tries) {
+                $question->setValidator(static function ($value) use (&$tries) {
                     ++$tries;
                     if (!$value) {
                         throw new \Exception();
@@ -910,6 +958,10 @@ EOD;
 
     public function testAutocompleteMoveCursorBackwards()
     {
+        if (!Terminal::hasSttyAvailable()) {
+            $this->markTestSkipped('`stty` is required to test autocomplete functionality');
+        }
+
         // F<TAB><BACKSPACE><BACKSPACE><BACKSPACE>
         $inputStream = $this->getInputStream("F\t\177\177\177");
 
@@ -925,6 +977,26 @@ EOD;
         $stream = $output->getStream();
         rewind($stream);
         $this->assertStringEndsWith("\033[1D\033[K\033[2D\033[K\033[1D\033[K", stream_get_contents($stream));
+    }
+
+    #[TestWith(['single'])]
+    #[TestWith(['multi'])]
+    public function testExitCommandOnInputSIGINT(string $mode)
+    {
+        if (!\function_exists('pcntl_signal')) {
+            $this->markTestSkipped('pcntl signals not available');
+        }
+
+        $p = new Process(
+            ['php', \dirname(__DIR__).'/Fixtures/application_test_sigint.php', $mode],
+            timeout: 2, // the process will auto shutdown if not killed by SIGINT, to prevent blocking
+        );
+        $p->setPty(true);
+        $p->start();
+
+        $this->expectException(ProcessSignaledException::class);
+        $this->expectExceptionMessage('The process has been signaled with signal "2".');
+        $p->wait();
     }
 
     protected function getInputStream($input)
@@ -943,8 +1015,8 @@ EOD;
 
     protected function createInputInterfaceMock($interactive = true)
     {
-        $mock = $this->createMock(InputInterface::class);
-        $mock->expects($this->any())
+        $mock = $this->createStub(InputInterface::class);
+        $mock
             ->method('isInteractive')
             ->willReturn($interactive);
 
@@ -954,7 +1026,7 @@ EOD;
 
 class AutocompleteValues implements \IteratorAggregate
 {
-    private $values;
+    private array $values;
 
     public function __construct(array $values)
     {

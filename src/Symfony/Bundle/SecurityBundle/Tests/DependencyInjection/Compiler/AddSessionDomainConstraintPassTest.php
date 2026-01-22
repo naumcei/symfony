@@ -26,7 +26,7 @@ class AddSessionDomainConstraintPassTest extends TestCase
 {
     public function testSessionCookie()
     {
-        $container = $this->createContainer(['cookie_domain' => '.symfony.com.', 'cookie_secure' => true]);
+        $container = $this->createContainer(['cookie_domain' => '.symfony.com.', 'cookie_secure' => true, 'cookie_samesite' => 'lax']);
 
         $utils = $container->get('security.http_utils');
         $request = Request::create('/', 'get');
@@ -41,7 +41,7 @@ class AddSessionDomainConstraintPassTest extends TestCase
 
     public function testSessionNoDomain()
     {
-        $container = $this->createContainer(['cookie_secure' => true]);
+        $container = $this->createContainer(['cookie_secure' => true, 'cookie_samesite' => 'lax']);
 
         $utils = $container->get('security.http_utils');
         $request = Request::create('/', 'get');
@@ -56,7 +56,7 @@ class AddSessionDomainConstraintPassTest extends TestCase
 
     public function testSessionNoSecure()
     {
-        $container = $this->createContainer(['cookie_domain' => '.symfony.com.']);
+        $container = $this->createContainer(['cookie_domain' => '.symfony.com.', 'cookie_samesite' => 'lax']);
 
         $utils = $container->get('security.http_utils');
         $request = Request::create('/', 'get');
@@ -102,7 +102,7 @@ class AddSessionDomainConstraintPassTest extends TestCase
 
     public function testSessionAutoSecure()
     {
-        $container = $this->createContainer(['cookie_domain' => '.symfony.com.', 'cookie_secure' => 'auto']);
+        $container = $this->createContainer(['cookie_domain' => '.symfony.com.', 'cookie_secure' => 'auto', 'cookie_samesite' => 'lax']);
 
         $utils = $container->get('security.http_utils');
         $request = Request::create('/', 'get');
@@ -138,14 +138,21 @@ class AddSessionDomainConstraintPassTest extends TestCase
         $container->setParameter('request_listener.https_port', 443);
 
         $config = [
+            'framework' => [
+                'csrf_protection' => false,
+                'router' => ['resource' => 'dummy'],
+            ],
+        ];
+
+        $ext = new FrameworkExtension();
+        $ext->load($config, $container);
+
+        $config = [
             'security' => [
                 'providers' => ['some_provider' => ['id' => 'foo']],
                 'firewalls' => ['some_firewall' => ['security' => false]],
             ],
         ];
-
-        $ext = new FrameworkExtension();
-        $ext->load(['framework' => ['http_method_override' => false, 'csrf_protection' => false, 'router' => ['resource' => 'dummy', 'utf8' => true]]], $container);
 
         $ext = new SecurityExtension();
         $ext->load($config, $container);

@@ -1,7 +1,6 @@
 <?php
 
 $container->loadFromExtension('framework', [
-    'http_method_override' => false,
     'serializer' => true,
     'messenger' => [
         'failure_transport' => 'failed',
@@ -20,11 +19,12 @@ $container->loadFromExtension('framework', [
                     'multiplier' => 3,
                     'max_delay' => 100,
                 ],
-                'rate_limiter' => 'customised_worker'
+                'rate_limiter' => 'customised_worker',
             ],
             'failed' => 'in-memory:///',
             'redis' => 'redis://127.0.0.1:6379/messages',
             'beanstalkd' => 'beanstalkd://127.0.0.1:11300',
+            'schedule' => 'schedule://default',
         ],
     ],
 ]);

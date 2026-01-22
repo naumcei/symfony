@@ -11,9 +11,9 @@
 
 namespace Symfony\Component\Security\Http\Tests\Authenticator\AccessToken;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Core\User\InMemoryUserProvider;
 use Symfony\Component\Security\Http\AccessToken\AccessTokenHandlerInterface;
@@ -35,9 +35,7 @@ class HeaderAccessTokenAuthenticatorTest extends TestCase
         $this->accessTokenHandler = new InMemoryAccessTokenHandler();
     }
 
-    /**
-     * @dataProvider provideSupportData
-     */
+    #[DataProvider('provideSupportData')]
     public function testSupport($request)
     {
         $this->setUpAuthenticator();
@@ -45,15 +43,13 @@ class HeaderAccessTokenAuthenticatorTest extends TestCase
         $this->assertNull($this->authenticator->supports($request));
     }
 
-    public function provideSupportData(): iterable
+    public static function provideSupportData(): iterable
     {
         yield [new Request([], [], [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer VALID_ACCESS_TOKEN'])];
         yield [new Request([], [], [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer INVALID_ACCESS_TOKEN'])];
     }
 
-    /**
-     * @dataProvider provideSupportsWithCustomTokenTypeData
-     */
+    #[DataProvider('provideSupportsWithCustomTokenTypeData')]
     public function testSupportsWithCustomTokenType($request, $result)
     {
         $this->setUpAuthenticator('Authorization', 'JWT');
@@ -61,7 +57,7 @@ class HeaderAccessTokenAuthenticatorTest extends TestCase
         $this->assertSame($result, $this->authenticator->supports($request));
     }
 
-    public function provideSupportsWithCustomTokenTypeData(): iterable
+    public static function provideSupportsWithCustomTokenTypeData(): iterable
     {
         yield [new Request([], [], [], [], [], ['HTTP_AUTHORIZATION' => 'JWT VALID_ACCESS_TOKEN']), null];
         yield [new Request([], [], [], [], [], ['HTTP_AUTHORIZATION' => 'JWT INVALID_ACCESS_TOKEN']), null];
@@ -69,9 +65,7 @@ class HeaderAccessTokenAuthenticatorTest extends TestCase
         yield [new Request([], [], [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer INVALID_ACCESS_TOKEN']), false];
     }
 
-    /**
-     * @dataProvider provideSupportsWithCustomHeaderParameter
-     */
+    #[DataProvider('provideSupportsWithCustomHeaderParameter')]
     public function testSupportsWithCustomHeaderParameter($request, $result)
     {
         $this->setUpAuthenticator('X-FOO');
@@ -79,7 +73,7 @@ class HeaderAccessTokenAuthenticatorTest extends TestCase
         $this->assertSame($result, $this->authenticator->supports($request));
     }
 
-    public function provideSupportsWithCustomHeaderParameter(): iterable
+    public static function provideSupportsWithCustomHeaderParameter(): iterable
     {
         yield [new Request([], [], [], [], [], ['HTTP_X_FOO' => 'Bearer VALID_ACCESS_TOKEN']), null];
         yield [new Request([], [], [], [], [], ['HTTP_X_FOO' => 'Bearer INVALID_ACCESS_TOKEN']), null];
@@ -107,20 +101,18 @@ class HeaderAccessTokenAuthenticatorTest extends TestCase
         $this->assertInstanceOf(SelfValidatingPassport::class, $passport);
     }
 
-    /**
-     * @dataProvider provideInvalidAuthenticateData
-     */
-    public function testAuthenticateInvalid($request, $errorMessage, $exceptionType = BadRequestHttpException::class)
+    #[DataProvider('provideInvalidAuthenticateData')]
+    public function testAuthenticateInvalid(Request $request, string $errorMessage, string $exceptionType)
     {
+        $this->setUpAuthenticator();
+
         $this->expectException($exceptionType);
         $this->expectExceptionMessage($errorMessage);
-
-        $this->setUpAuthenticator();
 
         $this->authenticator->authenticate($request);
     }
 
-    public function provideInvalidAuthenticateData(): iterable
+    public static function provideInvalidAuthenticateData(): iterable
     {
         $request = new Request();
         yield [$request, 'Invalid credentials.', BadCredentialsException::class];

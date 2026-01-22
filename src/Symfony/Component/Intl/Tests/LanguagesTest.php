@@ -11,12 +11,13 @@
 
 namespace Symfony\Component\Intl\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Intl\Exception\MissingResourceException;
 use Symfony\Component\Intl\Languages;
+use Symfony\Component\Intl\Util\IntlTestHelper;
 
-/**
- * @group intl-data
- */
+#[Group('intl-data')]
 class LanguagesTest extends ResourceBundleTestCase
 {
     // The below arrays document the state of the ICU data bundled with this package.
@@ -45,6 +46,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'ang',
         'ann',
         'anp',
+        'apc',
         'ar',
         'arc',
         'arn',
@@ -90,6 +92,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'bjn',
         'bkm',
         'bla',
+        'blo',
         'blt',
         'bm',
         'bn',
@@ -146,7 +149,6 @@ class LanguagesTest extends ResourceBundleTestCase
         'csw',
         'cu',
         'cv',
-        'cwd',
         'cy',
         'da',
         'dak',
@@ -219,7 +221,6 @@ class LanguagesTest extends ResourceBundleTestCase
         'gmh',
         'gn',
         'goh',
-        'gom',
         'gon',
         'gor',
         'got',
@@ -237,7 +238,6 @@ class LanguagesTest extends ResourceBundleTestCase
         'hak',
         'haw',
         'hax',
-        'hdn',
         'he',
         'hi',
         'hif',
@@ -263,7 +263,6 @@ class LanguagesTest extends ResourceBundleTestCase
         'ig',
         'ii',
         'ik',
-        'ike',
         'ikt',
         'ilo',
         'inh',
@@ -293,6 +292,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'kcg',
         'kde',
         'kea',
+        'kek',
         'ken',
         'kfo',
         'kg',
@@ -332,6 +332,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'kv',
         'kw',
         'kwk',
+        'kxv',
         'ky',
         'la',
         'lad',
@@ -347,6 +348,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'lil',
         'liv',
         'lkt',
+        'lld',
         'lmo',
         'ln',
         'lo',
@@ -385,6 +387,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'mgh',
         'mgo',
         'mh',
+        'mhn',
         'mi',
         'mic',
         'min',
@@ -405,6 +408,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'mwl',
         'mwr',
         'mwv',
+        'mww',
         'my',
         'mye',
         'myv',
@@ -445,7 +449,6 @@ class LanguagesTest extends ResourceBundleTestCase
         'oj',
         'ojb',
         'ojc',
-        'ojg',
         'ojs',
         'ojw',
         'oka',
@@ -531,6 +534,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'si',
         'sid',
         'sk',
+        'skr',
         'sl',
         'slh',
         'sli',
@@ -557,6 +561,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'suk',
         'sus',
         'sux',
+        'suz',
         'sv',
         'sw',
         'swb',
@@ -622,6 +627,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'vi',
         'vls',
         'vmf',
+        'vmw',
         'vo',
         'vot',
         'vro',
@@ -637,6 +643,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'xal',
         'xh',
         'xmf',
+        'xnr',
         'xog',
         'yao',
         'yap',
@@ -680,6 +687,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'ang',
         'ann',
         'anp',
+        'apc',
         'ara',
         'arc',
         'arg',
@@ -729,6 +737,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'bjn',
         'bkm',
         'bla',
+        'blo',
         'blt',
         'bod',
         'bos',
@@ -785,7 +794,6 @@ class LanguagesTest extends ResourceBundleTestCase
         'crs',
         'csb',
         'csw',
-        'cwd',
         'cym',
         'dak',
         'dan',
@@ -857,7 +865,6 @@ class LanguagesTest extends ResourceBundleTestCase
         'glv',
         'gmh',
         'goh',
-        'gom',
         'gon',
         'gor',
         'got',
@@ -877,7 +884,6 @@ class LanguagesTest extends ResourceBundleTestCase
         'haw',
         'hax',
         'hbs',
-        'hdn',
         'heb',
         'her',
         'hif',
@@ -899,7 +905,6 @@ class LanguagesTest extends ResourceBundleTestCase
         'ibo',
         'ido',
         'iii',
-        'ike',
         'ikt',
         'iku',
         'ile',
@@ -937,6 +942,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'kcg',
         'kde',
         'kea',
+        'kek',
         'ken',
         'kfo',
         'kgp',
@@ -972,6 +978,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'kur',
         'kut',
         'kwk',
+        'kxv',
         'lad',
         'lag',
         'lah',
@@ -988,6 +995,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'lit',
         'liv',
         'lkt',
+        'lld',
         'lmo',
         'lol',
         'lou',
@@ -1025,6 +1033,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'mga',
         'mgh',
         'mgo',
+        'mhn',
         'mic',
         'min',
         'mkd',
@@ -1045,6 +1054,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'mwl',
         'mwr',
         'mwv',
+        'mww',
         'mya',
         'mye',
         'myv',
@@ -1084,7 +1094,6 @@ class LanguagesTest extends ResourceBundleTestCase
         'oci',
         'ojb',
         'ojc',
-        'ojg',
         'oji',
         'ojs',
         'ojw',
@@ -1166,6 +1175,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'shu',
         'sid',
         'sin',
+        'skr',
         'slh',
         'sli',
         'slk',
@@ -1197,6 +1207,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'sun',
         'sus',
         'sux',
+        'suz',
         'swa',
         'swb',
         'swc',
@@ -1263,6 +1274,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'vie',
         'vls',
         'vmf',
+        'vmw',
         'vol',
         'vot',
         'vro',
@@ -1278,6 +1290,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'xal',
         'xho',
         'xmf',
+        'xnr',
         'xog',
         'yao',
         'yap',
@@ -1504,6 +1517,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'bam' => 'bm',
         'ben' => 'bn',
         'bod' => 'bo',
+        'tib' => 'bo',
         'bre' => 'br',
         'bos' => 'bs',
         'cat' => 'ca',
@@ -1512,26 +1526,33 @@ class LanguagesTest extends ResourceBundleTestCase
         'cos' => 'co',
         'cre' => 'cr',
         'ces' => 'cs',
+        'cze' => 'cs',
         'chu' => 'cu',
         'chv' => 'cv',
         'cym' => 'cy',
+        'wel' => 'cy',
         'dan' => 'da',
         'deu' => 'de',
+        'ger' => 'de',
         'div' => 'dv',
         'dzo' => 'dz',
         'ewe' => 'ee',
         'ell' => 'el',
+        'gre' => 'el',
         'eng' => 'en',
         'epo' => 'eo',
         'spa' => 'es',
         'est' => 'et',
+        'baq' => 'eu',
         'eus' => 'eu',
         'fas' => 'fa',
+        'per' => 'fa',
         'ful' => 'ff',
         'fin' => 'fi',
         'fij' => 'fj',
         'fao' => 'fo',
         'fra' => 'fr',
+        'fre' => 'fr',
         'fry' => 'fy',
         'gle' => 'ga',
         'gla' => 'gd',
@@ -1546,6 +1567,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'hrv' => 'hr',
         'hat' => 'ht',
         'hun' => 'hu',
+        'arm' => 'hy',
         'hye' => 'hy',
         'her' => 'hz',
         'ina' => 'ia',
@@ -1555,11 +1577,13 @@ class LanguagesTest extends ResourceBundleTestCase
         'iii' => 'ii',
         'ipk' => 'ik',
         'ido' => 'io',
+        'ice' => 'is',
         'isl' => 'is',
         'ita' => 'it',
         'iku' => 'iu',
         'jpn' => 'ja',
         'jav' => 'jv',
+        'geo' => 'ka',
         'kat' => 'ka',
         'kon' => 'kg',
         'kik' => 'ki',
@@ -1586,22 +1610,27 @@ class LanguagesTest extends ResourceBundleTestCase
         'lav' => 'lv',
         'mlg' => 'mg',
         'mah' => 'mh',
+        'mao' => 'mi',
         'mri' => 'mi',
+        'mac' => 'mk',
         'mkd' => 'mk',
         'mal' => 'ml',
         'mon' => 'mn',
         'mar' => 'mr',
+        'may' => 'ms',
         'msa' => 'ms',
         'mlt' => 'mt',
+        'bur' => 'my',
         'mya' => 'my',
         'nau' => 'na',
         'nob' => 'nb',
-        'nor' => 'no',
         'nde' => 'nd',
         'nep' => 'ne',
         'ndo' => 'ng',
+        'dut' => 'nl',
         'nld' => 'nl',
         'nno' => 'nn',
+        'nor' => 'no',
         'nbl' => 'nr',
         'nav' => 'nv',
         'nya' => 'ny',
@@ -1620,6 +1649,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'run' => 'rn',
         'mol' => 'ro',
         'ron' => 'ro',
+        'rum' => 'ro',
         'rus' => 'ru',
         'kin' => 'rw',
         'san' => 'sa',
@@ -1629,10 +1659,12 @@ class LanguagesTest extends ResourceBundleTestCase
         'sag' => 'sg',
         'sin' => 'si',
         'slk' => 'sk',
+        'slo' => 'sk',
         'slv' => 'sl',
         'smo' => 'sm',
         'sna' => 'sn',
         'som' => 'so',
+        'alb' => 'sq',
         'sqi' => 'sq',
         'srp' => 'sr',
         'ssw' => 'ss',
@@ -1665,6 +1697,7 @@ class LanguagesTest extends ResourceBundleTestCase
         'yid' => 'yi',
         'yor' => 'yo',
         'zha' => 'za',
+        'chi' => 'zh',
         'zho' => 'zh',
         'zul' => 'zu',
     ];
@@ -1674,17 +1707,19 @@ class LanguagesTest extends ResourceBundleTestCase
         $this->assertEquals(self::LANGUAGES, Languages::getLanguageCodes());
     }
 
-    /**
-     * @dataProvider provideLocales
-     */
+    #[DataProvider('provideLocales')]
     public function testGetNames($displayLocale)
     {
+        if ('en' !== $displayLocale) {
+            IntlTestHelper::requireFullIntl($this);
+        }
+
         $languages = array_keys($names = Languages::getNames($displayLocale));
 
         sort($languages);
 
         $this->assertNotEmpty($languages);
-        $this->assertEmpty(array_diff($languages, self::LANGUAGES));
+        $this->assertSame([], array_diff($languages, self::LANGUAGES));
 
         foreach (Languages::getAlpha3Names($displayLocale) as $alpha3Code => $name) {
             $alpha2Code = self::ALPHA3_TO_ALPHA2[$alpha3Code] ?? null;
@@ -1696,27 +1731,33 @@ class LanguagesTest extends ResourceBundleTestCase
 
     public function testGetNamesDefaultLocale()
     {
+        IntlTestHelper::requireFullIntl($this);
+
         \Locale::setDefault('de_AT');
 
         $this->assertSame(Languages::getNames('de_AT'), Languages::getNames());
     }
 
-    /**
-     * @dataProvider provideLocaleAliases
-     */
+    #[DataProvider('provideLocaleAliases')]
     public function testGetNamesSupportsAliases($alias, $ofLocale)
     {
+        if ('en' !== $ofLocale) {
+            IntlTestHelper::requireFullIntl($this);
+        }
+
         // Can't use assertSame(), because some aliases contain scripts with
         // different collation (=order of output) than their aliased locale
         // e.g. sr_Latn_ME => sr_ME
         $this->assertEquals(Languages::getNames($ofLocale), Languages::getNames($alias));
     }
 
-    /**
-     * @dataProvider provideLocales
-     */
+    #[DataProvider('provideLocales')]
     public function testGetName($displayLocale)
     {
+        if ('en' !== $displayLocale) {
+            IntlTestHelper::requireFullIntl($this);
+        }
+
         $names = Languages::getNames($displayLocale);
 
         foreach ($names as $language => $name) {
@@ -1733,6 +1774,8 @@ class LanguagesTest extends ResourceBundleTestCase
 
     public function testGetNameDefaultLocale()
     {
+        IntlTestHelper::requireFullIntl($this);
+
         \Locale::setDefault('de_AT');
 
         $names = Languages::getNames('de_AT');
@@ -1742,33 +1785,29 @@ class LanguagesTest extends ResourceBundleTestCase
         }
     }
 
-    public function provideLanguagesWithAlpha3Equivalent()
+    public static function provideLanguagesWithAlpha3Equivalent()
     {
         return array_map(
-            function ($value) { return [$value]; },
+            static fn ($value) => [$value],
             array_keys(self::ALPHA2_TO_ALPHA3)
         );
     }
 
-    /**
-     * @dataProvider provideLanguagesWithAlpha3Equivalent
-     */
+    #[DataProvider('provideLanguagesWithAlpha3Equivalent')]
     public function testGetAlpha3Code($language)
     {
         $this->assertSame(self::ALPHA2_TO_ALPHA3[$language], Languages::getAlpha3Code($language));
     }
 
-    public function provideLanguagesWithoutAlpha3Equivalent()
+    public static function provideLanguagesWithoutAlpha3Equivalent()
     {
         return array_map(
-            function ($value) { return [$value]; },
+            static fn ($value) => [$value],
             array_diff(self::LANGUAGES, array_keys(self::ALPHA2_TO_ALPHA3))
         );
     }
 
-    /**
-     * @dataProvider provideLanguagesWithoutAlpha3Equivalent
-     */
+    #[DataProvider('provideLanguagesWithoutAlpha3Equivalent')]
     public function testGetAlpha3CodeFailsIfNoAlpha3Equivalent($language)
     {
         $this->expectException(MissingResourceException::class);
@@ -1792,33 +1831,29 @@ class LanguagesTest extends ResourceBundleTestCase
         $this->assertSame(self::ALPHA3_CODES, Languages::getAlpha3Codes());
     }
 
-    public function provideLanguagesWithAlpha2Equivalent()
+    public static function provideLanguagesWithAlpha2Equivalent()
     {
         return array_map(
-            function ($value) { return [$value]; },
+            static fn ($value) => [$value],
             array_keys(self::ALPHA3_TO_ALPHA2)
         );
     }
 
-    /**
-     * @dataProvider provideLanguagesWithAlpha2Equivalent
-     */
+    #[DataProvider('provideLanguagesWithAlpha2Equivalent')]
     public function testGetAlpha2Code($language)
     {
         $this->assertSame(self::ALPHA3_TO_ALPHA2[$language], Languages::getAlpha2Code($language));
     }
 
-    public function provideLanguagesWithoutAlpha2Equivalent()
+    public static function provideLanguagesWithoutAlpha2Equivalent()
     {
         return array_map(
-            function ($value) { return [$value]; },
+            static fn ($value) => [$value],
             array_diff(self::ALPHA3_CODES, array_keys(self::ALPHA3_TO_ALPHA2))
         );
     }
 
-    /**
-     * @dataProvider provideLanguagesWithoutAlpha2Equivalent
-     */
+    #[DataProvider('provideLanguagesWithoutAlpha2Equivalent')]
     public function testGetAlpha2CodeFailsIfNoAlpha2Equivalent($language)
     {
         $this->expectException(MissingResourceException::class);
@@ -1838,11 +1873,13 @@ class LanguagesTest extends ResourceBundleTestCase
         $this->assertFalse(Languages::alpha3CodeExists('zzz'));
     }
 
-    /**
-     * @dataProvider provideLocales
-     */
+    #[DataProvider('provideLocales')]
     public function testGetAlpha3Name($displayLocale)
     {
+        if ('en' !== $displayLocale) {
+            IntlTestHelper::requireFullIntl($this);
+        }
+
         $names = Languages::getAlpha3Names($displayLocale);
 
         foreach ($names as $language => $name) {
@@ -1857,17 +1894,19 @@ class LanguagesTest extends ResourceBundleTestCase
         Languages::getAlpha3Name('zzz');
     }
 
-    /**
-     * @dataProvider provideLocales
-     */
+    #[DataProvider('provideLocales')]
     public function testGetAlpha3Names($displayLocale)
     {
+        if ('en' !== $displayLocale) {
+            IntlTestHelper::requireFullIntl($this);
+        }
+
         $languages = array_keys($names = Languages::getAlpha3Names($displayLocale));
 
         sort($languages);
 
         $this->assertNotEmpty($languages);
-        $this->assertEmpty(array_diff($languages, self::ALPHA3_CODES));
+        $this->assertSame([], array_diff($languages, self::ALPHA3_CODES));
 
         foreach (Languages::getNames($displayLocale) as $alpha2Code => $name) {
             $alpha3Code = self::ALPHA2_TO_ALPHA3[$alpha2Code] ?? (3 === \strlen($alpha2Code) ? $alpha2Code : null);

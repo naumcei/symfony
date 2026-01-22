@@ -22,9 +22,8 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class ResponseListenerTest extends TestCase
 {
-    private $dispatcher;
-
-    private $kernel;
+    private EventDispatcher $dispatcher;
+    private HttpKernelInterface $kernel;
 
     protected function setUp(): void
     {
@@ -32,13 +31,7 @@ class ResponseListenerTest extends TestCase
         $listener = new ResponseListener('UTF-8');
         $this->dispatcher->addListener(KernelEvents::RESPONSE, $listener->onKernelResponse(...));
 
-        $this->kernel = $this->createMock(HttpKernelInterface::class);
-    }
-
-    protected function tearDown(): void
-    {
-        $this->dispatcher = null;
-        $this->kernel = null;
+        $this->kernel = $this->createStub(HttpKernelInterface::class);
     }
 
     public function testFilterDoesNothingForSubRequests()

@@ -12,16 +12,19 @@
 namespace Symfony\Component\Notifier\Bridge\SpotHit\Tests;
 
 use Symfony\Component\Notifier\Bridge\SpotHit\SpotHitTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
 
-final class SpotHitTransportFactoryTest extends TransportFactoryTestCase
+final class SpotHitTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+
     public function createFactory(): SpotHitTransportFactory
     {
         return new SpotHitTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'spothit://spot-hit.fr',
@@ -31,17 +34,28 @@ final class SpotHitTransportFactoryTest extends TransportFactoryTestCase
             'spothit://spot-hit.fr?from=MyCompany',
             'spothit://api_token@default?from=MyCompany',
         ];
+        yield [
+            'spothit://spot-hit.fr?from=MyCompany&smslong=1',
+            'spothit://api_token@default?from=MyCompany&smslong=1',
+        ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'spothit://api_token@default?from=MyCompany'];
+        yield [true, 'spothit://api_token@default?from=MyCompany&smslong=1'];
+        yield [true, 'spothit://api_token@default?from=MyCompany&smslongnbr=1'];
         yield [false, 'somethingElse://api_token@default?from=MyCompany'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['foobar://api_token@default?from=MyCompany'];
         yield ['foobar://api_token@default'];
+    }
+
+    public static function incompleteDsnProvider(): iterable
+    {
+        yield ['spothit://default?from=MyCompany'];
     }
 }

@@ -23,21 +23,20 @@ use Symfony\Component\Notifier\Recipient\EmailRecipientInterface;
 /**
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class EmailMessage implements MessageInterface
+class EmailMessage implements MessageInterface, FromNotificationInterface
 {
-    private RawMessage $message;
-    private ?Envelope $envelope;
+    private ?Notification $notification = null;
 
-    public function __construct(RawMessage $message, Envelope $envelope = null)
-    {
-        $this->message = $message;
-        $this->envelope = $envelope;
+    public function __construct(
+        private RawMessage $message,
+        private ?Envelope $envelope = null,
+    ) {
     }
 
     public static function fromNotification(Notification $notification, EmailRecipientInterface $recipient): self
     {
         if ('' === $recipient->getEmail()) {
-            throw new InvalidArgumentException(sprintf('"%s" needs an email, it cannot be empty.', __CLASS__));
+            throw new InvalidArgumentException(\sprintf('"%s" needs an email, it cannot be empty.', __CLASS__));
         }
 
         if (!class_exists(NotificationEmail::class)) {
@@ -59,7 +58,10 @@ class EmailMessage implements MessageInterface
             }
         }
 
-        return new self($email);
+        $message = new self($email);
+        $message->notification = $notification;
+
+        return $message;
     }
 
     public function getMessage(): RawMessage
@@ -117,5 +119,10 @@ class EmailMessage implements MessageInterface
     public function getTransport(): ?string
     {
         return $this->message instanceof Email ? $this->message->getHeaders()->getHeaderBody('X-Transport') : null;
+    }
+
+    public function getNotification(): ?Notification
+    {
+        return $this->notification;
     }
 }

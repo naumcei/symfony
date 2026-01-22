@@ -22,14 +22,14 @@ use Twig\Environment;
 
 class LoginController implements ServiceSubscriberInterface
 {
-    private $container;
+    private ContainerInterface $container;
 
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
     }
 
-    public function loginAction(Request $request, UserInterface $user = null)
+    public function loginAction(Request $request, ?UserInterface $user = null)
     {
         // get the login error if there is one
         if ($request->attributes->has(SecurityRequestAttributes::AUTHENTICATION_ERROR)) {

@@ -45,13 +45,13 @@ final class TelegramTransportFactory extends AbstractTransportFactory
     private function getToken(Dsn $dsn): string
     {
         if (null === $dsn->getUser() && null === $dsn->getPassword()) {
-            throw new IncompleteDsnException('Missing token.', $dsn->getOriginalDsn());
+            throw new IncompleteDsnException('Missing token.', 'telegram://'.$dsn->getHost());
         }
 
         if (null === $dsn->getPassword()) {
-            throw new IncompleteDsnException('Malformed token.', $dsn->getOriginalDsn());
+            throw new IncompleteDsnException('Malformed token.', 'telegram://'.$dsn->getHost());
         }
 
-        return sprintf('%s:%s', $dsn->getUser(), $dsn->getPassword());
+        return \sprintf('%s:%s', $dsn->getUser(), $dsn->getPassword());
     }
 }

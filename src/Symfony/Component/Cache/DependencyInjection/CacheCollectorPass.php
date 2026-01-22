@@ -26,7 +26,7 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class CacheCollectorPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         if (!$container->hasDefinition('data_collector.cache')) {
             return;
@@ -39,7 +39,7 @@ class CacheCollectorPass implements CompilerPassInterface
         }
     }
 
-    private function addToCollector(string $id, string $name, ContainerBuilder $container)
+    private function addToCollector(string $id, string $name, ContainerBuilder $container): void
     {
         $definition = $container->getDefinition($id);
         if ($definition->isAbstract()) {
@@ -49,10 +49,8 @@ class CacheCollectorPass implements CompilerPassInterface
         $collectorDefinition = $container->getDefinition('data_collector.cache');
         $recorder = new Definition(is_subclass_of($definition->getClass(), TagAwareAdapterInterface::class) ? TraceableTagAwareAdapter::class : TraceableAdapter::class);
         $recorder->setTags($definition->getTags());
-        if (!$definition->isPublic() || !$definition->isPrivate()) {
-            $recorder->setPublic($definition->isPublic());
-        }
-        $recorder->setArguments([new Reference($innerId = $id.'.recorder_inner')]);
+        $recorder->setPublic($definition->isPublic());
+        $recorder->setArguments([new Reference($innerId = $id.'.recorder_inner'), new Reference('profiler.is_disabled_state_checker', ContainerBuilder::IGNORE_ON_INVALID_REFERENCE)]);
 
         foreach ($definition->getMethodCalls() as [$method, $args]) {
             if ('setCallbackWrapper' !== $method || !$args[0] instanceof Definition || !($args[0]->getArguments()[2] ?? null) instanceof Definition) {
@@ -71,6 +69,5 @@ class CacheCollectorPass implements CompilerPassInterface
 
         // Tell the collector to add the new instance
         $collectorDefinition->addMethodCall('addInstance', [$name, new Reference($id)]);
-        $collectorDefinition->setPublic(false);
     }
 }

@@ -11,10 +11,14 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Tests\Kernel;
 
+use PHPUnit\Framework\Attributes\BackupGlobals;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
-use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\ClosureLoader;
@@ -26,11 +30,12 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
+require_once __DIR__.'/default/src/DefaultKernel.php';
 require_once __DIR__.'/flex-style/src/FlexStyleMicroKernel.php';
 
 class MicroKernelTraitTest extends TestCase
 {
-    private $kernel;
+    private ?Kernel $kernel = null;
 
     protected function tearDown(): void
     {
@@ -39,7 +44,37 @@ class MicroKernelTraitTest extends TestCase
             $this->kernel = null;
             $fs = new Filesystem();
             $fs->remove($kernel->getCacheDir());
+            $fs->remove($kernel->getProjectDir().'/config/reference.php');
         }
+    }
+
+    #[BackupGlobals(true)]
+    public function testGetShareDirDisabledByEnv()
+    {
+        $_SERVER['APP_SHARE_DIR'] = 'false';
+
+        $kernel = $this->kernel = new ConcreteMicroKernel('test', false);
+
+        $this->assertNull($kernel->getShareDir());
+
+        $parameters = $kernel->getKernelParameters();
+        $this->assertArrayNotHasKey('kernel.share_dir', $parameters);
+    }
+
+    #[BackupGlobals(true)]
+    public function testGetShareDirCustomPathFromEnv()
+    {
+        $_SERVER['APP_SHARE_DIR'] = sys_get_temp_dir();
+
+        $kernel = $this->kernel = new ConcreteMicroKernel('test', false);
+
+        $expected = rtrim(sys_get_temp_dir(), '/').'/test';
+        $this->assertSame($expected, $kernel->getShareDir());
+
+        $parameters = $kernel->getKernelParameters();
+        $this->assertArrayHasKey('kernel.share_dir', $parameters);
+        $this->assertNotNull($parameters['kernel.share_dir']);
+        $this->assertSame(realpath($expected), realpath($parameters['kernel.share_dir']));
     }
 
     public function test()
@@ -82,7 +117,7 @@ class MicroKernelTraitTest extends TestCase
 
     public function testFlexStyle()
     {
-        $kernel = new FlexStyleMicroKernel('test', false);
+        $kernel = $this->kernel = new FlexStyleMicroKernel('test', false);
         $kernel->boot();
 
         $request = Request::create('/');
@@ -119,10 +154,7 @@ class MicroKernelTraitTest extends TestCase
 
             protected function configureContainer(ContainerConfigurator $c): void
             {
-                $c->extension('framework', [
-                    'http_method_override' => false,
-                    'router' => ['utf8' => true],
-                ]);
+                $c->extension('framework', []);
                 $c->services()->set('logger', NullLogger::class);
             }
 
@@ -137,33 +169,104 @@ class MicroKernelTraitTest extends TestCase
 
         $this->assertSame('Hello World!', $response->getContent());
     }
+
+    public function testSimpleKernel()
+    {
+        $kernel = $this->kernel = new SimpleKernel('simple_kernel');
+        $kernel->boot();
+
+        $request = Request::create('/');
+        $response = $kernel->handle($request, HttpKernelInterface::MAIN_REQUEST, false);
+
+        $this->assertSame('Hello World!', $response->getContent());
+    }
+
+    public function testKernelCommand()
+    {
+        if (!property_exists(AsCommand::class, 'help')) {
+            $this->markTestSkipped('Invokable command no available.');
+        }
+
+        $kernel = $this->kernel = new KernelCommand('kernel_command');
+        $application = new Application($kernel);
+
+        $input = new ArrayInput(['command' => 'kernel:hello']);
+        $output = new BufferedOutput();
+
+        $this->assertTrue($application->has('kernel:hello'));
+        $this->assertSame(0, $application->doRun($input, $output));
+        $this->assertSame('Hello Kernel!', $output->fetch());
+    }
+
+    public function testDefaultKernel()
+    {
+        $kernel = $this->kernel = new DefaultKernel('test', false);
+        $kernel->boot();
+
+        $this->assertTrue($kernel->getContainer()->has('foo_service'));
+
+        $request = Request::create('/');
+        $response = $kernel->handle($request, HttpKernelInterface::MAIN_REQUEST, false);
+
+        $this->assertSame('OK', $response->getContent());
+    }
+
+    public function testGetKernelParameters()
+    {
+        $kernel = $this->kernel = new ConcreteMicroKernel('test', false);
+
+        $parameters = $kernel->getKernelParameters();
+
+        $this->assertSame($kernel->getConfigDir(), $parameters['.kernel.config_dir']);
+        $this->assertSame(['test'], $parameters['.container.known_envs']);
+        $this->assertSame(['Symfony\Bundle\FrameworkBundle\FrameworkBundle' => ['all' => true]], $parameters['.kernel.bundles_definition']);
+    }
+
+    public function testGetKernelParametersWithBundlesFile()
+    {
+        $kernel = $this->kernel = new ConcreteMicroKernel('test', false);
+
+        $configDir = $kernel->getConfigDir();
+        mkdir($configDir, 0o777, true);
+
+        $bundlesContent = "<?php\nreturn [\n    'Symfony\Bundle\FrameworkBundle\FrameworkBundle' => ['all' => true],\n    'TestBundle' => ['test' => true, 'dev' => true],\n];";
+        file_put_contents($configDir.'/bundles.php', $bundlesContent);
+
+        $parameters = $kernel->getKernelParameters();
+
+        $this->assertSame(['test', 'dev'], $parameters['.container.known_envs']);
+        $this->assertSame([
+            'Symfony\Bundle\FrameworkBundle\FrameworkBundle' => ['all' => true],
+            'TestBundle' => ['test' => true, 'dev' => true],
+        ], $parameters['.kernel.bundles_definition']);
+    }
+
+    public function testRelativeEnvDirsAreResolvedFromProjectDir()
+    {
+        $_SERVER['APP_CACHE_DIR'] = 'var/custom-cache';
+        $_SERVER['APP_BUILD_DIR'] = 'var/custom-build';
+        $_SERVER['APP_SHARE_DIR'] = 'var/custom-share';
+
+        $projectDir = sys_get_temp_dir().'/sf_env_dir_kernel';
+        $kernel = new EnvDirKernel($projectDir);
+
+        $this->assertSame($projectDir.'/var/custom-cache/test', $kernel->getCacheDir());
+        $this->assertSame($projectDir.'/var/custom-build/test', $kernel->getBuildDir());
+        $this->assertSame($projectDir.'/var/custom-share/test', $kernel->getShareDir());
+    }
 }
 
-abstract class MinimalKernel extends Kernel
+class EnvDirKernel extends Kernel
 {
     use MicroKernelTrait;
 
-    private $cacheDir;
-
-    public function __construct(string $cacheDir)
+    public function __construct(private readonly string $projectDir)
     {
         parent::__construct('test', false);
-
-        $this->cacheDir = sys_get_temp_dir().'/'.$cacheDir;
     }
 
-    public function registerBundles(): iterable
+    public function getProjectDir(): string
     {
-        yield new FrameworkBundle();
-    }
-
-    public function getCacheDir(): string
-    {
-        return $this->cacheDir;
-    }
-
-    public function getLogDir(): string
-    {
-        return $this->cacheDir;
+        return $this->projectDir;
     }
 }

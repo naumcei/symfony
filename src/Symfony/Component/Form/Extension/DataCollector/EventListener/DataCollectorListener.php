@@ -24,18 +24,16 @@ use Symfony\Component\Form\FormEvents;
  */
 class DataCollectorListener implements EventSubscriberInterface
 {
-    private FormDataCollectorInterface $dataCollector;
-
-    public function __construct(FormDataCollectorInterface $dataCollector)
-    {
-        $this->dataCollector = $dataCollector;
+    public function __construct(
+        private FormDataCollectorInterface $dataCollector,
+    ) {
     }
 
     public static function getSubscribedEvents(): array
     {
         return [
-            // High priority in order to be called as soon as possible
-            FormEvents::POST_SET_DATA => ['postSetData', 255],
+            // Low priority in order to be called as late as possible
+            FormEvents::POST_SET_DATA => ['postSetData', -255],
             // Low priority in order to be called as late as possible
             FormEvents::POST_SUBMIT => ['postSubmit', -255],
         ];
@@ -44,7 +42,7 @@ class DataCollectorListener implements EventSubscriberInterface
     /**
      * Listener for the {@link FormEvents::POST_SET_DATA} event.
      */
-    public function postSetData(FormEvent $event)
+    public function postSetData(FormEvent $event): void
     {
         if ($event->getForm()->isRoot()) {
             // Collect basic information about each form
@@ -58,7 +56,7 @@ class DataCollectorListener implements EventSubscriberInterface
     /**
      * Listener for the {@link FormEvents::POST_SUBMIT} event.
      */
-    public function postSubmit(FormEvent $event)
+    public function postSubmit(FormEvent $event): void
     {
         if ($event->getForm()->isRoot()) {
             // Collect the submitted data of each form

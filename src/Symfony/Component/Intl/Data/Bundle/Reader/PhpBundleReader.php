@@ -12,6 +12,7 @@
 namespace Symfony\Component\Intl\Data\Bundle\Reader;
 
 use Symfony\Component\Intl\Exception\ResourceBundleNotFoundException;
+use Symfony\Component\Intl\Util\GzipStreamWrapper;
 
 /**
  * Reads .php resource bundles.
@@ -28,11 +29,15 @@ class PhpBundleReader implements BundleReaderInterface
 
         // prevent directory traversal attacks
         if (\dirname($fileName) !== $path) {
-            throw new ResourceBundleNotFoundException(sprintf('The resource bundle "%s" does not exist.', $fileName));
+            throw new ResourceBundleNotFoundException(\sprintf('The resource bundle "%s" does not exist.', $fileName));
+        }
+
+        if (is_file($fileName.'.gz')) {
+            return GzipStreamWrapper::require($fileName.'.gz');
         }
 
         if (!is_file($fileName)) {
-            throw new ResourceBundleNotFoundException(sprintf('The resource bundle "%s" does not exist.', $fileName));
+            throw new ResourceBundleNotFoundException(\sprintf('The resource bundle "%s" does not exist.', $fileName));
         }
 
         return include $fileName;

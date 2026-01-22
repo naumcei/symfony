@@ -11,26 +11,27 @@
 
 namespace Symfony\Component\Lock\Tests\Store;
 
-use PHPUnit\Framework\SkippedTestSuiteError;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use Symfony\Component\Lock\Exception\InvalidTtlException;
 use Symfony\Component\Lock\Key;
 use Symfony\Component\Lock\PersistingStoreInterface;
 use Symfony\Component\Lock\Store\MemcachedStore;
+use Symfony\Component\Lock\Test\AbstractStoreTestCase;
 
 /**
  * @author Jérémy Derussé <jeremy@derusse.com>
- *
- * @requires extension memcached
- * @group integration
  */
-class MemcachedStoreTest extends AbstractStoreTest
+#[RequiresPhpExtension('memcached')]
+#[Group('integration')]
+class MemcachedStoreTest extends AbstractStoreTestCase
 {
     use ExpiringStoreTestTrait;
 
     public static function setUpBeforeClass(): void
     {
         if (version_compare(phpversion('memcached'), '3.1.6', '<')) {
-            throw new SkippedTestSuiteError('Extension memcached > 3.1.5 required.');
+            self::markTestSkipped('Extension memcached > 3.1.5 required.');
         }
 
         $memcached = new \Memcached();
@@ -39,11 +40,11 @@ class MemcachedStoreTest extends AbstractStoreTest
         $code = $memcached->getResultCode();
 
         if (\Memcached::RES_SUCCESS !== $code && \Memcached::RES_NOTFOUND !== $code) {
-            throw new SkippedTestSuiteError('Unable to connect to the memcache host');
+            self::markTestSkipped('Unable to connect to the memcache host');
         }
     }
 
-    protected function getClockDelay()
+    protected function getClockDelay(): int
     {
         return 1000000;
     }

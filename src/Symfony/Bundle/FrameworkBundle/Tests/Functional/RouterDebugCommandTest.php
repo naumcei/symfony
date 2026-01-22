@@ -11,16 +11,17 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Tests\Functional;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\TestWith;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\Console\Tester\CommandTester;
 
-/**
- * @group functional
- */
+#[Group('functional')]
 class RouterDebugCommandTest extends AbstractWebTestCase
 {
-    private $application;
+    private Application $application;
 
     protected function setUp(): void
     {
@@ -81,22 +82,34 @@ class RouterDebugCommandTest extends AbstractWebTestCase
 
     public function testSearchWithThrow()
     {
+        $tester = $this->createCommandTester();
+
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('The route "gerard" does not exist.');
-        $tester = $this->createCommandTester();
+
         $tester->execute(['name' => 'gerard'], ['interactive' => true]);
     }
 
-    /**
-     * @dataProvider provideCompletionSuggestions
-     */
+    #[DataProvider('provideCompletionSuggestions')]
     public function testComplete(array $input, array $expectedSuggestions)
     {
         $tester = new CommandCompletionTester($this->application->get('debug:router'));
         $this->assertSame($expectedSuggestions, $tester->complete($input));
     }
 
-    public function provideCompletionSuggestions()
+    #[TestWith(['txt'])]
+    #[TestWith(['xml'])]
+    #[TestWith(['json'])]
+    #[TestWith(['md'])]
+    public function testShowAliases(string $format)
+    {
+        $tester = $this->createCommandTester();
+
+        $this->assertSame(0, $tester->execute(['--show-aliases' => true, '--format' => $format]));
+        $this->assertStringContainsString('my_custom_alias', $tester->getDisplay());
+    }
+
+    public static function provideCompletionSuggestions(): iterable
     {
         yield 'option --format' => [
             ['--format', ''],

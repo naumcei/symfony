@@ -37,22 +37,22 @@ class Symfony_DI_PhpDumper_Test_Deep_Graph extends Container
         return true;
     }
 
-    public function getRemovedIds(): array
-    {
-        return [
-        ];
-    }
-
     /**
      * Gets the public 'bar' shared service.
      *
      * @return \stdClass
      */
-    protected function getBarService()
+    protected static function getBarService($container)
     {
-        $this->services['bar'] = $instance = new \stdClass();
+        $instance = new \stdClass();
 
-        $instance->p5 = new \stdClass(($this->services['foo'] ?? $this->getFooService()));
+        if (isset($container->services['bar'])) {
+            return $container->services['bar'];
+        }
+
+        $container->services['bar'] = $instance;
+
+        $instance->p5 = new \stdClass(($container->services['foo'] ?? self::getFooService($container)));
 
         return $instance;
     }
@@ -62,12 +62,12 @@ class Symfony_DI_PhpDumper_Test_Deep_Graph extends Container
      *
      * @return \Symfony\Component\DependencyInjection\Tests\Dumper\FooForDeepGraph
      */
-    protected function getFooService()
+    protected static function getFooService($container)
     {
-        $a = ($this->services['bar'] ?? $this->getBarService());
+        $a = ($container->services['bar'] ?? self::getBarService($container));
 
-        if (isset($this->services['foo'])) {
-            return $this->services['foo'];
+        if (isset($container->services['foo'])) {
+            return $container->services['foo'];
         }
         $b = new \stdClass();
 
@@ -76,6 +76,12 @@ class Symfony_DI_PhpDumper_Test_Deep_Graph extends Container
 
         $b->p2 = $c;
 
-        return $this->services['foo'] = new \Symfony\Component\DependencyInjection\Tests\Dumper\FooForDeepGraph($a, $b);
+        $instance = new \Symfony\Component\DependencyInjection\Tests\Dumper\FooForDeepGraph($a, $b);
+
+        if (isset($container->services['foo'])) {
+            return $container->services['foo'];
+        }
+
+        return $container->services['foo'] = $instance;
     }
 }

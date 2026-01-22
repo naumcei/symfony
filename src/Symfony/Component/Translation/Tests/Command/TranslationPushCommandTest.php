@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Translation\Tests\Command;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -28,7 +29,7 @@ use Symfony\Component\Translation\TranslatorBag;
  */
 class TranslationPushCommandTest extends TranslationProviderTestCase
 {
-    private $colSize;
+    private string|false $colSize;
 
     protected function setUp(): void
     {
@@ -70,6 +71,52 @@ class TranslationPushCommandTest extends TranslationProviderTestCase
             'note' => 'NOTE',
             'new.foo' => 'nouveauFoo',
         ], 'fr');
+        $localTranslatorBag = new TranslatorBag();
+        $localTranslatorBag->addCatalogue($xliffLoader->load($filenameEn, 'en'));
+        $localTranslatorBag->addCatalogue($xliffLoader->load($filenameFr, 'fr'));
+
+        $provider->expects($this->once())
+            ->method('write')
+            ->with($localTranslatorBag->diff($providerReadTranslatorBag));
+
+        $provider->expects($this->once())
+            ->method('__toString')
+            ->willReturn('null://default');
+
+        $tester = $this->createCommandTester($provider, $locales, $domains);
+
+        $tester->execute(['--locales' => ['en', 'fr'], '--domains' => ['messages']]);
+
+        $this->assertStringContainsString('[OK] New local translations has been sent to "null" (for "en, fr" locale(s), and "messages" domain(s)).', trim($tester->getDisplay()));
+    }
+
+    public function testPushNewIntlIcuMessages()
+    {
+        $arrayLoader = new ArrayLoader();
+        $xliffLoader = new XliffFileLoader();
+        $locales = ['en', 'fr'];
+        $domains = ['messages'];
+
+        // Simulate existing messages on Provider
+        $providerReadTranslatorBag = new TranslatorBag();
+        $providerReadTranslatorBag->addCatalogue($arrayLoader->load(['note' => 'NOTE'], 'en'));
+        $providerReadTranslatorBag->addCatalogue($arrayLoader->load(['note' => 'NOTE'], 'fr'));
+
+        $provider = $this->createMock(ProviderInterface::class);
+        $provider->expects($this->once())
+            ->method('read')
+            ->with($domains, $locales)
+            ->willReturn($providerReadTranslatorBag);
+
+        // Create local files, with a new message
+        $filenameEn = $this->createFile([
+            'note' => 'NOTE',
+            'new.foo' => 'newFooIntlIcu',
+        ], 'en', 'messages+intl-icu.%locale%.xlf');
+        $filenameFr = $this->createFile([
+            'note' => 'NOTE',
+            'new.foo' => 'nouveauFooIntlIcu',
+        ], 'fr', 'messages+intl-icu.%locale%.xlf');
         $localTranslatorBag = new TranslatorBag();
         $localTranslatorBag->addCatalogue($xliffLoader->load($filenameEn, 'en'));
         $localTranslatorBag->addCatalogue($xliffLoader->load($filenameFr, 'fr'));
@@ -315,7 +362,7 @@ class TranslationPushCommandTest extends TranslationProviderTestCase
         );
 
         $application = new Application();
-        $application->add($command);
+        $application->addCommand($command);
         $tester = new CommandTester($application->find('translation:push'));
 
         $tester->execute(['--locales' => ['en', 'fr']]);
@@ -323,20 +370,18 @@ class TranslationPushCommandTest extends TranslationProviderTestCase
         $this->assertStringContainsString('[OK] New local translations has been sent to "null" (for "en, fr" locale(s), and "messages" domain(s)).', trim($tester->getDisplay()));
     }
 
-    /**
-     * @dataProvider provideCompletionSuggestions
-     */
+    #[DataProvider('provideCompletionSuggestions')]
     public function testComplete(array $input, array $expectedSuggestions)
     {
         $application = new Application();
-        $application->add($this->createCommand($this->createMock(ProviderInterface::class), ['en', 'fr', 'it'], ['messages', 'validators'], ['loco', 'crowdin', 'lokalise']));
+        $application->addCommand($this->createCommand($this->createStub(ProviderInterface::class), ['en', 'fr', 'it'], ['messages', 'validators'], ['loco', 'crowdin', 'lokalise']));
 
         $tester = new CommandCompletionTester($application->get('translation:push'));
         $suggestions = $tester->complete($input);
         $this->assertSame($expectedSuggestions, $suggestions);
     }
 
-    public function provideCompletionSuggestions(): \Generator
+    public static function provideCompletionSuggestions(): \Generator
     {
         yield 'provider' => [
             [''],
@@ -358,7 +403,7 @@ class TranslationPushCommandTest extends TranslationProviderTestCase
     {
         $command = $this->createCommand($provider, $locales, $domains);
         $application = new Application();
-        $application->add($command);
+        $application->addCommand($command);
 
         return new CommandTester($application->find('translation:push'));
     }

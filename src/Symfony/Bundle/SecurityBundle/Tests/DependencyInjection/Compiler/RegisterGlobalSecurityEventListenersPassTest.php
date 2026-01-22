@@ -11,6 +11,7 @@
 
 namespace Symfony\Bundle\SecurityBundle\Tests\DependencyInjection\Compiler;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\SecurityBundle\DependencyInjection\SecurityExtension;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;
@@ -31,7 +32,7 @@ use Symfony\Component\Security\Http\SecurityEvents;
 
 class RegisterGlobalSecurityEventListenersPassTest extends TestCase
 {
-    private $container;
+    private ContainerBuilder $container;
 
     protected function setUp(): void
     {
@@ -50,9 +51,7 @@ class RegisterGlobalSecurityEventListenersPassTest extends TestCase
         $securityBundle->build($this->container);
     }
 
-    /**
-     * @dataProvider providePropagatedEvents
-     */
+    #[DataProvider('providePropagatedEvents')]
     public function testEventIsPropagated(string $configuredEvent, string $registeredEvent)
     {
         $this->container->loadFromExtension('security', [
@@ -69,7 +68,7 @@ class RegisterGlobalSecurityEventListenersPassTest extends TestCase
         ]);
     }
 
-    public function providePropagatedEvents(): array
+    public static function providePropagatedEvents(): array
     {
         return [
             [CheckPassportEvent::class, CheckPassportEvent::class],
@@ -191,10 +190,8 @@ class RegisterGlobalSecurityEventListenersPassTest extends TestCase
             $actualListeners[] = $arguments;
         }
 
-        $foundListeners = array_uintersect($expectedListeners, $actualListeners, function (array $a, array $b) {
-            // PHP internally sorts all the arrays first, so returning proper 1 / -1 values is crucial
-            return $a <=> $b;
-        });
+        // PHP internally sorts all the arrays first, so returning proper 1 / -1 values is crucial
+        $foundListeners = array_uintersect($expectedListeners, $actualListeners, static fn (array $a, array $b) => $a <=> $b);
 
         $this->assertEquals($expectedListeners, $foundListeners);
     }

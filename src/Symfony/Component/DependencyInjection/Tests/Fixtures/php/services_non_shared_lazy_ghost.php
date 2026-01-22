@@ -53,9 +53,9 @@ class ProjectServiceContainer extends Container
      *
      * @return \stdClass
      */
-    protected function getBarService()
+    protected static function getBarService($container)
     {
-        return $this->services['bar'] = new \stdClass((isset($this->factories['service_container']['foo']) ? $this->factories['service_container']['foo']() : $this->getFooService()));
+        return $container->services['bar'] = new \stdClass((isset($container->factories['service_container']['foo']) ? $container->factories['service_container']['foo']($container) : self::getFooService($container)));
     }
 
     /**
@@ -63,26 +63,14 @@ class ProjectServiceContainer extends Container
      *
      * @return \stdClass
      */
-    protected function getFooService($lazyLoad = true)
+    protected static function getFooService($container, $lazyLoad = true)
     {
-        $this->factories['service_container']['foo'] ??= $this->getFooService(...);
+        $container->factories['service_container']['foo'] ??= self::getFooService(...);
 
         if (true === $lazyLoad) {
-            return $this->createProxy('stdClassGhost5a8a5eb', fn () => \stdClassGhost5a8a5eb::createLazyGhost($this->getFooService(...)));
+            return new \ReflectionClass('stdClass')->newLazyGhost(static function ($proxy) use ($container) { self::getFooService($container, $proxy); });
         }
 
         return $lazyLoad;
     }
 }
-
-class stdClassGhost5a8a5eb extends \stdClass implements \Symfony\Component\VarExporter\LazyObjectInterface
-{
-    use \Symfony\Component\VarExporter\LazyGhostTrait;
-
-    private const LAZY_OBJECT_PROPERTY_SCOPES = [];
-}
-
-// Help opcache.preload discover always-needed symbols
-class_exists(\Symfony\Component\VarExporter\Internal\Hydrator::class);
-class_exists(\Symfony\Component\VarExporter\Internal\LazyObjectRegistry::class);
-class_exists(\Symfony\Component\VarExporter\Internal\LazyObjectState::class);

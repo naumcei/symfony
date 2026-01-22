@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\BrowserKit;
 
+use Symfony\Component\BrowserKit\Exception\LogicException;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Mime\Part\AbstractPart;
 use Symfony\Component\Mime\Part\DataPart;
@@ -23,15 +24,17 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * to make real HTTP requests.
  *
  * @author Fabien Potencier <fabien@symfony.com>
+ *
+ * @template-extends AbstractBrowser<Request, Response>
  */
 class HttpBrowser extends AbstractBrowser
 {
     private HttpClientInterface $client;
 
-    public function __construct(HttpClientInterface $client = null, History $history = null, CookieJar $cookieJar = null)
+    public function __construct(?HttpClientInterface $client = null, ?History $history = null, ?CookieJar $cookieJar = null)
     {
         if (!$client && !class_exists(HttpClient::class)) {
-            throw new \LogicException(sprintf('You cannot use "%s" as the HttpClient component is not installed. Try running "composer require symfony/http-client".', __CLASS__));
+            throw new LogicException(\sprintf('You cannot use "%s" as the HttpClient component is not installed. Try running "composer require symfony/http-client".', __CLASS__));
         }
 
         $this->client = $client ?? HttpClient::create();
@@ -61,12 +64,12 @@ class HttpBrowser extends AbstractBrowser
      */
     private function getBodyAndExtraHeaders(Request $request, array $headers): array
     {
-        if (\in_array($request->getMethod(), ['GET', 'HEAD']) && !isset($headers['content-type'])) {
+        if (\in_array($request->getMethod(), ['GET', 'HEAD'], true) && !isset($headers['content-type'])) {
             return ['', []];
         }
 
         if (!class_exists(AbstractPart::class)) {
-            throw new \LogicException('You cannot pass non-empty bodies as the Mime component is not installed. Try running "composer require symfony/mime".');
+            throw new LogicException('You cannot pass non-empty bodies as the Mime component is not installed. Try running "composer require symfony/mime".');
         }
 
         if (null !== $content = $request->getContent()) {
@@ -96,7 +99,7 @@ class HttpBrowser extends AbstractBrowser
                 if ($vars = get_object_vars($v)) {
                     array_walk_recursive($vars, $caster);
                     $v = $vars;
-                } elseif (method_exists($v, '__toString')) {
+                } elseif ($v instanceof \Stringable) {
                     $v = (string) $v;
                 }
             }
@@ -142,10 +145,15 @@ class HttpBrowser extends AbstractBrowser
             }
             if (!isset($file['tmp_name'])) {
                 $uploadedFiles[$name] = $this->getUploadedFiles($file);
+                continue;
             }
-            if (isset($file['tmp_name'])) {
-                $uploadedFiles[$name] = DataPart::fromPath($file['tmp_name'], $file['name']);
+
+            if ('' === $file['tmp_name']) {
+                $uploadedFiles[$name] = new DataPart('', '');
+                continue;
             }
+
+            $uploadedFiles[$name] = DataPart::fromPath($file['tmp_name'], $file['name']);
         }
 
         return $uploadedFiles;

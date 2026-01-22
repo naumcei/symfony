@@ -13,11 +13,12 @@ namespace Symfony\Component\Lock\Tests\Store;
 
 use Symfony\Component\Lock\PersistingStoreInterface;
 use Symfony\Component\Lock\Store\InMemoryStore;
+use Symfony\Component\Lock\Test\AbstractStoreTestCase;
 
 /**
  * @author Jérémy Derussé <jeremy@derusse.com>
  */
-class InMemoryStoreTest extends AbstractStoreTest
+class InMemoryStoreTest extends AbstractStoreTestCase
 {
     use SharedLockStoreTestTrait;
 

@@ -14,6 +14,7 @@ namespace Symfony\Component\Serializer\Context\Encoder;
 use Symfony\Component\Serializer\Context\ContextBuilderInterface;
 use Symfony\Component\Serializer\Context\ContextBuilderTrait;
 use Symfony\Component\Serializer\Encoder\YamlEncoder;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * A helper providing autocompletion for available YamlEncoder options.
@@ -51,7 +52,7 @@ final class YamlEncoderContextBuilder implements ContextBuilderInterface
     /**
      * Configures \Symfony\Component\Yaml\Dumper::dump flags bitmask.
      *
-     * @see \Symfony\Component\Yaml\Yaml
+     * @see Yaml
      */
     public function withFlags(?int $flags): static
     {
@@ -59,7 +60,7 @@ final class YamlEncoderContextBuilder implements ContextBuilderInterface
     }
 
     /**
-     * Configures whether to perserve empty objects "{}" or to convert them to null.
+     * Configures whether to preserve empty objects "{}" or to convert them to null.
      */
     public function withPreservedEmptyObjects(?bool $preserveEmptyObjects): static
     {

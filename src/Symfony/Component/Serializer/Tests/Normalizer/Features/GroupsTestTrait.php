@@ -13,7 +13,7 @@ namespace Symfony\Component\Serializer\Tests\Normalizer\Features;
 
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\Tests\Fixtures\Annotations\GroupDummy;
+use Symfony\Component\Serializer\Tests\Fixtures\Attributes\GroupDummy;
 
 /**
  * Test AbstractNormalizer::GROUPS.
@@ -31,6 +31,7 @@ trait GroupsTestTrait
         $obj = new GroupDummy();
         $obj->setFoo('foo');
         $obj->setBar('bar');
+        $obj->setQuux('quux');
         $obj->setFooBar('fooBar');
         $obj->setSymfony('symfony');
         $obj->setKevin('kevin');
@@ -59,23 +60,23 @@ trait GroupsTestTrait
 
         $data = ['foo' => 'foo', 'bar' => 'bar'];
 
-        $normalized = $normalizer->denormalize(
+        $denormalized = $normalizer->denormalize(
             $data,
             GroupDummy::class,
             null,
             ['groups' => ['a']]
         );
-        $this->assertEquals($obj, $normalized);
+        $this->assertEquals($obj, $denormalized);
 
         $obj->setBar('bar');
 
-        $normalized = $normalizer->denormalize(
+        $denormalized = $normalizer->denormalize(
             $data,
             GroupDummy::class,
             null,
             ['groups' => ['a', 'b']]
         );
-        $this->assertEquals($obj, $normalized);
+        $this->assertEquals($obj, $denormalized);
     }
 
     public function testNormalizeNoPropertyInGroup()

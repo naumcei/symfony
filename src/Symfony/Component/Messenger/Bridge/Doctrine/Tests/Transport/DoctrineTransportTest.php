@@ -16,6 +16,7 @@ use Doctrine\DBAL\Schema\Schema;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Bridge\Doctrine\Tests\Fixtures\DummyMessage;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\Connection;
+use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineReceivedStamp;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransport;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
@@ -33,8 +34,8 @@ class DoctrineTransportTest extends TestCase
     public function testReceivesMessages()
     {
         $transport = $this->getTransport(
-            $serializer = $this->createMock(SerializerInterface::class),
-            $connection = $this->createMock(Connection::class)
+            $serializer = $this->createStub(SerializerInterface::class),
+            $connection = $this->createStub(Connection::class)
         );
 
         $decodedMessage = new DummyMessage('Decoded.');
@@ -60,19 +61,36 @@ class DoctrineTransportTest extends TestCase
         );
 
         $schema = new Schema();
-        $dbalConnection = $this->createMock(DbalConnection::class);
+        $dbalConnection = $this->createStub(DbalConnection::class);
 
+        $isSameDatabaseChecker = static fn () => true;
         $connection->expects($this->once())
             ->method('configureSchema')
-            ->with($schema, $dbalConnection);
+            ->with($schema, $dbalConnection, $isSameDatabaseChecker);
 
-        $transport->configureSchema($schema, $dbalConnection);
+        $transport->configureSchema($schema, $dbalConnection, $isSameDatabaseChecker);
     }
 
-    private function getTransport(SerializerInterface $serializer = null, Connection $connection = null): DoctrineTransport
+    public function testKeepalive()
     {
-        $serializer ??= $this->createMock(SerializerInterface::class);
-        $connection ??= $this->createMock(Connection::class);
+        $transport = $this->getTransport(
+            null,
+            $connection = $this->createMock(Connection::class)
+        );
+
+        $envelope = new Envelope(new \stdClass(), [new DoctrineReceivedStamp('1')]);
+
+        $connection->expects($this->once())
+            ->method('keepalive')
+            ->with('1');
+
+        $transport->keepalive($envelope);
+    }
+
+    private function getTransport(?SerializerInterface $serializer = null, ?Connection $connection = null): DoctrineTransport
+    {
+        $serializer ??= $this->createStub(SerializerInterface::class);
+        $connection ??= $this->createStub(Connection::class);
 
         return new DoctrineTransport($connection, $serializer);
     }

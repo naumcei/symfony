@@ -11,16 +11,15 @@
 
 namespace Symfony\Component\Cache\Tests\Adapter;
 
+use PHPUnit\Framework\Attributes\Group;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\Cache\Adapter\ProxyAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Symfony\Component\Cache\CacheItem;
 
-/**
- * @group integration
- */
-class ProxyAdapterAndRedisAdapterTest extends AbstractRedisAdapterTest
+#[Group('integration')]
+class ProxyAdapterAndRedisAdapterTest extends AbstractRedisAdapterTestCase
 {
     protected $skippedTests = [
         'testPrune' => 'RedisAdapter does not implement PruneableInterface.',
@@ -32,7 +31,7 @@ class ProxyAdapterAndRedisAdapterTest extends AbstractRedisAdapterTest
         self::$redis = AbstractAdapter::createConnection('redis://'.getenv('REDIS_HOST'));
     }
 
-    public function createCachePool($defaultLifetime = 0, string $testMethod = null): CacheItemPoolInterface
+    public function createCachePool($defaultLifetime = 0, ?string $testMethod = null): CacheItemPoolInterface
     {
         return new ProxyAdapter(new RedisAdapter(self::$redis, str_replace('\\', '.', __CLASS__), 100), 'ProxyNS', $defaultLifetime);
     }
@@ -51,7 +50,7 @@ class ProxyAdapterAndRedisAdapterTest extends AbstractRedisAdapterTest
 
         $cache = $this->createCachePool(1);
         $cache->clear();
-        $value = rand();
+        $value = random_int(0, getrandmax());
         $item = $cache->getItem('foo');
         $setCacheItemExpiry($item, 0);
         $cache->save($item->set($value));
@@ -66,6 +65,7 @@ class ProxyAdapterAndRedisAdapterTest extends AbstractRedisAdapterTest
         $this->assertSame($value, $this->cache->getItem('baz')->get());
 
         sleep(1);
+        usleep(100000);
         $this->assertSame($value, $this->cache->getItem('foo')->get());
         $this->assertSame($value, $this->cache->getItem('bar')->get());
         $this->assertFalse($this->cache->getItem('baz')->isHit());

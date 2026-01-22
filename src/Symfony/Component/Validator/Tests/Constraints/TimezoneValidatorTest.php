@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\Validator\Tests\Constraints;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use Symfony\Component\Validator\Constraints\Timezone;
 use Symfony\Component\Validator\Constraints\TimezoneValidator;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
@@ -47,9 +49,7 @@ class TimezoneValidatorTest extends ConstraintValidatorTestCase
         $this->validator->validate(new \stdClass(), new Timezone());
     }
 
-    /**
-     * @dataProvider getValidTimezones
-     */
+    #[DataProvider('getValidTimezones')]
     public function testValidTimezones(string $timezone)
     {
         $this->validator->validate($timezone, new Timezone());
@@ -57,7 +57,7 @@ class TimezoneValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    public function getValidTimezones(): iterable
+    public static function getValidTimezones(): iterable
     {
         // ICU standard (alias/BC in PHP)
         yield ['Etc/UTC'];
@@ -69,11 +69,7 @@ class TimezoneValidatorTest extends ConstraintValidatorTestCase
         yield ['America/Argentina/Buenos_Aires'];
 
         // not deprecated in ICU
-        yield ['CST6CDT'];
-        yield ['EST5EDT'];
-        yield ['MST7MDT'];
-        yield ['PST8PDT'];
-        yield ['America/Montreal'];
+        yield ['America/Toronto'];
 
         // previously expired in ICU
         yield ['Europe/Saratov'];
@@ -91,21 +87,17 @@ class TimezoneValidatorTest extends ConstraintValidatorTestCase
         yield ['Pacific/Noumea'];
     }
 
-    /**
-     * @dataProvider getValidGroupedTimezones
-     */
+    #[DataProvider('getValidGroupedTimezones')]
     public function testValidGroupedTimezones(string $timezone, int $zone)
     {
-        $constraint = new Timezone([
-            'zone' => $zone,
-        ]);
+        $constraint = new Timezone(zone: $zone);
 
         $this->validator->validate($timezone, $constraint);
 
         $this->assertNoViolation();
     }
 
-    public function getValidGroupedTimezones(): iterable
+    public static function getValidGroupedTimezones(): iterable
     {
         yield ['America/Buenos_Aires', \DateTimeZone::AMERICA | \DateTimeZone::AUSTRALIA]; // icu
         yield ['America/Argentina/Buenos_Aires', \DateTimeZone::AMERICA]; // php
@@ -124,24 +116,20 @@ class TimezoneValidatorTest extends ConstraintValidatorTestCase
         yield ['Atlantic/Azores', \DateTimeZone::ATLANTIC | \DateTimeZone::ASIA];
     }
 
-    /**
-     * @dataProvider getInvalidTimezones
-     */
+    #[DataProvider('getInvalidTimezones')]
     public function testInvalidTimezoneWithoutZone(string $timezone)
     {
-        $constraint = new Timezone([
-            'message' => 'myMessage',
-        ]);
+        $constraint = new Timezone(message: 'myMessage');
 
         $this->validator->validate($timezone, $constraint);
 
         $this->buildViolation('myMessage')
-            ->setParameter('{{ value }}', sprintf('"%s"', $timezone))
+            ->setParameter('{{ value }}', \sprintf('"%s"', $timezone))
             ->setCode(Timezone::TIMEZONE_IDENTIFIER_ERROR)
             ->assertRaised();
     }
 
-    public function getInvalidTimezones(): iterable
+    public static function getInvalidTimezones(): iterable
     {
         yield ['Buenos_Aires/America'];
         yield ['Buenos_Aires/Argentina/America'];
@@ -149,25 +137,23 @@ class TimezoneValidatorTest extends ConstraintValidatorTestCase
         yield ['foobar'];
     }
 
-    /**
-     * @dataProvider getInvalidGroupedTimezones
-     */
+    #[DataProvider('getInvalidGroupedTimezones')]
     public function testInvalidGroupedTimezones(string $timezone, int $zone)
     {
-        $constraint = new Timezone([
-            'zone' => $zone,
-            'message' => 'myMessage',
-        ]);
+        $constraint = new Timezone(
+            zone: $zone,
+            message: 'myMessage',
+        );
 
         $this->validator->validate($timezone, $constraint);
 
         $this->buildViolation('myMessage')
-            ->setParameter('{{ value }}', sprintf('"%s"', $timezone))
+            ->setParameter('{{ value }}', \sprintf('"%s"', $timezone))
             ->setCode(Timezone::TIMEZONE_IDENTIFIER_IN_ZONE_ERROR)
             ->assertRaised();
     }
 
-    public function getInvalidGroupedTimezones(): iterable
+    public static function getInvalidGroupedTimezones(): iterable
     {
         yield ['America/Buenos_Aires', \DateTimeZone::ASIA | \DateTimeZone::AUSTRALIA]; // icu
         yield ['America/Argentina/Buenos_Aires', \DateTimeZone::EUROPE]; // php
@@ -192,22 +178,20 @@ class TimezoneValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    /**
-     * @dataProvider getValidGroupedTimezonesByCountry
-     */
+    #[DataProvider('getValidGroupedTimezonesByCountry')]
     public function testValidGroupedTimezonesByCountry(string $timezone, string $country)
     {
-        $constraint = new Timezone([
-            'zone' => \DateTimeZone::PER_COUNTRY,
-            'countryCode' => $country,
-        ]);
+        $constraint = new Timezone(
+            zone: \DateTimeZone::PER_COUNTRY,
+            countryCode: $country,
+        );
 
         $this->validator->validate($timezone, $constraint);
 
         $this->assertNoViolation();
     }
 
-    public function getValidGroupedTimezonesByCountry(): iterable
+    public static function getValidGroupedTimezonesByCountry(): iterable
     {
         yield ['America/Buenos_Aires', 'AR']; // icu
         yield ['America/Argentina/Buenos_Aires', 'AR']; // php
@@ -229,26 +213,24 @@ class TimezoneValidatorTest extends ConstraintValidatorTestCase
         yield ['Pacific/Kiritimati', 'KI'];
     }
 
-    /**
-     * @dataProvider getInvalidGroupedTimezonesByCountry
-     */
+    #[DataProvider('getInvalidGroupedTimezonesByCountry')]
     public function testInvalidGroupedTimezonesByCountry(string $timezone, string $countryCode)
     {
-        $constraint = new Timezone([
-            'message' => 'myMessage',
-            'zone' => \DateTimeZone::PER_COUNTRY,
-            'countryCode' => $countryCode,
-        ]);
+        $constraint = new Timezone(
+            message: 'myMessage',
+            zone: \DateTimeZone::PER_COUNTRY,
+            countryCode: $countryCode,
+        );
 
         $this->validator->validate($timezone, $constraint);
 
         $this->buildViolation('myMessage')
-            ->setParameter('{{ value }}', sprintf('"%s"', $timezone))
+            ->setParameter('{{ value }}', \sprintf('"%s"', $timezone))
             ->setCode(Timezone::TIMEZONE_IDENTIFIER_IN_COUNTRY_ERROR)
             ->assertRaised();
     }
 
-    public function getInvalidGroupedTimezonesByCountry(): iterable
+    public static function getInvalidGroupedTimezonesByCountry(): iterable
     {
         yield ['America/Argentina/Cordoba', 'FR'];
         yield ['America/Barbados', 'PT'];
@@ -259,11 +241,11 @@ class TimezoneValidatorTest extends ConstraintValidatorTestCase
 
     public function testGroupedTimezonesWithInvalidCountry()
     {
-        $constraint = new Timezone([
-            'message' => 'myMessage',
-            'zone' => \DateTimeZone::PER_COUNTRY,
-            'countryCode' => 'foobar',
-        ]);
+        $constraint = new Timezone(
+            message: 'myMessage',
+            zone: \DateTimeZone::PER_COUNTRY,
+            countryCode: 'foobar',
+        );
 
         $this->validator->validate('Europe/Amsterdam', $constraint);
 
@@ -273,11 +255,14 @@ class TimezoneValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    /**
-     * @dataProvider getDeprecatedTimezones
-     */
+    #[DataProvider('getDeprecatedTimezones')]
     public function testDeprecatedTimezonesAreValidWithBC(string $timezone)
     {
+        // Skip test if the timezone is not available in the current timezone database
+        if (!\in_array($timezone, \DateTimeZone::listIdentifiers(\DateTimeZone::ALL_WITH_BC), true)) {
+            $this->markTestSkipped(\sprintf('Timezone "%s" is not available in the current timezone database', $timezone));
+        }
+
         $constraint = new Timezone(\DateTimeZone::ALL_WITH_BC);
 
         $this->validator->validate($timezone, $constraint);
@@ -285,24 +270,20 @@ class TimezoneValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    /**
-     * @dataProvider getDeprecatedTimezones
-     */
+    #[DataProvider('getDeprecatedTimezones')]
     public function testDeprecatedTimezonesAreInvalidWithoutBC(string $timezone)
     {
-        $constraint = new Timezone([
-            'message' => 'myMessage',
-        ]);
+        $constraint = new Timezone(message: 'myMessage');
 
         $this->validator->validate($timezone, $constraint);
 
         $this->buildViolation('myMessage')
-            ->setParameter('{{ value }}', sprintf('"%s"', $timezone))
+            ->setParameter('{{ value }}', \sprintf('"%s"', $timezone))
             ->setCode(Timezone::TIMEZONE_IDENTIFIER_ERROR)
             ->assertRaised();
     }
 
-    public function getDeprecatedTimezones(): iterable
+    public static function getDeprecatedTimezones(): iterable
     {
         yield ['Australia/ACT'];
         yield ['Australia/LHI'];
@@ -320,9 +301,7 @@ class TimezoneValidatorTest extends ConstraintValidatorTestCase
         yield ['US/Pacific'];
     }
 
-    /**
-     * @requires extension intl
-     */
+    #[RequiresPhpExtension('intl')]
     public function testIntlCompatibility()
     {
         $reflector = new \ReflectionExtension('intl');
@@ -336,10 +315,10 @@ class TimezoneValidatorTest extends ConstraintValidatorTestCase
             $this->markTestSkipped('"Europe/Saratov" is expired until 2017, current version is '.$tzDbVersion);
         }
 
-        $constraint = new Timezone([
-            'message' => 'myMessage',
-            'intlCompatible' => true,
-        ]);
+        $constraint = new Timezone(
+            message: 'myMessage',
+            intlCompatible: true,
+        );
 
         $this->validator->validate('Europe/Saratov', $constraint);
 

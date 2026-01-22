@@ -3,7 +3,7 @@
 {% block head %}
     {% if collector.hasexception %}
         <style>
-            {{ render(controller('web_profiler.controller.exception_panel::stylesheet', { token: token })) }}
+            {{ render(controller('web_profiler.controller.exception_panel::stylesheet', {token: token})) }}
             {{ include('@WebProfiler/Collector/exception.css.twig') }}
         </style>
     {% endif %}
@@ -35,11 +35,11 @@
 
     {% if not collector.hasexception %}
         <div class="empty empty-panel">
-            <p>No exception was thrown and caught during the request.</p>
+            <p>No exception was thrown and caught.</p>
         </div>
     {% else %}
         <div class="sf-reset">
-            {{ render(controller('web_profiler.controller.exception_panel::body', { token: token })) }}
+            {{ render(controller('web_profiler.controller.exception_panel::body', {token: token})) }}
         </div>
     {% endif %}
 {% endblock %}

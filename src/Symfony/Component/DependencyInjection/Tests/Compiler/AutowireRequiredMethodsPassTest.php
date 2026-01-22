@@ -16,51 +16,13 @@ use Symfony\Component\DependencyInjection\Compiler\AutowireRequiredMethodsPass;
 use Symfony\Component\DependencyInjection\Compiler\ResolveClassPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Tests\Fixtures\WitherStaticReturnType;
-use Symfony\Contracts\Service\Attribute\Required;
 
 require_once __DIR__.'/../Fixtures/includes/autowiring_classes.php';
 
 class AutowireRequiredMethodsPassTest extends TestCase
 {
-    public function testSetterInjection()
-    {
-        $container = new ContainerBuilder();
-        $container->register(Foo::class);
-        $container->register(A::class);
-        $container->register(CollisionA::class);
-        $container->register(CollisionB::class);
-
-        // manually configure *one* call, to override autowiring
-        $container
-            ->register('setter_injection', SetterInjection::class)
-            ->setAutowired(true)
-            ->addMethodCall('setWithCallsConfigured', ['manual_arg1', 'manual_arg2']);
-
-        (new ResolveClassPass())->process($container);
-        (new AutowireRequiredMethodsPass())->process($container);
-
-        $methodCalls = $container->getDefinition('setter_injection')->getMethodCalls();
-
-        $this->assertEquals(
-            ['setWithCallsConfigured', 'setFoo', 'setDependencies', 'setChildMethodWithoutDocBlock'],
-            array_column($methodCalls, 0)
-        );
-
-        // test setWithCallsConfigured args
-        $this->assertEquals(
-            ['manual_arg1', 'manual_arg2'],
-            $methodCalls[0][1]
-        );
-        // test setFoo args
-        $this->assertEquals([], $methodCalls[1][1]);
-    }
-
     public function testSetterInjectionWithAttribute()
     {
-        if (!class_exists(Required::class)) {
-            $this->markTestSkipped('symfony/service-contracts 2.2 required');
-        }
-
         $container = new ContainerBuilder();
         $container->register(Foo::class);
 
@@ -75,7 +37,7 @@ class AutowireRequiredMethodsPassTest extends TestCase
         $this->assertSame([['setFoo', []]], $methodCalls);
     }
 
-    public function testExplicitMethodInjection()
+    public function testExplicitMethodInjectionAttribute()
     {
         $container = new ContainerBuilder();
         $container->register(Foo::class);
@@ -98,28 +60,6 @@ class AutowireRequiredMethodsPassTest extends TestCase
             array_column($methodCalls, 0)
         );
         $this->assertEquals([], $methodCalls[0][1]);
-    }
-
-    public function testWitherInjection()
-    {
-        $container = new ContainerBuilder();
-        $container->register(Foo::class);
-
-        $container
-            ->register('wither', Wither::class)
-            ->setAutowired(true);
-
-        (new ResolveClassPass())->process($container);
-        (new AutowireRequiredMethodsPass())->process($container);
-
-        $methodCalls = $container->getDefinition('wither')->getMethodCalls();
-
-        $expected = [
-            ['withFoo1', [], true],
-            ['withFoo2', [], true],
-            ['setFoo', []],
-        ];
-        $this->assertSame($expected, $methodCalls);
     }
 
     public function testWitherWithStaticReturnTypeInjection()
@@ -145,10 +85,6 @@ class AutowireRequiredMethodsPassTest extends TestCase
 
     public function testWitherInjectionWithAttribute()
     {
-        if (!class_exists(Required::class)) {
-            $this->markTestSkipped('symfony/service-contracts 2.2 required');
-        }
-
         $container = new ContainerBuilder();
         $container->register(Foo::class);
 

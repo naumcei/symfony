@@ -20,13 +20,13 @@ namespace Symfony\Component\Intl\Data\Bundle\Writer;
  */
 class JsonBundleWriter implements BundleWriterInterface
 {
-    public function write(string $path, string $locale, mixed $data)
+    public function write(string $path, string $locale, mixed $data): void
     {
         if ($data instanceof \Traversable) {
             $data = iterator_to_array($data);
         }
 
-        array_walk_recursive($data, function (&$value) {
+        array_walk_recursive($data, static function (&$value) {
             if ($value instanceof \Traversable) {
                 $value = iterator_to_array($value);
             }

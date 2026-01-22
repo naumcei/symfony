@@ -34,7 +34,7 @@ class CacheTraitTest extends TestCase
             ->with('computed data');
 
         $cache = $this->getMockBuilder(TestPool::class)
-            ->setMethods(['getItem', 'save'])
+            ->onlyMethods(['getItem', 'save'])
             ->getMock();
         $cache->expects($this->once())
             ->method('getItem')
@@ -43,9 +43,7 @@ class CacheTraitTest extends TestCase
         $cache->expects($this->once())
             ->method('save');
 
-        $callback = function (CacheItemInterface $item) {
-            return 'computed data';
-        };
+        $callback = static fn (CacheItemInterface $item) => 'computed data';
 
         $cache->get('key', $callback);
     }
@@ -60,7 +58,7 @@ class CacheTraitTest extends TestCase
             ->method('set');
 
         $cache = $this->getMockBuilder(TestPool::class)
-            ->setMethods(['getItem', 'save'])
+            ->onlyMethods(['getItem', 'save'])
             ->getMock();
 
         $cache->expects($this->once())
@@ -71,7 +69,7 @@ class CacheTraitTest extends TestCase
             ->method('save');
 
         $callback = function (CacheItemInterface $item) {
-            $this->assertTrue(false, 'This code should never be reached');
+            $this->fail('This code should never be reached');
         };
 
         $cache->get('key', $callback);
@@ -91,7 +89,7 @@ class CacheTraitTest extends TestCase
             ->with('computed data');
 
         $cache = $this->getMockBuilder(TestPool::class)
-            ->setMethods(['getItem', 'save'])
+            ->onlyMethods(['getItem', 'save'])
             ->getMock();
 
         $cache->expects($this->once())
@@ -101,9 +99,7 @@ class CacheTraitTest extends TestCase
         $cache->expects($this->once())
             ->method('save');
 
-        $callback = function (CacheItemInterface $item) {
-            return 'computed data';
-        };
+        $callback = static fn (CacheItemInterface $item) => 'computed data';
 
         $cache->get('key', $callback, \INF);
     }
@@ -111,12 +107,10 @@ class CacheTraitTest extends TestCase
     public function testExceptionOnNegativeBeta()
     {
         $cache = $this->getMockBuilder(TestPool::class)
-            ->setMethods(['getItem', 'save'])
+            ->onlyMethods(['getItem', 'save'])
             ->getMock();
 
-        $callback = function (CacheItemInterface $item) {
-            return 'computed data';
-        };
+        $callback = static fn (CacheItemInterface $item) => 'computed data';
 
         $this->expectException(\InvalidArgumentException::class);
         $cache->get('key', $callback, -2);

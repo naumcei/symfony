@@ -12,16 +12,21 @@
 namespace Symfony\Component\Notifier\Bridge\Telnyx\Tests;
 
 use Symfony\Component\Notifier\Bridge\Telnyx\TelnyxTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
+use Symfony\Component\Notifier\Test\MissingRequiredOptionTestTrait;
 
-final class TelnyxTransportFactoryTest extends TransportFactoryTestCase
+final class TelnyxTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+    use MissingRequiredOptionTestTrait;
+
     public function createFactory(): TelnyxTransportFactory
     {
         return new TelnyxTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'telnyx://host.test?from=+0611223344',
@@ -34,20 +39,25 @@ final class TelnyxTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'telnyx://api_key@default?from=%2B0611223344'];
         yield [false, 'somethingElse://api_key@default?from=0611223344'];
     }
 
-    public function missingRequiredOptionProvider(): iterable
+    public static function missingRequiredOptionProvider(): iterable
     {
         yield 'missing option: from' => ['telnyx://api_key@default'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://api_key@default?from=+0611223344'];
         yield ['somethingElse://api_key@default']; // missing "from" option
+    }
+
+    public static function incompleteDsnProvider(): iterable
+    {
+        yield ['telnyx://default?from=%2B0611223344'];
     }
 }

@@ -44,9 +44,9 @@ class Symfony_DI_PhpDumper_Test_EnvParameters extends Container
      *
      * @return \Symfony\Component\DependencyInjection\Tests\Fixtures\Bar
      */
-    protected function getBarService()
+    protected static function getBarService($container)
     {
-        return $this->services['bar'] = new \Symfony\Component\DependencyInjection\Tests\Fixtures\Bar($this->getEnv('QUZ'));
+        return $container->services['bar'] = new \Symfony\Component\DependencyInjection\Tests\Fixtures\Bar($container->getEnv('QUZ'));
     }
 
     /**
@@ -54,26 +54,27 @@ class Symfony_DI_PhpDumper_Test_EnvParameters extends Container
      *
      * @return object A %env(FOO)% instance
      */
-    protected function getTestService()
+    protected static function getTestService($container)
     {
-        return $this->services['test'] = new ${($_ = $this->getEnv('FOO')) && false ?: "_"}($this->getEnv('Bar'), 'foo'.$this->getEnv('string:FOO').'baz', $this->getEnv('int:Baz'));
+        return $container->services['test'] = new ${($_ = $container->getEnv('FOO')) && false ?: "_"}($container->getEnv('Bar'), 'foo'.$container->getEnv('string:FOO').'baz', $container->getEnv('int:Baz'));
     }
 
     public function getParameter(string $name): array|bool|string|int|float|\UnitEnum|null
     {
-        if (!(isset($this->parameters[$name]) || isset($this->loadedDynamicParameters[$name]) || \array_key_exists($name, $this->parameters))) {
+        if (isset($this->loadedDynamicParameters[$name])) {
+            $value = $this->loadedDynamicParameters[$name] ? $this->dynamicParameters[$name] : $this->getDynamicParameter($name);
+        } elseif (\array_key_exists($name, $this->parameters) && '.' !== ($name[0] ?? '')) {
+            $value = $this->parameters[$name];
+        } else {
             throw new ParameterNotFoundException($name);
         }
-        if (isset($this->loadedDynamicParameters[$name])) {
-            return $this->loadedDynamicParameters[$name] ? $this->dynamicParameters[$name] : $this->getDynamicParameter($name);
-        }
 
-        return $this->parameters[$name];
+        return $value;
     }
 
     public function hasParameter(string $name): bool
     {
-        return isset($this->parameters[$name]) || isset($this->loadedDynamicParameters[$name]) || \array_key_exists($name, $this->parameters);
+        return \array_key_exists($name, $this->parameters) || isset($this->loadedDynamicParameters[$name]);
     }
 
     public function setParameter(string $name, $value): void
@@ -83,12 +84,12 @@ class Symfony_DI_PhpDumper_Test_EnvParameters extends Container
 
     public function getParameterBag(): ParameterBagInterface
     {
-        if (null === $this->parameterBag) {
+        if (!isset($this->parameterBag)) {
             $parameters = $this->parameters;
             foreach ($this->loadedDynamicParameters as $name => $loaded) {
                 $parameters[$name] = $loaded ? $this->dynamicParameters[$name] : $this->getDynamicParameter($name);
             }
-            $this->parameterBag = new FrozenParameterBag($parameters);
+            $this->parameterBag = new FrozenParameterBag($parameters, []);
         }
 
         return $this->parameterBag;
@@ -104,11 +105,12 @@ class Symfony_DI_PhpDumper_Test_EnvParameters extends Container
 
     private function getDynamicParameter(string $name)
     {
+        $container = $this;
         $value = match ($name) {
-            'bar' => $this->getEnv('FOO'),
-            'baz' => $this->getEnv('int:Baz'),
-            'json' => $this->getEnv('json:file:json_file'),
-            'db_dsn' => $this->getEnv('resolve:DB'),
+            'bar' => $container->getEnv('FOO'),
+            'baz' => $container->getEnv('int:Baz'),
+            'json' => $container->getEnv('json:file:json_file'),
+            'db_dsn' => $container->getEnv('resolve:DB'),
             default => throw new ParameterNotFoundException($name),
         };
         $this->loadedDynamicParameters[$name] = true;

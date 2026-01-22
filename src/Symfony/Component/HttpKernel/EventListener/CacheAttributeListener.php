@@ -12,7 +12,9 @@
 namespace Symfony\Component\HttpKernel\EventListener;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
+use Symfony\Component\HttpFoundation\HeaderBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\Cache;
@@ -27,49 +29,49 @@ use Symfony\Component\HttpKernel\KernelEvents;
  */
 class CacheAttributeListener implements EventSubscriberInterface
 {
-    /**
-     * @var \SplObjectStorage<Request, \DateTimeInterface>
-     */
-    private \SplObjectStorage $lastModified;
-
-    /**
-     * @var \SplObjectStorage<Request, string>
-     */
-    private \SplObjectStorage $etags;
-
     public function __construct(
         private ?ExpressionLanguage $expressionLanguage = null,
     ) {
-        $this->lastModified = new \SplObjectStorage();
-        $this->etags = new \SplObjectStorage();
     }
 
     /**
      * Handles HTTP validation headers.
      */
-    public function onKernelControllerArguments(ControllerArgumentsEvent $event)
+    public function onKernelControllerArguments(ControllerArgumentsEvent $event): void
     {
         $request = $event->getRequest();
 
-        if (!\is_array($attributes = $request->attributes->get('_cache') ?? $event->getAttributes()[Cache::class] ?? null)) {
+        /** @var Cache[] $attributes */
+        if (!$attributes = $request->attributes->get('_cache') ?? $event->getAttributes(Cache::class)) {
             return;
         }
 
         $request->attributes->set('_cache', $attributes);
+        $variables = null;
         $response = null;
-        $lastModified = null;
-        $etag = null;
 
-        /** @var Cache[] $attributes */
         foreach ($attributes as $cache) {
-            if (null !== $cache->lastModified) {
-                $lastModified = $this->getExpressionLanguage()->evaluate($cache->lastModified, array_merge($request->attributes->all(), $event->getNamedArguments()));
+            if (!\is_bool($cache->if)) {
+                if (!\is_bool($if = $this->evaluate($cache->if, $variables ??= $this->getVariables($request, $event)))) {
+                    throw new \TypeError(\sprintf('The value of the "$if" option of the "%s" attribute must evaluate to a boolean, "%s" given.', Cache::class, get_debug_type($if)));
+                }
+
+                $cache->if = $if;
+            }
+            if (!$cache->if) {
+                continue;
+            }
+
+            if (null !== $cache->lastModified && !$cache->lastModified instanceof \DateTimeInterface) {
+                $lastModified = $this->evaluate($cache->lastModified, $variables ??= $this->getVariables($request, $event));
                 ($response ??= new Response())->setLastModified($lastModified);
+                $cache->lastModified = $lastModified;
             }
 
             if (null !== $cache->etag) {
-                $etag = hash('sha256', $this->getExpressionLanguage()->evaluate($cache->etag, array_merge($request->attributes->all(), $event->getNamedArguments())));
+                $etag = hash('sha256', $this->evaluate($cache->etag, $variables ??= $this->getVariables($request, $event)));
                 ($response ??= new Response())->setEtag($etag);
+                $cache->etag = $etag;
             }
         }
 
@@ -79,19 +81,12 @@ class CacheAttributeListener implements EventSubscriberInterface
 
             return;
         }
-
-        if (null !== $etag) {
-            $this->etags[$request] = $etag;
-        }
-        if (null !== $lastModified) {
-            $this->lastModified[$request] = $lastModified;
-        }
     }
 
     /**
      * Modifies the response to apply HTTP cache headers when needed.
      */
-    public function onKernelResponse(ResponseEvent $event)
+    public function onKernelResponse(ResponseEvent $event): void
     {
         $request = $event->getRequest();
 
@@ -102,27 +97,42 @@ class CacheAttributeListener implements EventSubscriberInterface
         $response = $event->getResponse();
 
         // http://tools.ietf.org/html/draft-ietf-httpbis-p4-conditional-12#section-3.1
-        if (!\in_array($response->getStatusCode(), [200, 203, 300, 301, 302, 304, 404, 410])) {
-            unset($this->lastModified[$request]);
-            unset($this->etags[$request]);
-
+        if (!\in_array($response->getStatusCode(), [200, 203, 300, 301, 302, 304, 404, 410], true)) {
             return;
         }
 
-        if (isset($this->lastModified[$request]) && !$response->headers->has('Last-Modified')) {
-            $response->setLastModified($this->lastModified[$request]);
-        }
+        // Check if the response has a Vary header that should be considered, ignoring cases where
+        // it's only 'Accept-Language' and the request has the '_vary_by_language' attribute
+        $hasVary = ['Accept-Language'] === $response->getVary() ? !$request->attributes->get('_vary_by_language') : $response->hasVary();
+        // Check if cache-control directive was set manually in cacheControl (not auto computed)
+        $hasCacheControlDirective = new class($response->headers) extends HeaderBag {
+            public function __construct(private parent $headerBag)
+            {
+            }
 
-        if (isset($this->etags[$request]) && !$response->headers->has('Etag')) {
-            $response->setEtag($this->etags[$request]);
-        }
+            public function __invoke(string $key): bool
+            {
+                return \array_key_exists($key, $this->headerBag->cacheControl);
+            }
+        };
+        $hasPublicOrPrivateCacheControlDirective = $hasCacheControlDirective('public') || $hasCacheControlDirective('private');
 
-        unset($this->lastModified[$request]);
-        unset($this->etags[$request]);
-        $hasVary = $response->headers->has('Vary');
+        for ($i = \count($attributes) - 1; 0 <= $i; --$i) {
+            $cache = $attributes[$i];
 
-        foreach (array_reverse($attributes) as $cache) {
-            if (null !== $cache->smaxage && !$response->headers->hasCacheControlDirective('s-maxage')) {
+            if (!$cache->if) {
+                continue;
+            }
+
+            if (null !== $cache->lastModified && !$response->headers->has('Last-Modified')) {
+                $response->setLastModified($cache->lastModified);
+            }
+
+            if (null !== $cache->etag && !$response->headers->has('ETag')) {
+                $response->setEtag($cache->etag);
+            }
+
+            if (null !== $cache->smaxage && !$hasCacheControlDirective('s-maxage')) {
                 $response->setSharedMaxAge($this->toSeconds($cache->smaxage));
             }
 
@@ -130,19 +140,19 @@ class CacheAttributeListener implements EventSubscriberInterface
                 $response->headers->addCacheControlDirective('must-revalidate');
             }
 
-            if (null !== $cache->maxage && !$response->headers->hasCacheControlDirective('max-age')) {
+            if (null !== $cache->maxage && !$hasCacheControlDirective('max-age')) {
                 $response->setMaxAge($this->toSeconds($cache->maxage));
             }
 
-            if (null !== $cache->maxStale && !$response->headers->hasCacheControlDirective('max-stale')) {
+            if (null !== $cache->maxStale && !$hasCacheControlDirective('max-stale')) {
                 $response->headers->addCacheControlDirective('max-stale', $this->toSeconds($cache->maxStale));
             }
 
-            if (null !== $cache->staleWhileRevalidate && !$response->headers->hasCacheControlDirective('stale-while-revalidate')) {
+            if (null !== $cache->staleWhileRevalidate && !$hasCacheControlDirective('stale-while-revalidate')) {
                 $response->headers->addCacheControlDirective('stale-while-revalidate', $this->toSeconds($cache->staleWhileRevalidate));
             }
 
-            if (null !== $cache->staleIfError && !$response->headers->hasCacheControlDirective('stale-if-error')) {
+            if (null !== $cache->staleIfError && !$hasCacheControlDirective('stale-if-error')) {
                 $response->headers->addCacheControlDirective('stale-if-error', $this->toSeconds($cache->staleIfError));
             }
 
@@ -153,15 +163,21 @@ class CacheAttributeListener implements EventSubscriberInterface
             if (!$hasVary && $cache->vary) {
                 $response->setVary($cache->vary, false);
             }
-        }
 
-        foreach ($attributes as $cache) {
-            if (true === $cache->public) {
+            if (true === $cache->public && !$hasPublicOrPrivateCacheControlDirective) {
                 $response->setPublic();
             }
 
-            if (false === $cache->public) {
+            if (false === $cache->public && !$hasPublicOrPrivateCacheControlDirective) {
                 $response->setPrivate();
+            }
+
+            if (true === $cache->noStore) {
+                $response->headers->addCacheControlDirective('no-store');
+            }
+
+            if (false === $cache->noStore) {
+                $response->headers->removeCacheControlDirective('no-store');
             }
         }
     }
@@ -172,6 +188,27 @@ class CacheAttributeListener implements EventSubscriberInterface
             KernelEvents::CONTROLLER_ARGUMENTS => ['onKernelControllerArguments', 10],
             KernelEvents::RESPONSE => ['onKernelResponse', -10],
         ];
+    }
+
+    public function reset(): void
+    {
+    }
+
+    private function evaluate(string|Expression|\Closure $closureOrExpression, array $variables): mixed
+    {
+        if ($closureOrExpression instanceof \Closure) {
+            return $closureOrExpression($variables['args'], $variables['request']);
+        }
+
+        return $this->getExpressionLanguage()->evaluate($closureOrExpression, $variables);
+    }
+
+    private function getVariables(Request $request, ControllerArgumentsEvent $event): array
+    {
+        return array_merge([
+            'request' => $request,
+            'args' => $arguments = $event->getNamedArguments(),
+        ], $request->attributes->all(), $arguments);
     }
 
     private function getExpressionLanguage(): ExpressionLanguage

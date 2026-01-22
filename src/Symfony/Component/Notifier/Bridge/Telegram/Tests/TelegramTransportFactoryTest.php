@@ -12,16 +12,19 @@
 namespace Symfony\Component\Notifier\Bridge\Telegram\Tests;
 
 use Symfony\Component\Notifier\Bridge\Telegram\TelegramTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
 
-final class TelegramTransportFactoryTest extends TransportFactoryTestCase
+final class TelegramTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+
     public function createFactory(): TelegramTransportFactory
     {
         return new TelegramTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'telegram://host.test?channel=testChannel',
@@ -29,19 +32,19 @@ final class TelegramTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'telegram://host?channel=testChannel'];
         yield [false, 'somethingElse://host?channel=testChannel'];
     }
 
-    public function incompleteDsnProvider(): iterable
+    public static function incompleteDsnProvider(): iterable
     {
         yield 'missing password' => ['telegram://token@host.test?channel=testChannel'];
         yield 'missing token' => ['telegram://host.test?channel=testChannel'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://user:pwd@host'];
     }

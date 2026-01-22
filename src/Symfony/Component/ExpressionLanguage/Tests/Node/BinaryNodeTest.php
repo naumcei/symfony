@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\ExpressionLanguage\Tests\Node;
 
+use PHPUnit\Framework\Attributes\TestWith;
 use Symfony\Component\ExpressionLanguage\Compiler;
 use Symfony\Component\ExpressionLanguage\Node\ArrayNode;
 use Symfony\Component\ExpressionLanguage\Node\BinaryNode;
@@ -18,9 +19,9 @@ use Symfony\Component\ExpressionLanguage\Node\ConstantNode;
 use Symfony\Component\ExpressionLanguage\Node\NameNode;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
 
-class BinaryNodeTest extends AbstractNodeTest
+class BinaryNodeTest extends AbstractNodeTestCase
 {
-    public function getEvaluateData()
+    public static function getEvaluateData(): array
     {
         $array = new ArrayNode();
         $array->addElement(new ConstantNode('a'));
@@ -29,12 +30,15 @@ class BinaryNodeTest extends AbstractNodeTest
         return [
             [true, new BinaryNode('or', new ConstantNode(true), new ConstantNode(false))],
             [true, new BinaryNode('||', new ConstantNode(true), new ConstantNode(false))],
+            [false, new BinaryNode('xor', new ConstantNode(true), new ConstantNode(true))],
             [false, new BinaryNode('and', new ConstantNode(true), new ConstantNode(false))],
             [false, new BinaryNode('&&', new ConstantNode(true), new ConstantNode(false))],
 
             [0, new BinaryNode('&', new ConstantNode(2), new ConstantNode(4))],
             [6, new BinaryNode('|', new ConstantNode(2), new ConstantNode(4))],
             [6, new BinaryNode('^', new ConstantNode(2), new ConstantNode(4))],
+            [32, new BinaryNode('<<', new ConstantNode(2), new ConstantNode(4))],
+            [2, new BinaryNode('>>', new ConstantNode(32), new ConstantNode(4))],
 
             [true, new BinaryNode('<', new ConstantNode(1), new ConstantNode(2))],
             [true, new BinaryNode('<=', new ConstantNode(1), new ConstantNode(2))],
@@ -75,7 +79,7 @@ class BinaryNodeTest extends AbstractNodeTest
         ];
     }
 
-    public function getCompileData()
+    public static function getCompileData(): array
     {
         $array = new ArrayNode();
         $array->addElement(new ConstantNode('a'));
@@ -84,12 +88,15 @@ class BinaryNodeTest extends AbstractNodeTest
         return [
             ['(true || false)', new BinaryNode('or', new ConstantNode(true), new ConstantNode(false))],
             ['(true || false)', new BinaryNode('||', new ConstantNode(true), new ConstantNode(false))],
+            ['(true xor true)', new BinaryNode('xor', new ConstantNode(true), new ConstantNode(true))],
             ['(true && false)', new BinaryNode('and', new ConstantNode(true), new ConstantNode(false))],
             ['(true && false)', new BinaryNode('&&', new ConstantNode(true), new ConstantNode(false))],
 
             ['(2 & 4)', new BinaryNode('&', new ConstantNode(2), new ConstantNode(4))],
             ['(2 | 4)', new BinaryNode('|', new ConstantNode(2), new ConstantNode(4))],
             ['(2 ^ 4)', new BinaryNode('^', new ConstantNode(2), new ConstantNode(4))],
+            ['(2 << 4)', new BinaryNode('<<', new ConstantNode(2), new ConstantNode(4))],
+            ['(32 >> 4)', new BinaryNode('>>', new ConstantNode(32), new ConstantNode(4))],
 
             ['(1 < 2)', new BinaryNode('<', new ConstantNode(1), new ConstantNode(2))],
             ['(1 <= 2)', new BinaryNode('<=', new ConstantNode(1), new ConstantNode(2))],
@@ -113,21 +120,21 @@ class BinaryNodeTest extends AbstractNodeTest
             ['pow(5, 2)', new BinaryNode('**', new ConstantNode(5), new ConstantNode(2))],
             ['("a" . "b")', new BinaryNode('~', new ConstantNode('a'), new ConstantNode('b'))],
 
-            ['in_array("a", [0 => "a", 1 => "b"])', new BinaryNode('in', new ConstantNode('a'), $array)],
-            ['in_array("c", [0 => "a", 1 => "b"])', new BinaryNode('in', new ConstantNode('c'), $array)],
-            ['!in_array("c", [0 => "a", 1 => "b"])', new BinaryNode('not in', new ConstantNode('c'), $array)],
-            ['!in_array("a", [0 => "a", 1 => "b"])', new BinaryNode('not in', new ConstantNode('a'), $array)],
+            ['\in_array("a", [0 => "a", 1 => "b"], true)', new BinaryNode('in', new ConstantNode('a'), $array)],
+            ['\in_array("c", [0 => "a", 1 => "b"], true)', new BinaryNode('in', new ConstantNode('c'), $array)],
+            ['!\in_array("c", [0 => "a", 1 => "b"], true)', new BinaryNode('not in', new ConstantNode('c'), $array)],
+            ['!\in_array("a", [0 => "a", 1 => "b"], true)', new BinaryNode('not in', new ConstantNode('a'), $array)],
 
             ['range(1, 3)', new BinaryNode('..', new ConstantNode(1), new ConstantNode(3))],
 
-            ['(static function ($regexp, $str) { set_error_handler(function ($t, $m) use ($regexp, $str) { throw new \Symfony\Component\ExpressionLanguage\SyntaxError(sprintf(\'Regexp "%s" passed to "matches" is not valid\', $regexp).substr($m, 12)); }); try { return preg_match($regexp, (string) $str); } finally { restore_error_handler(); } })("/^[a-z]+\$/", "abc")', new BinaryNode('matches', new ConstantNode('abc'), new ConstantNode('/^[a-z]+$/'))],
+            ['(static function ($regexp, $str) { set_error_handler(static fn ($t, $m) => throw new \Symfony\Component\ExpressionLanguage\SyntaxError(sprintf(\'Regexp "%s" passed to "matches" is not valid\', $regexp).substr($m, 12))); try { return preg_match($regexp, (string) $str); } finally { restore_error_handler(); } })("/^[a-z]+\$/", "abc")', new BinaryNode('matches', new ConstantNode('abc'), new ConstantNode('/^[a-z]+$/'))],
 
             ['str_starts_with("abc", "a")', new BinaryNode('starts with', new ConstantNode('abc'), new ConstantNode('a'))],
             ['str_ends_with("abc", "a")', new BinaryNode('ends with', new ConstantNode('abc'), new ConstantNode('a'))],
         ];
     }
 
-    public function getDumpData()
+    public static function getDumpData(): array
     {
         $array = new ArrayNode();
         $array->addElement(new ConstantNode('a'));
@@ -136,12 +143,15 @@ class BinaryNodeTest extends AbstractNodeTest
         return [
             ['(true or false)', new BinaryNode('or', new ConstantNode(true), new ConstantNode(false))],
             ['(true || false)', new BinaryNode('||', new ConstantNode(true), new ConstantNode(false))],
+            ['(true xor true)', new BinaryNode('xor', new ConstantNode(true), new ConstantNode(true))],
             ['(true and false)', new BinaryNode('and', new ConstantNode(true), new ConstantNode(false))],
             ['(true && false)', new BinaryNode('&&', new ConstantNode(true), new ConstantNode(false))],
 
             ['(2 & 4)', new BinaryNode('&', new ConstantNode(2), new ConstantNode(4))],
             ['(2 | 4)', new BinaryNode('|', new ConstantNode(2), new ConstantNode(4))],
             ['(2 ^ 4)', new BinaryNode('^', new ConstantNode(2), new ConstantNode(4))],
+            ['(2 << 4)', new BinaryNode('<<', new ConstantNode(2), new ConstantNode(4))],
+            ['(32 >> 4)', new BinaryNode('>>', new ConstantNode(32), new ConstantNode(4))],
 
             ['(1 < 2)', new BinaryNode('<', new ConstantNode(1), new ConstantNode(2))],
             ['(1 <= 2)', new BinaryNode('<=', new ConstantNode(1), new ConstantNode(2))],
@@ -213,5 +223,69 @@ class BinaryNodeTest extends AbstractNodeTest
         $compiler = new Compiler([]);
         $node->compile($compiler);
         eval('$regexp = "this is not a regexp"; '.$compiler->getSource().';');
+    }
+
+    public function testCompileMatchesWithBooleanBinaryNode()
+    {
+        $binaryNode = new BinaryNode('||', new ConstantNode(true), new ConstantNode(false));
+        $node = new BinaryNode('matches', new ConstantNode('abc'), $binaryNode);
+
+        $this->expectException(SyntaxError::class);
+        $this->expectExceptionMessage('The regex passed to "matches" must be a string');
+        $compiler = new Compiler([]);
+        $node->compile($compiler);
+    }
+
+    public function testCompileMatchesWithStringBinaryNode()
+    {
+        $binaryNode = new BinaryNode('~', new ConstantNode('a'), new ConstantNode('b'));
+        $node = new BinaryNode('matches', new ConstantNode('abc'), $binaryNode);
+
+        $compiler = new Compiler([]);
+        $node->compile($compiler);
+        $this->expectNotToPerformAssertions();
+    }
+
+    public function testDivisionByZero()
+    {
+        $node = new BinaryNode('/', new ConstantNode(1), new ConstantNode(0));
+
+        $this->expectException(\DivisionByZeroError::class);
+        $this->expectExceptionMessage('Division by zero.');
+
+        $node->evaluate([], []);
+    }
+
+    public function testModuloByZero()
+    {
+        $node = new BinaryNode('%', new ConstantNode(1), new ConstantNode(0));
+
+        $this->expectException(\DivisionByZeroError::class);
+        $this->expectExceptionMessage('Modulo by zero.');
+
+        $node->evaluate([], []);
+    }
+
+    #[TestWith([1])]
+    #[TestWith(['true'])]
+    public function testInOperatorStrictness(mixed $value)
+    {
+        $array = new ArrayNode();
+        $array->addElement(new ConstantNode('1'));
+        $array->addElement(new ConstantNode(true));
+
+        $node = new BinaryNode('in', new ConstantNode($value), $array);
+
+        $this->assertFalse($node->evaluate([], []));
+    }
+
+    public function testEvaluateUnsupportedOperator()
+    {
+        $node = new BinaryNode('unsupported', new ConstantNode(1), new ConstantNode(2));
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('"Symfony\Component\ExpressionLanguage\Node\BinaryNode" does not support the "unsupported" operator.');
+
+        $node->evaluate([], []);
     }
 }

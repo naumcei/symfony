@@ -11,12 +11,17 @@
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\FrameworkBundle\Controller\ControllerHelper;
 use Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver;
+use Symfony\Bundle\FrameworkBundle\Controller\TemplateController;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver\BackedEnumValueResolver;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver\DateTimeValueResolver;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver;
+use Symfony\Component\HttpKernel\Controller\ArgumentResolver\QueryParameterValueResolver;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver\RequestAttributeValueResolver;
+use Symfony\Component\HttpKernel\Controller\ArgumentResolver\RequestPayloadValueResolver;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver\RequestValueResolver;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver\SessionValueResolver;
@@ -27,6 +32,7 @@ use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadataFactory;
 use Symfony\Component\HttpKernel\EventListener\CacheAttributeListener;
 use Symfony\Component\HttpKernel\EventListener\DisallowRobotsIndexingListener;
 use Symfony\Component\HttpKernel\EventListener\ErrorListener;
+use Symfony\Component\HttpKernel\EventListener\IsSignatureValidAttributeListener;
 use Symfony\Component\HttpKernel\EventListener\LocaleListener;
 use Symfony\Component\HttpKernel\EventListener\ResponseListener;
 use Symfony\Component\HttpKernel\EventListener\ValidateRequestListener;
@@ -38,6 +44,7 @@ return static function (ContainerConfigurator $container) {
                 service('service_container'),
                 service('logger')->ignoreOnInvalid(),
             ])
+            ->call('allowControllers', [[AbstractController::class, TemplateController::class]])
             ->tag('monolog.logger', ['channel' => 'request'])
 
         ->set('argument_metadata_factory', ArgumentMetadataFactory::class)
@@ -46,37 +53,55 @@ return static function (ContainerConfigurator $container) {
             ->args([
                 service('argument_metadata_factory'),
                 abstract_arg('argument value resolvers'),
+                abstract_arg('targeted value resolvers'),
             ])
 
         ->set('argument_resolver.backed_enum_resolver', BackedEnumValueResolver::class)
-            ->tag('controller.argument_value_resolver', ['priority' => 100])
+            ->tag('controller.argument_value_resolver', ['priority' => 100, 'name' => BackedEnumValueResolver::class])
 
         ->set('argument_resolver.uid', UidValueResolver::class)
-            ->tag('controller.argument_value_resolver', ['priority' => 100])
+            ->tag('controller.argument_value_resolver', ['priority' => 100, 'name' => UidValueResolver::class])
 
         ->set('argument_resolver.datetime', DateTimeValueResolver::class)
-            ->tag('controller.argument_value_resolver', ['priority' => 100])
+            ->args([
+                service('clock')->nullOnInvalid(),
+            ])
+            ->tag('controller.argument_value_resolver', ['priority' => 100, 'name' => DateTimeValueResolver::class])
+
+        ->set('argument_resolver.request_payload', RequestPayloadValueResolver::class)
+            ->args([
+                service('serializer'),
+                service('validator')->nullOnInvalid(),
+                service('translator')->nullOnInvalid(),
+                param('validator.translation_domain'),
+            ])
+            ->tag('controller.targeted_value_resolver', ['name' => RequestPayloadValueResolver::class])
+            ->tag('kernel.event_subscriber')
+            ->lazy()
 
         ->set('argument_resolver.request_attribute', RequestAttributeValueResolver::class)
-            ->tag('controller.argument_value_resolver', ['priority' => 100])
+            ->tag('controller.argument_value_resolver', ['priority' => 100, 'name' => RequestAttributeValueResolver::class])
 
         ->set('argument_resolver.request', RequestValueResolver::class)
-            ->tag('controller.argument_value_resolver', ['priority' => 50])
+            ->tag('controller.argument_value_resolver', ['priority' => 50, 'name' => RequestValueResolver::class])
 
         ->set('argument_resolver.session', SessionValueResolver::class)
-            ->tag('controller.argument_value_resolver', ['priority' => 50])
+            ->tag('controller.argument_value_resolver', ['priority' => 50, 'name' => SessionValueResolver::class])
 
         ->set('argument_resolver.service', ServiceValueResolver::class)
             ->args([
                 abstract_arg('service locator, set in RegisterControllerArgumentLocatorsPass'),
             ])
-            ->tag('controller.argument_value_resolver', ['priority' => -50])
+            ->tag('controller.argument_value_resolver', ['priority' => -50, 'name' => ServiceValueResolver::class])
 
         ->set('argument_resolver.default', DefaultValueResolver::class)
-            ->tag('controller.argument_value_resolver', ['priority' => -100])
+            ->tag('controller.argument_value_resolver', ['priority' => -100, 'name' => DefaultValueResolver::class])
 
         ->set('argument_resolver.variadic', VariadicValueResolver::class)
-            ->tag('controller.argument_value_resolver', ['priority' => -150])
+            ->tag('controller.argument_value_resolver', ['priority' => -150, 'name' => VariadicValueResolver::class])
+
+        ->set('argument_resolver.query_parameter_value_resolver', QueryParameterValueResolver::class)
+            ->tag('controller.targeted_value_resolver', ['name' => QueryParameterValueResolver::class])
 
         ->set('response_listener', ResponseListener::class)
             ->args([
@@ -115,12 +140,25 @@ return static function (ContainerConfigurator $container) {
                 service('logger')->nullOnInvalid(),
                 param('kernel.debug'),
                 abstract_arg('an exceptions to log & status code mapping'),
+                abstract_arg('list of loggers by log_channel'),
             ])
             ->tag('kernel.event_subscriber')
             ->tag('monolog.logger', ['channel' => 'request'])
 
         ->set('controller.cache_attribute_listener', CacheAttributeListener::class)
             ->tag('kernel.event_subscriber')
+            ->tag('kernel.reset', ['method' => '?reset'])
+
+        ->set('controller.is_signature_valid_attribute_listener', IsSignatureValidAttributeListener::class)
+            ->args([
+                service('uri_signer'),
+            ])
+            ->tag('kernel.event_subscriber')
+
+        ->set('controller.helper', ControllerHelper::class)
+            ->tag('container.service_subscriber')
+
+        ->alias(ControllerHelper::class, 'controller.helper')
 
     ;
 };

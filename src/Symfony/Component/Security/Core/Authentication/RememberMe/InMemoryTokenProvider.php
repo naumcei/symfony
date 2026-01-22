@@ -18,7 +18,7 @@ use Symfony\Component\Security\Core\Exception\TokenNotFoundException;
  *
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-class InMemoryTokenProvider implements TokenProviderInterface
+final class InMemoryTokenProvider implements TokenProviderInterface
 {
     private array $tokens = [];
 
@@ -31,28 +31,27 @@ class InMemoryTokenProvider implements TokenProviderInterface
         return $this->tokens[$series];
     }
 
-    public function updateToken(string $series, #[\SensitiveParameter] string $tokenValue, \DateTime $lastUsed)
+    public function updateToken(string $series, #[\SensitiveParameter] string $tokenValue, \DateTimeInterface $lastUsed): void
     {
         if (!isset($this->tokens[$series])) {
             throw new TokenNotFoundException('No token found.');
         }
 
         $token = new PersistentToken(
-            $this->tokens[$series]->getClass(),
-            method_exists($this->tokens[$series], 'getUserIdentifier') ? $this->tokens[$series]->getUserIdentifier() : $this->tokens[$series]->getUsername(),
+            $this->tokens[$series]->getUserIdentifier(),
             $series,
             $tokenValue,
-            $lastUsed
+            $lastUsed,
         );
         $this->tokens[$series] = $token;
     }
 
-    public function deleteTokenBySeries(string $series)
+    public function deleteTokenBySeries(string $series): void
     {
         unset($this->tokens[$series]);
     }
 
-    public function createNewToken(PersistentTokenInterface $token)
+    public function createNewToken(PersistentTokenInterface $token): void
     {
         $this->tokens[$token->getSeries()] = $token;
     }

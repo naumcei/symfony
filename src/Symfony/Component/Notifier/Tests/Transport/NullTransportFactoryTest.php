@@ -12,28 +12,25 @@
 namespace Symfony\Component\Notifier\Tests\Transport;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\Notifier\Exception\UnsupportedSchemeException;
 use Symfony\Component\Notifier\Transport\Dsn;
 use Symfony\Component\Notifier\Transport\NullTransport;
 use Symfony\Component\Notifier\Transport\NullTransportFactory;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @author Jan Schädlich <jan.schaedlich@sensiolabs.de>
  */
 class NullTransportFactoryTest extends TestCase
 {
-    /**
-     * @var NullTransportFactory
-     */
-    private $nullTransportFactory;
+    private NullTransportFactory $nullTransportFactory;
 
     protected function setUp(): void
     {
         $this->nullTransportFactory = new NullTransportFactory(
-            $this->createMock(EventDispatcherInterface::class),
-            $this->createMock(HttpClientInterface::class)
+            new EventDispatcher(),
+            new MockHttpClient()
         );
     }
 

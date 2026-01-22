@@ -55,7 +55,7 @@ class ©
         return [$pack => $this->value] + ($this->metadata['tags'] ?? []);
     }
 
-    public function __unserialize(array $data)
+    public function __unserialize(array $data): void
     {
         $pack = array_key_first($data);
         $this->value = $data[$pack];
@@ -79,3 +79,6 @@ class ©
         $this->metadata = $metadata;
     }
 }
+
+// @php-cs-fixer-ignore long_to_shorthand_operator To prevent false positive causing "Cannot use assign-op operators with string offsets" error
+// @php-cs-fixer-ignore psr_autoloading This class is explicitly having short, special name

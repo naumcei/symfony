@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Security\Core\Tests\Authentication\Token;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
 use Symfony\Component\Security\Core\User\InMemoryUser;
@@ -18,9 +19,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class AbstractTokenTest extends TestCase
 {
-    /**
-     * @dataProvider provideUsers
-     */
+    #[DataProvider('provideUsers')]
     public function testGetUserIdentifier($user, string $username)
     {
         $token = new ConcreteToken(['ROLE_FOO']);
@@ -28,20 +27,9 @@ class AbstractTokenTest extends TestCase
         $this->assertEquals($username, $token->getUserIdentifier());
     }
 
-    public function provideUsers()
+    public static function provideUsers()
     {
         yield [new InMemoryUser('fabien', null), 'fabien'];
-    }
-
-    public function testEraseCredentials()
-    {
-        $token = new ConcreteToken(['ROLE_FOO']);
-
-        $user = $this->createMock(UserInterface::class);
-        $user->expects($this->once())->method('eraseCredentials');
-        $token->setUser($user);
-
-        $token->eraseCredentials();
     }
 
     public function testSerialize()
@@ -83,10 +71,8 @@ class AbstractTokenTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider provideUsers
-     */
-    public function testSetUser($user)
+    #[DataProvider('provideUsers')]
+    public function testSetUser($user, string $username)
     {
         $token = new ConcreteToken();
         $token->setUser($user);
@@ -96,9 +82,9 @@ class AbstractTokenTest extends TestCase
 
 class ConcreteToken extends AbstractToken
 {
-    private $credentials = 'credentials_value';
+    private string $credentials = 'credentials_value';
 
-    public function __construct(array $roles = [], UserInterface $user = null)
+    public function __construct(array $roles = [], ?UserInterface $user = null)
     {
         parent::__construct($roles);
 

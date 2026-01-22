@@ -43,12 +43,14 @@ class TemplatedEmailTest extends TestCase
             ->textTemplate('text.txt.twig')
             ->htmlTemplate('text.html.twig')
             ->context($context = ['a' => 'b'])
+            ->locale($locale = 'fr_FR')
         ;
 
         $email = unserialize(serialize($email));
         $this->assertEquals('text.txt.twig', $email->getTextTemplate());
         $this->assertEquals('text.html.twig', $email->getHtmlTemplate());
         $this->assertEquals($context, $email->getContext());
+        $this->assertEquals($locale, $email->getLocale());
     }
 
     public function testSymfonySerialize()
@@ -58,47 +60,48 @@ class TemplatedEmailTest extends TestCase
         $e->to('you@example.com');
         $e->textTemplate('email.txt.twig');
         $e->htmlTemplate('email.html.twig');
+        $e->locale('en');
         $e->context(['foo' => 'bar']);
         $e->addPart(new DataPart('Some Text file', 'test.txt'));
         $expected = clone $e;
 
         $expectedJson = <<<EOF
-{
-    "htmlTemplate": "email.html.twig",
-    "textTemplate": "email.txt.twig",
-    "context": {
-        "foo": "bar"
-    },
-    "text": null,
-    "textCharset": null,
-    "html": null,
-    "htmlCharset": null,
-    "attachments": [
-        {%A
-            "body": "Some Text file",%A
-            "name": "test.txt",%A
-        }
-    ],
-    "headers": {
-        "to": [
             {
-                "addresses": [
-                    {
-                        "address": "you@example.com",
-                        "name": ""
+                "htmlTemplate": "email.html.twig",
+                "textTemplate": "email.txt.twig",
+                "locale": "en",
+                "context": {
+                    "foo": "bar"
+                },
+                "text": null,
+                "textCharset": null,
+                "html": null,
+                "htmlCharset": null,
+                "attachments": [
+                    {%A
+                        "body": "Some Text file",%A
+                        "name": "test.txt",%A
                     }
                 ],
-                "name": "To",
-                "lineLength": 76,
-                "lang": null,
-                "charset": "utf-8"
+                "headers": {
+                    "to": [
+                        {
+                            "addresses": [
+                                {
+                                    "address": "you@example.com",
+                                    "name": ""
+                                }
+                            ],
+                            "name": "To",
+                            "lineLength": 76,
+                            "lang": null,
+                            "charset": "utf-8"
+                        }
+                    ]
+                },
+                "body": null
             }
-        ]
-    },
-    "body": null,
-    "message": null
-}
-EOF;
+            EOF;
 
         $extractor = new PhpDocExtractor();
         $propertyNormalizer = new PropertyNormalizer(null, null, $extractor);

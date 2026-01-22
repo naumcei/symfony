@@ -11,17 +11,17 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Tests\Command;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\Command\EventDispatcherDebugCommand;
 use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\Mailer\Event\MessageEvent;
 
 class EventDispatcherDebugCommandTest extends TestCase
 {
-    /**
-     * @dataProvider provideCompletionSuggestions
-     */
+    #[DataProvider('provideCompletionSuggestions')]
     public function testComplete(array $input, array $expectedSuggestions)
     {
         $tester = $this->createCommandCompletionTester();
@@ -31,9 +31,9 @@ class EventDispatcherDebugCommandTest extends TestCase
         $this->assertSame($expectedSuggestions, $suggestions);
     }
 
-    public function provideCompletionSuggestions()
+    public static function provideCompletionSuggestions(): iterable
     {
-        yield 'event' => [[''], ['Symfony\Component\Mailer\Event\MessageEvent', 'console.command']];
+        yield 'event' => [[''], [MessageEvent::class, 'console.command']];
         yield 'event for other dispatcher' => [['--dispatcher', 'other_event_dispatcher', ''], ['other_event', 'App\OtherEvent']];
         yield 'dispatcher' => [['--dispatcher='], ['event_dispatcher', 'other_event_dispatcher']];
         yield 'format' => [['--format='], ['txt', 'xml', 'json', 'md']];
@@ -42,14 +42,14 @@ class EventDispatcherDebugCommandTest extends TestCase
     private function createCommandCompletionTester(): CommandCompletionTester
     {
         $dispatchers = new ServiceLocator([
-            'event_dispatcher' => function () {
+            'event_dispatcher' => static function () {
                 $dispatcher = new EventDispatcher();
-                $dispatcher->addListener('Symfony\Component\Mailer\Event\MessageEvent', 'var_dump');
+                $dispatcher->addListener(MessageEvent::class, 'var_dump');
                 $dispatcher->addListener('console.command', 'var_dump');
 
                 return $dispatcher;
             },
-            'other_event_dispatcher' => function () {
+            'other_event_dispatcher' => static function () {
                 $dispatcher = new EventDispatcher();
                 $dispatcher->addListener('other_event', 'var_dump');
                 $dispatcher->addListener('App\OtherEvent', 'var_dump');

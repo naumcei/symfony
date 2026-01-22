@@ -45,6 +45,16 @@ class IsGrantedAttributeMethodsController
     {
     }
 
+    #[IsGranted(attribute: 'ROLE_ADMIN', message: 'Exception Code Http', statusCode: 404, exceptionCode: 10010)]
+    public function exceptionCodeInHttpException()
+    {
+    }
+
+    #[IsGranted(attribute: 'ROLE_ADMIN', message: 'Exception Code Access Denied', exceptionCode: 10010)]
+    public function exceptionCodeInAccessDeniedException()
+    {
+    }
+
     #[IsGranted(attribute: new Expression('"ROLE_ADMIN" in role_names or is_granted("POST_VIEW", subject)'), subject: 'post')]
     public function withExpressionInAttribute($post)
     {
@@ -65,6 +75,16 @@ class IsGrantedAttributeMethodsController
 
     #[IsGranted(attribute: 'SOME_VOTER', subject: new Expression('request'))]
     public function withRequestAsSubject()
+    {
+    }
+
+    #[IsGranted(attribute: 'ROLE_ADMIN', methods: 'get')]
+    public function adminWithMethodGet(): void
+    {
+    }
+
+    #[IsGranted(attribute: 'ROLE_ADMIN', methods: ['GET', 'POST'])]
+    public function adminWithMethodGetAndPost(): void
     {
     }
 }

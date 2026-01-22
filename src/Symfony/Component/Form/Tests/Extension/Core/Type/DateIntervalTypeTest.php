@@ -11,11 +11,12 @@
 
 namespace Symfony\Component\Form\Tests\Extension\Core\Type;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Form\Extension\Core\Type\DateIntervalType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 
-class DateIntervalTypeTest extends BaseTypeTest
+class DateIntervalTypeTest extends BaseTypeTestCase
 {
     public const TESTED_TYPE = DateIntervalType::class;
 
@@ -424,9 +425,7 @@ class DateIntervalTypeTest extends BaseTypeTest
         $this->assertSame($expectedData, $form->getData());
     }
 
-    /**
-     * @dataProvider provideEmptyData
-     */
+    #[DataProvider('provideEmptyData')]
     public function testSubmitNullUsesDateEmptyData($widget, $emptyData, $expectedData)
     {
         $form = $this->factory->create(static::TESTED_TYPE, null, [
@@ -440,7 +439,7 @@ class DateIntervalTypeTest extends BaseTypeTest
         $this->assertEquals($expectedData, $form->getData());
     }
 
-    public function provideEmptyData()
+    public static function provideEmptyData(): array
     {
         $expectedData = new \DateInterval('P6Y4M');
 

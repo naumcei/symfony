@@ -18,7 +18,6 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\DataCollector\FormDataCollector;
 use Symfony\Component\Form\Extension\DataCollector\FormDataExtractor;
-use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\Form\FormInterface;
@@ -28,35 +27,12 @@ use Symfony\Component\Form\ResolvedFormTypeFactory;
 
 class FormDataCollectorTest extends TestCase
 {
-    /**
-     * @var FormDataCollector
-     */
-    private $dataCollector;
-
-    /**
-     * @var FormFactory
-     */
-    private $factory;
-
-    /**
-     * @var Form
-     */
-    private $form;
-
-    /**
-     * @var Form
-     */
-    private $childForm;
-
-    /**
-     * @var FormView
-     */
-    private $view;
-
-    /**
-     * @var FormView
-     */
-    private $childView;
+    private FormDataCollector $dataCollector;
+    private FormFactory $factory;
+    private FormInterface $form;
+    private FormInterface $childForm;
+    private FormView $view;
+    private FormView $childView;
 
     protected function setUp(): void
     {
@@ -94,7 +70,7 @@ class FormDataCollectorTest extends TestCase
             ],
             'errors' => [],
             'children' => [],
-         ];
+        ];
 
         $formData = [
             'id' => 'name',
@@ -110,11 +86,11 @@ class FormDataCollectorTest extends TestCase
                 'norm' => null,
             ],
             'errors' => [],
-             'has_children_error' => false,
-             'children' => [
-                 'child' => $childFormData,
-             ],
-         ];
+            'has_children_error' => false,
+            'children' => [
+                'child' => $childFormData,
+            ],
+        ];
 
         $this->assertEquals([
             'forms' => [
@@ -125,7 +101,7 @@ class FormDataCollectorTest extends TestCase
                 spl_object_hash($this->childForm) => $childFormData,
             ],
             'nb_errors' => 0,
-         ], $this->dataCollector->getData());
+        ], $this->dataCollector->getData());
     }
 
     public function testBuildMultiplePreliminaryFormTrees()
@@ -335,9 +311,7 @@ class FormDataCollectorTest extends TestCase
         $form1View = new FormView();
         $form2View = new FormView();
         $child1View = new FormView();
-        $child1View->vars['is_selected'] = function ($choice, array $values) {
-            return \in_array($choice, $values, true);
-        };
+        $child1View->vars['is_selected'] = static fn ($choice, array $values) => \in_array($choice, $values, true);
 
         $form1->add($child1);
         $form2->add($child1);

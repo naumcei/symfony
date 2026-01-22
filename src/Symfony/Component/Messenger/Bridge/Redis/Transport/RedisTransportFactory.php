@@ -18,18 +18,20 @@ use Symfony\Component\Messenger\Transport\TransportInterface;
 /**
  * @author Alexander Schranz <alexander@suluio>
  * @author Antoine Bluchet <soyuka@gmail.com>
+ *
+ * @implements TransportFactoryInterface<RedisTransport>
  */
 class RedisTransportFactory implements TransportFactoryInterface
 {
-    public function createTransport(string $dsn, array $options, SerializerInterface $serializer): TransportInterface
+    public function createTransport(#[\SensitiveParameter] string $dsn, array $options, SerializerInterface $serializer): TransportInterface
     {
         unset($options['transport_name']);
 
         return new RedisTransport(Connection::fromDsn($dsn, $options), $serializer);
     }
 
-    public function supports(string $dsn, array $options): bool
+    public function supports(#[\SensitiveParameter] string $dsn, array $options): bool
     {
-        return str_starts_with($dsn, 'redis://') || str_starts_with($dsn, 'rediss://');
+        return str_starts_with($dsn, 'redis:') || str_starts_with($dsn, 'rediss:') || str_starts_with($dsn, 'valkey:') || str_starts_with($dsn, 'valkeys:');
     }
 }

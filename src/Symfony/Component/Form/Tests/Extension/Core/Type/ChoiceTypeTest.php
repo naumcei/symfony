@@ -11,18 +11,21 @@
 
 namespace Symfony\Component\Form\Tests\Extension\Core\Type;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Form\ChoiceList\Loader\CallbackChoiceLoader;
 use Symfony\Component\Form\ChoiceList\View\ChoiceGroupView;
 use Symfony\Component\Form\ChoiceList\View\ChoiceView;
+use Symfony\Component\Form\Exception\LogicException;
 use Symfony\Component\Form\Exception\TransformationFailedException;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 
-class ChoiceTypeTest extends BaseTypeTest
+class ChoiceTypeTest extends BaseTypeTestCase
 {
-    public const TESTED_TYPE = 'Symfony\Component\Form\Extension\Core\Type\ChoiceType';
+    public const TESTED_TYPE = ChoiceType::class;
 
-    private $choices = [
+    private array $choices = [
         'Bernhard' => 'a',
         'Fabien' => 'b',
         'Kris' => 'c',
@@ -30,19 +33,19 @@ class ChoiceTypeTest extends BaseTypeTest
         'Roman' => 'e',
     ];
 
-    private $scalarChoices = [
+    private array $scalarChoices = [
         'Yes' => true,
         'No' => false,
         'n/a' => '',
     ];
 
-    private $booleanChoicesWithNull = [
+    private array $booleanChoicesWithNull = [
         'Yes' => true,
         'No' => false,
         'n/a' => null,
     ];
 
-    private $numericChoicesFlipped = [
+    private array $numericChoicesFlipped = [
         0 => 'Bernhard',
         1 => 'Fabien',
         2 => 'Kris',
@@ -50,9 +53,9 @@ class ChoiceTypeTest extends BaseTypeTest
         4 => 'Roman',
     ];
 
-    private $objectChoices;
+    private array $objectChoices;
 
-    protected $groupedChoices = [
+    protected array $groupedChoices = [
         'Symfony' => [
             'Bernhard' => 'a',
             'Fabien' => 'b',
@@ -77,13 +80,6 @@ class ChoiceTypeTest extends BaseTypeTest
         ];
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->objectChoices = null;
-    }
-
     public function testChoicesOptionExpectsArrayOrTraversable()
     {
         $this->expectException(InvalidOptionsException::class);
@@ -97,6 +93,14 @@ class ChoiceTypeTest extends BaseTypeTest
         $this->expectException(InvalidOptionsException::class);
         $this->factory->create(static::TESTED_TYPE, null, [
             'choice_loader' => new \stdClass(),
+        ]);
+    }
+
+    public function testPlaceholderAttrOptionExpectsArray()
+    {
+        $this->expectException(InvalidOptionsException::class);
+        $this->factory->create(static::TESTED_TYPE, null, [
+            'placeholder_attr' => new \stdClass(),
         ]);
     }
 
@@ -189,15 +193,19 @@ class ChoiceTypeTest extends BaseTypeTest
 
     public function testPlaceholderPresentOnNonRequiredExpandedSingleChoice()
     {
+        $placeholderAttr = ['attr' => 'value'];
+
         $form = $this->factory->create(static::TESTED_TYPE, null, [
             'multiple' => false,
             'expanded' => true,
             'required' => false,
             'choices' => $this->choices,
+            'placeholder_attr' => $placeholderAttr,
         ]);
 
         $this->assertArrayHasKey('placeholder', $form);
         $this->assertCount(\count($this->choices) + 1, $form, 'Each choice should become a new field');
+        $this->assertSame($placeholderAttr, $form->createView()->children['placeholder']->vars['attr']);
     }
 
     public function testPlaceholderNotPresentIfRequired()
@@ -531,9 +539,7 @@ class ChoiceTypeTest extends BaseTypeTest
             'choices' => [
                 'Empty' => 'EMPTY_CHOICE',
             ],
-            'choice_value' => function () {
-                return '';
-            },
+            'choice_value' => static fn () => '',
         ]);
 
         $form->submit('');
@@ -873,7 +879,7 @@ class ChoiceTypeTest extends BaseTypeTest
 
         $this->assertSame('b', $form->getData());
         $this->assertSame('b', $form->getViewData());
-        $this->assertEmpty($form->getExtraData());
+        $this->assertSame([], $form->getExtraData());
         $this->assertTrue($form->isSynchronized());
 
         $this->assertFalse($form[0]->getData());
@@ -901,7 +907,7 @@ class ChoiceTypeTest extends BaseTypeTest
 
         $this->assertNull($form->getData());
         $this->assertSame('foobar', $form->getViewData());
-        $this->assertEmpty($form->getExtraData());
+        $this->assertSame([], $form->getExtraData());
         $this->assertFalse($form->isSynchronized());
 
         $this->assertFalse($form[0]->getData());
@@ -929,7 +935,7 @@ class ChoiceTypeTest extends BaseTypeTest
 
         $this->assertSame('b', $form->getData());
         $this->assertSame('b', $form->getViewData());
-        $this->assertEmpty($form->getExtraData());
+        $this->assertSame([], $form->getExtraData());
         $this->assertTrue($form->isSynchronized());
 
         $this->assertFalse($form['placeholder']->getData());
@@ -959,7 +965,7 @@ class ChoiceTypeTest extends BaseTypeTest
 
         $this->assertNull($form->getData());
         $this->assertSame('foobar', $form->getViewData());
-        $this->assertEmpty($form->getExtraData());
+        $this->assertSame([], $form->getExtraData());
         $this->assertFalse($form->isSynchronized());
 
         $this->assertFalse($form[0]->getData());
@@ -1343,7 +1349,7 @@ class ChoiceTypeTest extends BaseTypeTest
 
         $this->assertSame(['a', 'c'], $form->getData());
         $this->assertSame(['a', 'c'], $form->getViewData());
-        $this->assertEmpty($form->getExtraData());
+        $this->assertSame([], $form->getExtraData());
         $this->assertTrue($form->isSynchronized());
 
         $this->assertTrue($form[0]->getData());
@@ -1370,7 +1376,7 @@ class ChoiceTypeTest extends BaseTypeTest
 
         $this->assertNull($form->getData());
         $this->assertSame('foobar', $form->getViewData());
-        $this->assertEmpty($form->getExtraData());
+        $this->assertSame([], $form->getExtraData());
         $this->assertFalse($form->isSynchronized());
 
         $this->assertFalse($form[0]->getData());
@@ -1397,7 +1403,7 @@ class ChoiceTypeTest extends BaseTypeTest
 
         $this->assertSame(['a'], $form->getData());
         $this->assertSame(['a'], $form->getViewData());
-        $this->assertEmpty($form->getExtraData());
+        $this->assertSame([], $form->getExtraData());
         $this->assertFalse($form->isValid());
 
         $this->assertTrue($form[0]->getData());
@@ -1666,83 +1672,83 @@ class ChoiceTypeTest extends BaseTypeTest
         $this->assertSame('', $view->vars['placeholder']);
     }
 
-    /**
-     * @dataProvider getOptionsWithPlaceholder
-     */
-    public function testPassPlaceholderToView($multiple, $expanded, $required, $placeholder, $viewValue)
+    #[DataProvider('getOptionsWithPlaceholder')]
+    public function testPassPlaceholderToView($multiple, $expanded, $required, $placeholder, $placeholderViewValue, $placeholderAttr, $placeholderAttrViewValue)
     {
         $view = $this->factory->create(static::TESTED_TYPE, null, [
             'multiple' => $multiple,
             'expanded' => $expanded,
             'required' => $required,
             'placeholder' => $placeholder,
+            'placeholder_attr' => $placeholderAttr,
             'choices' => $this->choices,
         ])
             ->createView();
 
-        $this->assertSame($viewValue, $view->vars['placeholder']);
+        $this->assertSame($placeholderViewValue, $view->vars['placeholder']);
+        $this->assertSame($placeholderAttrViewValue, $view->vars['placeholder_attr']);
         $this->assertFalse($view->vars['placeholder_in_choices']);
     }
 
-    /**
-     * @dataProvider getOptionsWithPlaceholder
-     */
-    public function testDontPassPlaceholderIfContainedInChoices($multiple, $expanded, $required, $placeholder, $viewValue)
+    #[DataProvider('getOptionsWithPlaceholder')]
+    public function testDontPassPlaceholderIfContainedInChoices($multiple, $expanded, $required, $placeholder, $placeholderViewValue, $placeholderAttr, $placeholderAttrViewValue)
     {
         $view = $this->factory->create(static::TESTED_TYPE, null, [
             'multiple' => $multiple,
             'expanded' => $expanded,
             'required' => $required,
             'placeholder' => $placeholder,
+            'placeholder_attr' => $placeholderAttr,
             'choices' => ['Empty' => '', 'A' => 'a'],
         ])
             ->createView();
 
         $this->assertNull($view->vars['placeholder']);
+        $this->assertSame([], $view->vars['placeholder_attr']);
         $this->assertTrue($view->vars['placeholder_in_choices']);
     }
 
-    public function getOptionsWithPlaceholder()
+    public static function getOptionsWithPlaceholder()
     {
         return [
             // single non-expanded
-            [false, false, false, 'foobar', 'foobar'],
-            [false, false, false, '', ''],
-            [false, false, false, null, null],
-            [false, false, false, false, null],
-            [false, false, true, 'foobar', 'foobar'],
-            [false, false, true, '', ''],
-            [false, false, true, null, null],
-            [false, false, true, false, null],
+            [false, false, false, 'foobar', 'foobar', ['attr' => 'value'], ['attr' => 'value']],
+            [false, false, false, '', '', ['attr' => 'value'], ['attr' => 'value']],
+            [false, false, false, null, null, ['attr' => 'value'], []],
+            [false, false, false, false, null, ['attr' => 'value'], []],
+            [false, false, true, 'foobar', 'foobar', ['attr' => 'value'], ['attr' => 'value']],
+            [false, false, true, '', '', ['attr' => 'value'], ['attr' => 'value']],
+            [false, false, true, null, null, ['attr' => 'value'], []],
+            [false, false, true, false, null, ['attr' => 'value'], []],
             // single expanded
-            [false, true, false, 'foobar', 'foobar'],
+            [false, true, false, 'foobar', 'foobar', ['attr' => 'value'], ['attr' => 'value']],
             // radios should never have an empty label
-            [false, true, false, '', 'None'],
-            [false, true, false, null, null],
-            [false, true, false, false, null],
+            [false, true, false, '', 'None', ['attr' => 'value'], ['attr' => 'value']],
+            [false, true, false, null, null, ['attr' => 'value'], []],
+            [false, true, false, false, null, ['attr' => 'value'], []],
             // required radios should never have a placeholder
-            [false, true, true, 'foobar', null],
-            [false, true, true, '', null],
-            [false, true, true, null, null],
-            [false, true, true, false, null],
+            [false, true, true, 'foobar', null, ['attr' => 'value'], []],
+            [false, true, true, '', null, ['attr' => 'value'], []],
+            [false, true, true, null, null, ['attr' => 'value'], []],
+            [false, true, true, false, null, ['attr' => 'value'], []],
             // multiple non-expanded
-            [true, false, false, 'foobar', null],
-            [true, false, false, '', null],
-            [true, false, false, null, null],
-            [true, false, false, false, null],
-            [true, false, true, 'foobar', null],
-            [true, false, true, '', null],
-            [true, false, true, null, null],
-            [true, false, true, false, null],
+            [true, false, false, 'foobar', null, ['attr' => 'value'], []],
+            [true, false, false, '', null, ['attr' => 'value'], []],
+            [true, false, false, null, null, ['attr' => 'value'], []],
+            [true, false, false, false, null, ['attr' => 'value'], []],
+            [true, false, true, 'foobar', null, ['attr' => 'value'], []],
+            [true, false, true, '', null, ['attr' => 'value'], []],
+            [true, false, true, null, null, ['attr' => 'value'], []],
+            [true, false, true, false, null, ['attr' => 'value'], []],
             // multiple expanded
-            [true, true, false, 'foobar', null],
-            [true, true, false, '', null],
-            [true, true, false, null, null],
-            [true, true, false, false, null],
-            [true, true, true, 'foobar', null],
-            [true, true, true, '', null],
-            [true, true, true, null, null],
-            [true, true, true, false, null],
+            [true, true, false, 'foobar', null, ['attr' => 'value'], []],
+            [true, true, false, '', null, ['attr' => 'value'], []],
+            [true, true, false, null, null, ['attr' => 'value'], []],
+            [true, true, false, false, null, ['attr' => 'value'], []],
+            [true, true, true, 'foobar', null, ['attr' => 'value'], []],
+            [true, true, true, '', null, ['attr' => 'value'], []],
+            [true, true, true, null, null, ['attr' => 'value'], []],
+            [true, true, true, false, null, ['attr' => 'value'], []],
         ];
     }
 
@@ -1888,8 +1894,8 @@ class ChoiceTypeTest extends BaseTypeTest
     {
         $this->assertInstanceOf(
             FormInterface::class, $this->factory->createNamed('name', static::TESTED_TYPE, null, [
-            'choices' => [],
-        ]));
+                'choices' => [],
+            ]));
     }
 
     public function testInitializeWithDefaultObjectChoice()
@@ -1937,9 +1943,7 @@ class ChoiceTypeTest extends BaseTypeTest
         $this->assertNull($form->get('subChoice')->getConfig()->getOption('choice_label'));
     }
 
-    /**
-     * @dataProvider invalidNestedValueTestMatrix
-     */
+    #[DataProvider('invalidNestedValueTestMatrix')]
     public function testSubmitInvalidNestedValue($multiple, $expanded, $submissionData)
     {
         $form = $this->factory->create(static::TESTED_TYPE, null, [
@@ -1958,7 +1962,7 @@ class ChoiceTypeTest extends BaseTypeTest
         }
     }
 
-    public function invalidNestedValueTestMatrix()
+    public static function invalidNestedValueTestMatrix()
     {
         return [
             'non-multiple, non-expanded' => [false, false, [[]]],
@@ -2105,9 +2109,7 @@ class ChoiceTypeTest extends BaseTypeTest
         $this->assertSame('choice_translation_domain', $form->children[1]->vars['translation_domain']);
     }
 
-    /**
-     * @dataProvider provideTrimCases
-     */
+    #[DataProvider('provideTrimCases')]
     public function testTrimIsDisabled($multiple, $expanded)
     {
         $form = $this->factory->create(static::TESTED_TYPE, null, [
@@ -2132,9 +2134,7 @@ class ChoiceTypeTest extends BaseTypeTest
         }
     }
 
-    /**
-     * @dataProvider provideTrimCases
-     */
+    #[DataProvider('provideTrimCases')]
     public function testSubmitValueWithWhiteSpace($multiple, $expanded)
     {
         $valueWhitWhiteSpace = '1 ';
@@ -2153,7 +2153,7 @@ class ChoiceTypeTest extends BaseTypeTest
         $this->assertSame($multiple ? (array) $valueWhitWhiteSpace : $valueWhitWhiteSpace, $form->getData());
     }
 
-    public function provideTrimCases()
+    public static function provideTrimCases()
     {
         return [
             'Simple' => [false, false],
@@ -2163,9 +2163,7 @@ class ChoiceTypeTest extends BaseTypeTest
         ];
     }
 
-    /**
-     * @dataProvider expandedIsEmptyWhenNoRealChoiceIsSelectedProvider
-     */
+    #[DataProvider('expandedIsEmptyWhenNoRealChoiceIsSelectedProvider')]
     public function testExpandedIsEmptyWhenNoRealChoiceIsSelected($expected, $submittedData, $multiple, $required, $placeholder)
     {
         $options = [
@@ -2188,7 +2186,7 @@ class ChoiceTypeTest extends BaseTypeTest
         $this->assertSame($expected, $form->isEmpty());
     }
 
-    public function expandedIsEmptyWhenNoRealChoiceIsSelectedProvider()
+    public static function expandedIsEmptyWhenNoRealChoiceIsSelectedProvider()
     {
         // Some invalid cases are voluntarily not tested:
         //   - multiple with placeholder
@@ -2208,9 +2206,7 @@ class ChoiceTypeTest extends BaseTypeTest
     {
         $form = $this->factory->create(static::TESTED_TYPE, null, [
             'choices' => $this->choices,
-            'choice_filter' => function ($choice) {
-                return \in_array($choice, range('a', 'c'), true);
-            },
+            'choice_filter' => static fn ($choice) => \in_array($choice, range('a', 'c'), true),
         ]);
 
         $this->assertEquals([
@@ -2224,9 +2220,7 @@ class ChoiceTypeTest extends BaseTypeTest
     {
         $form = $this->factory->create(static::TESTED_TYPE, null, [
             'choices' => $this->groupedChoices,
-            'choice_filter' => function ($choice) {
-                return \in_array($choice, range('a', 'c'), true);
-            },
+            'choice_filter' => static fn ($choice) => \in_array($choice, range('a', 'c'), true),
         ]);
 
         $this->assertEquals(['Symfony' => new ChoiceGroupView('Symfony', [
@@ -2239,12 +2233,8 @@ class ChoiceTypeTest extends BaseTypeTest
     public function testFilteredChoiceLoader()
     {
         $form = $this->factory->create(static::TESTED_TYPE, null, [
-            'choice_loader' => new CallbackChoiceLoader(function () {
-                return $this->choices;
-            }),
-            'choice_filter' => function ($choice) {
-                return \in_array($choice, range('a', 'c'), true);
-            },
+            'choice_loader' => new CallbackChoiceLoader(fn () => $this->choices),
+            'choice_filter' => static fn ($choice) => \in_array($choice, range('a', 'c'), true),
         ]);
 
         $this->assertEquals([
@@ -2256,9 +2246,7 @@ class ChoiceTypeTest extends BaseTypeTest
 
     public function testWithSameLoaderAndDifferentChoiceValueCallbacks()
     {
-        $choiceLoader = new CallbackChoiceLoader(function () {
-            return [1, 2, 3];
-        });
+        $choiceLoader = new CallbackChoiceLoader(static fn () => [1, 2, 3]);
 
         $view = $this->factory->create(FormTypeTest::TESTED_TYPE)
             ->add('choice_one', self::TESTED_TYPE, [
@@ -2266,9 +2254,7 @@ class ChoiceTypeTest extends BaseTypeTest
             ])
             ->add('choice_two', self::TESTED_TYPE, [
                 'choice_loader' => $choiceLoader,
-                'choice_value' => function ($choice) {
-                    return $choice ? (string) $choice * 10 : '';
-                },
+                'choice_value' => static fn ($choice) => $choice ? (string) $choice * 10 : '',
             ])
             ->createView()
         ;
@@ -2280,5 +2266,112 @@ class ChoiceTypeTest extends BaseTypeTest
         $this->assertSame('10', $view['choice_two']->vars['choices'][0]->value);
         $this->assertSame('20', $view['choice_two']->vars['choices'][1]->value);
         $this->assertSame('30', $view['choice_two']->vars['choices'][2]->value);
+    }
+
+    public function testChoiceLazyThrowsWhenChoiceLoaderIsNotSet()
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('The "choice_lazy" option can only be used if the "choice_loader" option is set.');
+
+        $this->factory->create(static::TESTED_TYPE, null, [
+            'choice_lazy' => true,
+        ]);
+    }
+
+    public function testChoiceLazyLoadsAndRendersNothingWhenNoDataSet()
+    {
+        $form = $this->factory->create(static::TESTED_TYPE, null, [
+            'choice_loader' => new CallbackChoiceLoader(static fn () => ['a' => 'A', 'b' => 'B']),
+            'choice_lazy' => true,
+        ]);
+
+        $this->assertNull($form->getData());
+
+        $view = $form->createView();
+        $this->assertArrayHasKey('choices', $view->vars);
+        $this->assertSame([], $view->vars['choices']);
+    }
+
+    public function testChoiceLazyLoadsAndRendersOnlyDataSetViaDefault()
+    {
+        $form = $this->factory->create(static::TESTED_TYPE, 'A', [
+            'choice_loader' => new CallbackChoiceLoader(static fn () => ['a' => 'A', 'b' => 'B']),
+            'choice_lazy' => true,
+        ]);
+
+        $this->assertSame('A', $form->getData());
+
+        $view = $form->createView();
+        $this->assertArrayHasKey('choices', $view->vars);
+        $this->assertCount(1, $view->vars['choices']);
+        $this->assertSame('A', $view->vars['choices'][0]->value);
+    }
+
+    public function testChoiceLazyLoadsAndRendersOnlyDataSetViaSubmit()
+    {
+        $form = $this->factory->create(static::TESTED_TYPE, null, [
+            'choice_loader' => new CallbackChoiceLoader(static fn () => ['a' => 'A', 'b' => 'B']),
+            'choice_lazy' => true,
+        ]);
+
+        $form->submit('B');
+        $this->assertSame('B', $form->getData());
+
+        $view = $form->createView();
+        $this->assertArrayHasKey('choices', $view->vars);
+        $this->assertCount(1, $view->vars['choices']);
+        $this->assertSame('B', $view->vars['choices'][0]->value);
+    }
+
+    public function testChoiceLazyErrorWhenInvalidSubmitData()
+    {
+        $form = $this->factory->create(static::TESTED_TYPE, null, [
+            'choice_loader' => new CallbackChoiceLoader(static fn () => ['a' => 'A', 'b' => 'B']),
+            'choice_lazy' => true,
+        ]);
+
+        $form->submit('invalid');
+        $this->assertNull($form->getData());
+
+        $view = $form->createView();
+        $this->assertArrayHasKey('choices', $view->vars);
+        $this->assertCount(0, $view->vars['choices']);
+        $this->assertCount(1, $form->getErrors());
+        $this->assertSame('ERROR: The selected choice is invalid.', trim((string) $form->getErrors()));
+    }
+
+    public function testChoiceLazyMultipleWithDefaultData()
+    {
+        $form = $this->factory->create(static::TESTED_TYPE, ['A', 'B'], [
+            'choice_loader' => new CallbackChoiceLoader(static fn () => ['a' => 'A', 'b' => 'B', 'c' => 'C']),
+            'choice_lazy' => true,
+            'multiple' => true,
+        ]);
+
+        $this->assertSame(['A', 'B'], $form->getData());
+
+        $view = $form->createView();
+        $this->assertArrayHasKey('choices', $view->vars);
+        $this->assertCount(2, $view->vars['choices']);
+        $this->assertSame('A', $view->vars['choices'][0]->value);
+        $this->assertSame('B', $view->vars['choices'][1]->value);
+    }
+
+    public function testChoiceLazyMultipleWithSubmittedData()
+    {
+        $form = $this->factory->create(static::TESTED_TYPE, null, [
+            'choice_loader' => new CallbackChoiceLoader(static fn () => ['a' => 'A', 'b' => 'B', 'c' => 'C']),
+            'choice_lazy' => true,
+            'multiple' => true,
+        ]);
+
+        $form->submit(['B', 'C']);
+        $this->assertSame(['B', 'C'], $form->getData());
+
+        $view = $form->createView();
+        $this->assertArrayHasKey('choices', $view->vars);
+        $this->assertCount(2, $view->vars['choices']);
+        $this->assertSame('B', $view->vars['choices'][0]->value);
+        $this->assertSame('C', $view->vars['choices'][1]->value);
     }
 }

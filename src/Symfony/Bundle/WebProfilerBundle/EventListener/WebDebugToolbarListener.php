@@ -14,8 +14,10 @@ namespace Symfony\Bundle\WebProfilerBundle\EventListener;
 use Symfony\Bundle\FullStack;
 use Symfony\Bundle\WebProfilerBundle\Csp\ContentSecurityPolicyHandler;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\EventStreamResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ServerEvent;
 use Symfony\Component\HttpFoundation\Session\Flash\AutoExpireFlashBag;
 use Symfony\Component\HttpKernel\DataCollector\DumpDataCollector;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
@@ -40,23 +42,16 @@ class WebDebugToolbarListener implements EventSubscriberInterface
     public const DISABLED = 1;
     public const ENABLED = 2;
 
-    private Environment $twig;
-    private ?UrlGeneratorInterface $urlGenerator;
-    private bool $interceptRedirects;
-    private int $mode;
-    private string $excludedAjaxPaths;
-    private ?ContentSecurityPolicyHandler $cspHandler;
-    private ?DumpDataCollector $dumpDataCollector;
-
-    public function __construct(Environment $twig, bool $interceptRedirects = false, int $mode = self::ENABLED, UrlGeneratorInterface $urlGenerator = null, string $excludedAjaxPaths = '^/bundles|^/_wdt', ContentSecurityPolicyHandler $cspHandler = null, DumpDataCollector $dumpDataCollector = null)
-    {
-        $this->twig = $twig;
-        $this->urlGenerator = $urlGenerator;
-        $this->interceptRedirects = $interceptRedirects;
-        $this->mode = $mode;
-        $this->excludedAjaxPaths = $excludedAjaxPaths;
-        $this->cspHandler = $cspHandler;
-        $this->dumpDataCollector = $dumpDataCollector;
+    public function __construct(
+        private Environment $twig,
+        private bool $interceptRedirects = false,
+        private int $mode = self::ENABLED,
+        private ?UrlGeneratorInterface $urlGenerator = null,
+        private string $excludedAjaxPaths = '^/bundles|^/_wdt',
+        private ?ContentSecurityPolicyHandler $cspHandler = null,
+        private ?DumpDataCollector $dumpDataCollector = null,
+        private bool $ajaxReplace = false,
+    ) {
     }
 
     public function isEnabled(): bool
@@ -67,13 +62,13 @@ class WebDebugToolbarListener implements EventSubscriberInterface
     public function setMode(int $mode): void
     {
         if (self::DISABLED !== $mode && self::ENABLED !== $mode) {
-            throw new \InvalidArgumentException(sprintf('Invalid value provided for mode, use one of "%s::DISABLED" or "%s::ENABLED".', self::class, self::class));
+            throw new \InvalidArgumentException(\sprintf('Invalid value provided for mode, use one of "%s::DISABLED" or "%s::ENABLED".', self::class, self::class));
         }
 
         $this->mode = $mode;
     }
 
-    public function onKernelResponse(ResponseEvent $event)
+    public function onKernelResponse(ResponseEvent $event): void
     {
         $response = $event->getResponse();
         $request = $event->getRequest();
@@ -104,10 +99,14 @@ class WebDebugToolbarListener implements EventSubscriberInterface
 
         // do not capture redirects or modify XML HTTP Requests
         if ($request->isXmlHttpRequest()) {
+            if (self::ENABLED === $this->mode && $this->ajaxReplace && !$response->headers->has('Symfony-Debug-Toolbar-Replace')) {
+                $response->headers->set('Symfony-Debug-Toolbar-Replace', '1');
+            }
+
             return;
         }
 
-        if ($response->headers->has('X-Debug-Token') && $response->isRedirect() && $this->interceptRedirects && 'html' === $request->getRequestFormat()) {
+        if ($response->headers->has('X-Debug-Token') && $response->isRedirect() && $this->interceptRedirects && 'html' === $request->getRequestFormat() && $response->headers->has('Location')) {
             if ($request->hasSession() && ($session = $request->getSession())->isStarted() && $session->getFlashBag() instanceof AutoExpireFlashBag) {
                 // keep current flashes for one more request if using AutoExpireFlashBag
                 $session->getFlashBag()->setAll($session->getFlashBag()->peekAll());
@@ -118,10 +117,31 @@ class WebDebugToolbarListener implements EventSubscriberInterface
             $response->headers->remove('Location');
         }
 
+        if ($response->headers->has('X-Debug-Token') && $response instanceof EventStreamResponse) {
+            $callback = $response->getCallback();
+            $response->setCallback(static function () use ($callback, $response) {
+                $response->sendEvent(new ServerEvent(
+                    [
+                        $response->headers->get('X-Debug-Token') ?? '',
+                        $response->headers->get('X-Debug-Token-Link') ?? '',
+                    ],
+                    'symfony:debug:started',
+                ));
+                try {
+                    $callback();
+                } catch (\Throwable $e) {
+                    $response->sendEvent(new ServerEvent('error', 'symfony:debug:error'));
+                    throw $e;
+                } finally {
+                    $response->sendEvent(new ServerEvent('-', 'symfony:debug:finished'));
+                }
+            });
+        }
+
         if (self::DISABLED === $this->mode
             || !$response->headers->has('X-Debug-Token')
             || $response->isRedirection()
-            || ($response->headers->has('Content-Type') && !str_contains($response->headers->get('Content-Type'), 'html'))
+            || ($response->headers->has('Content-Type') && !str_contains($response->headers->get('Content-Type') ?? '', 'html'))
             || 'html' !== $request->getRequestFormat()
             || false !== stripos($response->headers->get('Content-Disposition', ''), 'attachment;')
         ) {
@@ -134,7 +154,7 @@ class WebDebugToolbarListener implements EventSubscriberInterface
     /**
      * Injects the web debug toolbar into the given Response.
      */
-    protected function injectToolbar(Response $response, Request $request, array $nonces)
+    protected function injectToolbar(Response $response, Request $request, array $nonces): void
     {
         $content = $response->getContent();
         $pos = strripos($content, '</body>');

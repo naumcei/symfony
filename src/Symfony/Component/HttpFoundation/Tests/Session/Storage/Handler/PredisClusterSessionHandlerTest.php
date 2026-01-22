@@ -11,15 +11,17 @@
 
 namespace Symfony\Component\HttpFoundation\Tests\Session\Storage\Handler;
 
+use PHPUnit\Framework\Attributes\Group;
 use Predis\Client;
 
-/**
- * @group integration
- */
+#[Group('integration')]
 class PredisClusterSessionHandlerTest extends AbstractRedisSessionHandlerTestCase
 {
     protected function createRedisClient(string $host): Client
     {
-        return new Client([array_combine(['host', 'port'], explode(':', getenv('REDIS_HOST')) + [1 => 6379])]);
+        return new Client(
+            [array_combine(['host', 'port'], explode(':', getenv('REDIS_HOST')) + [1 => 6379])],
+            ['cluster' => 'redis']
+        );
     }
 }

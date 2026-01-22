@@ -27,7 +27,9 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class DecoratorServicePass extends AbstractRecursivePass
 {
-    public function process(ContainerBuilder $container)
+    protected bool $skipScalars = true;
+
+    public function process(ContainerBuilder $container): void
     {
         $definitions = new \SplPriorityQueue();
         $order = \PHP_INT_MAX;
@@ -39,10 +41,11 @@ class DecoratorServicePass extends AbstractRecursivePass
             $definitions->insert([$id, $definition], [$decorated[2], --$order]);
         }
         $decoratingDefinitions = [];
+        $decoratedIds = [];
 
         $tagsToKeep = $container->hasParameter('container.behavior_describing_tags')
             ? $container->getParameter('container.behavior_describing_tags')
-            : ['container.do_not_inline', 'container.service_locator', 'container.service_subscriber', 'container.service_subscriber.locator'];
+            : ['proxy', 'container.do_not_inline', 'container.service_locator', 'container.service_subscriber', 'container.service_subscriber.locator'];
 
         foreach ($definitions as [$id, $definition]) {
             $decoratedService = $definition->getDecoratedService();
@@ -55,6 +58,7 @@ class DecoratorServicePass extends AbstractRecursivePass
                 $renamedId = $id.'.inner';
             }
 
+            $decoratedIds[$inner] ??= $renamedId;
             $this->currentId = $renamedId;
             $this->processValue($definition);
 
@@ -85,7 +89,7 @@ class DecoratorServicePass extends AbstractRecursivePass
             }
 
             if ($decoratedDefinition?->isSynthetic()) {
-                throw new InvalidArgumentException(sprintf('A synthetic service cannot be decorated: service "%s" cannot decorate "%s".', $id, $inner));
+                throw new InvalidArgumentException(\sprintf('A synthetic service cannot be decorated: service "%s" cannot decorate "%s".', $id, $inner));
             }
 
             if (isset($decoratingDefinitions[$inner])) {
@@ -108,6 +112,10 @@ class DecoratorServicePass extends AbstractRecursivePass
             }
 
             $container->setAlias($inner, $id)->setPublic($public);
+        }
+
+        foreach ($decoratingDefinitions as $inner => $definition) {
+            $definition->addTag('container.decorator', ['id' => $inner, 'inner' => $decoratedIds[$inner]]);
         }
     }
 

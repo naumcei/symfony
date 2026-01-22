@@ -12,16 +12,16 @@
 namespace Symfony\Component\Notifier\Bridge\MicrosoftTeams\Tests;
 
 use Symfony\Component\Notifier\Bridge\MicrosoftTeams\MicrosoftTeamsTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
 
-final class MicrosoftTeamsTransportFactoryTest extends TransportFactoryTestCase
+final class MicrosoftTeamsTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
     public function createFactory(): MicrosoftTeamsTransportFactory
     {
         return new MicrosoftTeamsTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'microsoftteams://host/webhook',
@@ -29,13 +29,13 @@ final class MicrosoftTeamsTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'microsoftteams://host/webhook'];
         yield [false, 'somethingElse://host/webhook'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://host/webhook'];
     }

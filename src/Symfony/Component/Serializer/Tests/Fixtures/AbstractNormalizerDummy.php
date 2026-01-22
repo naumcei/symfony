@@ -20,25 +20,30 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
  */
 class AbstractNormalizerDummy extends AbstractNormalizer
 {
+    public function getSupportedTypes(?string $format): array
+    {
+        return ['*' => false];
+    }
+
     public function getAllowedAttributes(string|object $classOrObject, array $context, bool $attributesAsString = false): array|bool
     {
         return parent::getAllowedAttributes($classOrObject, $context, $attributesAsString);
     }
 
-    public function normalize(mixed $object, string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
+    public function normalize(mixed $data, ?string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
     {
     }
 
-    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return true;
     }
 
-    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): mixed
+    public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): mixed
     {
     }
 
-    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return true;
     }

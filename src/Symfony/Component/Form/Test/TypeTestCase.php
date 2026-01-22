@@ -13,52 +13,44 @@ namespace Symfony\Component\Form\Test;
 
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormExtensionInterface;
 use Symfony\Component\Form\Test\Traits\ValidatorExtensionTrait;
 
 abstract class TypeTestCase extends FormIntegrationTestCase
 {
-    /**
-     * @var FormBuilder
-     */
-    protected $builder;
-
-    /**
-     * @var EventDispatcherInterface
-     */
-    protected $dispatcher;
+    protected FormBuilder $builder;
+    protected EventDispatcherInterface $dispatcher;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->dispatcher = $this->createMock(EventDispatcherInterface::class);
+        if (!isset($this->dispatcher)) {
+            $this->dispatcher = $this->createMock(EventDispatcherInterface::class);
+        }
         $this->builder = new FormBuilder('', null, $this->dispatcher, $this->factory);
     }
 
-    protected function tearDown(): void
-    {
-        if (\in_array(ValidatorExtensionTrait::class, class_uses($this))) {
-            $this->validator = null;
-        }
-    }
-
-    protected function getExtensions()
+    /**
+     * @return FormExtensionInterface[]
+     */
+    protected function getExtensions(): array
     {
         $extensions = [];
 
-        if (\in_array(ValidatorExtensionTrait::class, class_uses($this))) {
+        if (\in_array(ValidatorExtensionTrait::class, class_uses($this), true)) {
             $extensions[] = $this->getValidatorExtension();
         }
 
         return $extensions;
     }
 
-    public static function assertDateTimeEquals(\DateTime $expected, \DateTime $actual)
+    public static function assertDateTimeEquals(\DateTime $expected, \DateTime $actual): void
     {
         self::assertEquals($expected->format('c'), $actual->format('c'));
     }
 
-    public static function assertDateIntervalEquals(\DateInterval $expected, \DateInterval $actual)
+    public static function assertDateIntervalEquals(\DateInterval $expected, \DateInterval $actual): void
     {
         self::assertEquals($expected->format('%RP%yY%mM%dDT%hH%iM%sS'), $actual->format('%RP%yY%mM%dDT%hH%iM%sS'));
     }

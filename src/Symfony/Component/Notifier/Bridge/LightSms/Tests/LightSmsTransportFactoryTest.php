@@ -12,16 +12,19 @@
 namespace Symfony\Component\Notifier\Bridge\LightSms\Tests;
 
 use Symfony\Component\Notifier\Bridge\LightSms\LightSmsTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
 
-final class LightSmsTransportFactoryTest extends TransportFactoryTestCase
+final class LightSmsTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+
     public function createFactory(): LightSmsTransportFactory
     {
         return new LightSmsTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'lightsms://host.test?from=0611223344',
@@ -29,15 +32,21 @@ final class LightSmsTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'lightsms://login:token@default?from=37061234567'];
         yield [false, 'somethingElse://login:token@default?from=37061234567'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://login:token@default?from=37061234567'];
         yield ['somethingElse://login:token@default']; // missing "from" option
+    }
+
+    public static function incompleteDsnProvider(): iterable
+    {
+        yield ['lightsms://login@default?from=37061234567'];
+        yield ['lightsms://:token@default?from=37061234567'];
     }
 }

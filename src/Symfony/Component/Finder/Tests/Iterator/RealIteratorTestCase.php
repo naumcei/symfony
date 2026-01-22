@@ -16,8 +16,8 @@ use Symfony\Component\Finder\Tests\FinderTest;
 
 abstract class RealIteratorTestCase extends IteratorTestCase
 {
-    protected static $tmpDir;
-    protected static $files;
+    protected static string $tmpDir;
+    protected static array $files;
 
     public static function setUpBeforeClass(): void
     {
@@ -72,8 +72,9 @@ abstract class RealIteratorTestCase extends IteratorTestCase
         file_put_contents(self::toAbsolute('test.php'), str_repeat(' ', 800));
         file_put_contents(self::toAbsolute('test.py'), str_repeat(' ', 2000));
 
-        touch(self::toAbsolute('foo/bar.tmp'), strtotime('2005-10-15'));
-        touch(self::toAbsolute('test.php'), strtotime('2005-10-15'));
+        $oneYearAgo = strtotime('-1 year');
+        touch(self::toAbsolute('foo/bar.tmp'), $oneYearAgo);
+        touch(self::toAbsolute('test.php'), $oneYearAgo);
 
         if (FinderTest::class === static::class) {
             $fs = new Filesystem();
@@ -126,9 +127,7 @@ abstract class RealIteratorTestCase extends IteratorTestCase
         /*
          * Without the call to setUpBeforeClass() property can be null.
          */
-        if (!self::$tmpDir) {
-            self::$tmpDir = realpath(sys_get_temp_dir()).\DIRECTORY_SEPARATOR.'symfony_finder';
-        }
+        self::$tmpDir ??= realpath(sys_get_temp_dir()).\DIRECTORY_SEPARATOR.'symfony_finder';
 
         if (\is_array($files)) {
             $f = [];

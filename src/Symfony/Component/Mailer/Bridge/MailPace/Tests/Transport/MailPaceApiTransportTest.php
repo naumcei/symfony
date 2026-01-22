@@ -11,8 +11,10 @@
 
 namespace Symfony\Component\Mailer\Bridge\MailPace\Tests\Transport;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\JsonMockResponse;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\Mailer\Bridge\MailPace\Transport\MailPaceApiTransport;
 use Symfony\Component\Mailer\Envelope;
@@ -24,15 +26,13 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 final class MailPaceApiTransportTest extends TestCase
 {
-    /**
-     * @dataProvider getTransportData
-     */
+    #[DataProvider('getTransportData')]
     public function testToString(MailPaceApiTransport $transport, string $expected)
     {
         $this->assertSame($expected, (string) $transport);
     }
 
-    public function getTransportData(): array
+    public static function getTransportData(): array
     {
         return [
             [
@@ -79,7 +79,7 @@ final class MailPaceApiTransportTest extends TestCase
             $this->assertSame('Hello!', $body['subject']);
             $this->assertSame('Hello There!', $body['textbody']);
 
-            return new MockResponse(json_encode(['id' => 'foobar', 'status' => 'pending']), [
+            return new JsonMockResponse(['id' => 'foobar', 'status' => 'pending'], [
                 'http_code' => 200,
             ]);
         });
@@ -99,12 +99,36 @@ final class MailPaceApiTransportTest extends TestCase
 
     public function testSendThrowsForErrorResponse()
     {
+        $client = new MockHttpClient(static fn (string $method, string $url, array $options): ResponseInterface => new JsonMockResponse(['error' => 'i\'m a teapot'], [
+            'http_code' => 418,
+        ]));
+        $transport = new MailPaceApiTransport('KEY', $client);
+        $transport->setPort(8984);
+
+        $mail = new Email();
+        $mail->subject('Hello!')
+            ->to(new Address('saif.gmati@symfony.com', 'Saif Eddin'))
+            ->from(new Address('fabpot@symfony.com', 'Fabien'))
+            ->text('Hello There!');
+
+        $this->expectException(HttpTransportException::class);
+        $this->expectExceptionMessage('Unable to send an email: i\'m a teapot (code 418).');
+        $transport->send($mail);
+    }
+
+    public function testSendThrowsForErrorsResponse()
+    {
         $client = new MockHttpClient(static function (string $method, string $url, array $options): ResponseInterface {
-            return new MockResponse(json_encode(['Message' => 'i\'m a teapot', 'ErrorCode' => 418]), [
-                'http_code' => 418,
-                'response_headers' => [
-                    'content-type' => 'application/json',
+            return new JsonMockResponse([
+                'errors' => [
+                    'to' => [
+                        'contains a blocked address',
+                        'number of email addresses exceeds maximum volume',
+                    ],
+                    'attachments.name' => ['Extension file type blocked, see Docs for full list of allowed file types'],
                 ],
+            ], [
+                'http_code' => 400,
             ]);
         });
         $transport = new MailPaceApiTransport('KEY', $client);
@@ -117,7 +141,26 @@ final class MailPaceApiTransportTest extends TestCase
             ->text('Hello There!');
 
         $this->expectException(HttpTransportException::class);
-        $this->expectExceptionMessage('Unable to send an email: i\'m a teapot (code 418).');
+        $this->expectExceptionMessage('Unable to send an email: to: contains a blocked address & number of email addresses exceeds maximum volume; attachments.name: Extension file type blocked, see Docs for full list of allowed file types (code 400).');
+        $transport->send($mail);
+    }
+
+    public function testSendThrowsForInternalServerErrorResponse()
+    {
+        $client = new MockHttpClient(static function (string $method, string $url, array $options): ResponseInterface {
+            return new MockResponse('', ['http_code' => 500]);
+        });
+        $transport = new MailPaceApiTransport('KEY', $client);
+        $transport->setPort(8984);
+
+        $mail = new Email();
+        $mail->subject('Hello!')
+            ->to(new Address('saif.gmati@symfony.com', 'Saif Eddin'))
+            ->from(new Address('fabpot@symfony.com', 'Fabien'))
+            ->text('Hello There!');
+
+        $this->expectException(HttpTransportException::class);
+        $this->expectExceptionMessage('Unable to send an email:  (code 500).');
         $transport->send($mail);
     }
 

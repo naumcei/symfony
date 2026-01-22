@@ -20,19 +20,11 @@ use Symfony\Component\PropertyInfo\PropertyWriteInfoExtractorInterface;
 
 class PropertyAccessorBuilderTest extends TestCase
 {
-    /**
-     * @var PropertyAccessorBuilder
-     */
-    protected $builder;
+    protected PropertyAccessorBuilder $builder;
 
     protected function setUp(): void
     {
         $this->builder = new PropertyAccessorBuilder();
-    }
-
-    protected function tearDown(): void
-    {
-        $this->builder = null;
     }
 
     public function testEnableMagicGet()
@@ -108,7 +100,7 @@ class PropertyAccessorBuilderTest extends TestCase
 
     public function testUseReadInfoExtractor()
     {
-        $readInfoExtractor = $this->createMock(PropertyReadInfoExtractorInterface::class);
+        $readInfoExtractor = $this->createStub(PropertyReadInfoExtractorInterface::class);
 
         $this->builder->setReadInfoExtractor($readInfoExtractor);
 
@@ -118,7 +110,7 @@ class PropertyAccessorBuilderTest extends TestCase
 
     public function testUseWriteInfoExtractor()
     {
-        $writeInfoExtractor = $this->createMock(PropertyWriteInfoExtractorInterface::class);
+        $writeInfoExtractor = $this->createStub(PropertyWriteInfoExtractorInterface::class);
 
         $this->builder->setWriteInfoExtractor($writeInfoExtractor);
 

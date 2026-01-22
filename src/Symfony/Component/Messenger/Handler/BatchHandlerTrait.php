@@ -20,6 +20,10 @@ trait BatchHandlerTrait
 
     public function flush(bool $force): void
     {
+        if (!$force && !$this->shouldFlush()) {
+            return;
+        }
+
         if ($jobs = $this->jobs) {
             $this->jobs = [];
             $this->process($jobs);
@@ -55,13 +59,18 @@ trait BatchHandlerTrait
 
     private function shouldFlush(): bool
     {
-        return 10 <= \count($this->jobs);
+        return $this->getBatchSize() <= \count($this->jobs);
     }
 
     /**
      * Completes the jobs in the list.
      *
-     * @list<array{0: object, 1: Acknowledger}> $jobs A list of pairs of messages and their corresponding acknowledgers
+     * @param list<array{0: object, 1: Acknowledger}> $jobs A list of pairs of messages and their corresponding acknowledgers
      */
     abstract private function process(array $jobs): void;
+
+    private function getBatchSize(): int
+    {
+        return 10;
+    }
 }

@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Validator\Tests\Constraints;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Validator\Constraints\IsNull;
 use Symfony\Component\Validator\Constraints\IsNullValidator;
 use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
@@ -29,14 +30,10 @@ class IsNullValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    /**
-     * @dataProvider getInvalidValues
-     */
+    #[DataProvider('getInvalidValues')]
     public function testInvalidValues($value, $valueAsString)
     {
-        $constraint = new IsNull([
-            'message' => 'myMessage',
-        ]);
+        $constraint = new IsNull(message: 'myMessage');
 
         $this->validator->validate($value, $constraint);
 
@@ -46,9 +43,7 @@ class IsNullValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    /**
-     * @dataProvider getInvalidValues
-     */
+    #[DataProvider('getInvalidValues')]
     public function testInvalidValuesNamed($value, $valueAsString)
     {
         $constraint = new IsNull(message: 'myMessage');
@@ -61,7 +56,7 @@ class IsNullValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    public function getInvalidValues()
+    public static function getInvalidValues()
     {
         return [
             [0, '0'],
@@ -69,7 +64,7 @@ class IsNullValidatorTest extends ConstraintValidatorTestCase
             [true, 'true'],
             ['', '""'],
             ['foo bar', '"foo bar"'],
-            [new \DateTime(), 'object'],
+            [new \DateTimeImmutable(), 'object'],
             [new \stdClass(), 'object'],
             [[], 'array'],
         ];

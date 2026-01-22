@@ -28,24 +28,22 @@ final class ClickatellTransport extends AbstractTransport
 {
     protected const HOST = 'api.clickatell.com';
 
-    private string $authToken;
-    private ?string $from;
-
-    public function __construct(#[\SensitiveParameter] string $authToken, string $from = null, HttpClientInterface $client = null, EventDispatcherInterface $dispatcher = null)
-    {
-        $this->authToken = $authToken;
-        $this->from = $from;
-
+    public function __construct(
+        #[\SensitiveParameter] private string $authToken,
+        private ?string $from = null,
+        ?HttpClientInterface $client = null,
+        ?EventDispatcherInterface $dispatcher = null,
+    ) {
         parent::__construct($client, $dispatcher);
     }
 
     public function __toString(): string
     {
         if (null === $this->from) {
-            return sprintf('clickatell://%s', $this->getEndpoint());
+            return \sprintf('clickatell://%s', $this->getEndpoint());
         }
 
-        return sprintf('clickatell://%s?from=%s', $this->getEndpoint(), $this->from);
+        return \sprintf('clickatell://%s%s', $this->getEndpoint(), null !== $this->from ? '?from='.$this->from : '');
     }
 
     public function supports(MessageInterface $message): bool
@@ -59,9 +57,12 @@ final class ClickatellTransport extends AbstractTransport
             throw new UnsupportedMessageTypeException(__CLASS__, SmsMessage::class, $message);
         }
 
-        $endpoint = sprintf('https://%s/rest/message', $this->getEndpoint());
+        $endpoint = \sprintf('https://%s/rest/message', $this->getEndpoint());
 
-        $from = $message->getFrom() ?: $this->from;
+        $options = [];
+        $options['from'] = $message->getFrom() ?: $this->from;
+        $options['to'] = [$message->getPhone()];
+        $options['text'] = $message->getSubject();
 
         $response = $this->client->request('POST', $endpoint, [
             'headers' => [
@@ -70,17 +71,13 @@ final class ClickatellTransport extends AbstractTransport
                 'Content-Type' => 'application/json',
                 'X-Version' => 1,
             ],
-            'json' => [
-                'from' => $from ?? '',
-                'to' => [$message->getPhone()],
-                'text' => $message->getSubject(),
-            ],
+            'json' => array_filter($options),
         ]);
 
         try {
             $statusCode = $response->getStatusCode();
         } catch (TransportExceptionInterface $e) {
-            throw new TransportException('Could not reach the remote Clicktell server.', $response, 0, $e);
+            throw new TransportException('Could not reach the remote Clickatell server.', $response, 0, $e);
         }
 
         if (202 === $statusCode) {
@@ -96,6 +93,6 @@ final class ClickatellTransport extends AbstractTransport
         $errorInfo = $content['error']['description'] ?? '';
         $errorDocumentation = $content['error']['documentation'] ?? '';
 
-        throw new TransportException(sprintf('Unable to send SMS with Clickatell: Error code %d with message "%s" (%s).', $errorCode, $errorInfo, $errorDocumentation), $response);
+        throw new TransportException(\sprintf('Unable to send SMS with Clickatell: Error code %d with message "%s" (%s).', $errorCode, $errorInfo, $errorDocumentation), $response);
     }
 }

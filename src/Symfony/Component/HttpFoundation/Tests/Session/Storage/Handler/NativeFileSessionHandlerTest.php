@@ -11,6 +11,9 @@
 
 namespace Symfony\Component\HttpFoundation\Tests\Session\Storage\Handler;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeFileSessionHandler;
 use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
@@ -19,10 +22,9 @@ use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
  * Test class for NativeFileSessionHandler.
  *
  * @author Drak <drak@zikula.org>
- *
- * @runTestsInSeparateProcesses
- * @preserveGlobalState disabled
  */
+#[PreserveGlobalState(false)]
+#[RunTestsInSeparateProcesses]
 class NativeFileSessionHandlerTest extends TestCase
 {
     public function testConstruct()
@@ -35,9 +37,7 @@ class NativeFileSessionHandlerTest extends TestCase
         $this->assertEquals('TESTING', \ini_get('session.name'));
     }
 
-    /**
-     * @dataProvider savePathDataProvider
-     */
+    #[DataProvider('savePathDataProvider')]
     public function testConstructSavePath($savePath, $expectedSavePath, $path)
     {
         new NativeFileSessionHandler($savePath);
@@ -47,7 +47,7 @@ class NativeFileSessionHandlerTest extends TestCase
         rmdir($path);
     }
 
-    public function savePathDataProvider()
+    public static function savePathDataProvider()
     {
         $base = sys_get_temp_dir();
 

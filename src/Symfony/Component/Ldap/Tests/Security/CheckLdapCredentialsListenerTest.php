@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\Ldap\Tests\Security;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,23 +32,20 @@ use Symfony\Component\Security\Http\Authenticator\AuthenticatorInterface;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
-use Symfony\Component\Security\Http\Authenticator\Passport\PassportInterface;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\Event\CheckPassportEvent;
 use Symfony\Contracts\Service\ServiceLocatorTrait;
 
 class CheckLdapCredentialsListenerTest extends TestCase
 {
-    private $ldap;
+    private MockObject&LdapInterface $ldap;
 
     protected function setUp(): void
     {
         $this->ldap = $this->createMock(LdapInterface::class);
     }
 
-    /**
-     * @dataProvider provideShouldNotCheckPassport
-     */
+    #[DataProvider('provideShouldNotCheckPassport')]
     public function testShouldNotCheckPassport($authenticator, $passport)
     {
         $this->ldap->expects($this->never())->method('bind');
@@ -55,7 +54,7 @@ class CheckLdapCredentialsListenerTest extends TestCase
         $listener->onCheckPassport(new CheckPassportEvent($authenticator, $passport));
     }
 
-    public function provideShouldNotCheckPassport()
+    public static function provideShouldNotCheckPassport()
     {
         // no LdapBadge
         yield [new TestAuthenticator(), new Passport(new UserBadge('test'), new PasswordCredentials('s3cret'))];
@@ -88,9 +87,7 @@ class CheckLdapCredentialsListenerTest extends TestCase
         $listener->onCheckPassport($this->createEvent('s3cr3t', new LdapBadge('not_existing_ldap_service')));
     }
 
-    /**
-     * @dataProvider provideWrongPassportData
-     */
+    #[DataProvider('provideWrongPassportData')]
     public function testWrongPassport($passport)
     {
         $this->expectException(\LogicException::class);
@@ -100,7 +97,7 @@ class CheckLdapCredentialsListenerTest extends TestCase
         $listener->onCheckPassport(new CheckPassportEvent(new TestAuthenticator(), $passport));
     }
 
-    public function provideWrongPassportData()
+    public static function provideWrongPassportData()
     {
         // no password credentials
         yield [new SelfValidatingPassport(new UserBadge('test'), [new LdapBadge('app.ldap')])];
@@ -127,43 +124,6 @@ class CheckLdapCredentialsListenerTest extends TestCase
         $listener->onCheckPassport($this->createEvent());
     }
 
-    /**
-     * @group legacy
-     *
-     * @dataProvider queryForDnProvider
-     */
-    public function testLegacyQueryForDn(string $dnString, string $queryString)
-    {
-        $collection = new class([new Entry('')]) extends \ArrayObject implements CollectionInterface {
-            public function toArray(): array
-            {
-                return $this->getArrayCopy();
-            }
-        };
-
-        $query = $this->createMock(QueryInterface::class);
-        $query->expects($this->once())->method('execute')->willReturn($collection);
-
-        $this->ldap
-            ->method('bind')
-            ->withConsecutive(
-                ['elsa', 'test1234A$']
-            );
-        $this->ldap->expects($this->any())->method('escape')->with('Wouter', '', LdapInterface::ESCAPE_FILTER)->willReturn('wouter');
-        $this->ldap->expects($this->once())->method('query')->with('{user_identifier}', 'wouter_test')->willReturn($query);
-
-        $listener = $this->createListener();
-        $listener->onCheckPassport($this->createEvent('s3cr3t', new LdapBadge('app.ldap', $dnString, 'elsa', 'test1234A$', $queryString)));
-    }
-
-    public function queryForDnProvider(): iterable
-    {
-        yield ['{username}', '{username}_test'];
-        yield ['{user_identifier}', '{username}_test'];
-        yield ['{username}', '{user_identifier}_test'];
-        yield ['{user_identifier}', '{user_identifier}_test'];
-    }
-
     public function testQueryForDn()
     {
         $collection = new class([new Entry('')]) extends \ArrayObject implements CollectionInterface {
@@ -178,9 +138,15 @@ class CheckLdapCredentialsListenerTest extends TestCase
 
         $this->ldap
             ->method('bind')
-            ->withConsecutive(
-                ['elsa', 'test1234A$']
-            );
+            ->willReturnCallback(function (...$args) {
+                static $series = [
+                    ['elsa', 'test1234A$'],
+                    ['', 's3cr3t'],
+                ];
+
+                $this->assertSame(array_shift($series), $args);
+            })
+        ;
         $this->ldap->expects($this->any())->method('escape')->with('Wouter', '', LdapInterface::ESCAPE_FILTER)->willReturn('wouter');
         $this->ldap->expects($this->once())->method('query')->with('{user_identifier}', 'wouter_test')->willReturn($query);
 
@@ -200,9 +166,15 @@ class CheckLdapCredentialsListenerTest extends TestCase
 
         $this->ldap
             ->method('bind')
-            ->withConsecutive(
-                ['elsa', 'test1234A$']
-            );
+            ->willReturnCallback(function (...$args) {
+                static $series = [
+                    ['elsa', 'test1234A$'],
+                    ['', 's3cr3t'],
+                ];
+
+                $this->assertSame(array_shift($series), $args);
+            })
+        ;
         $this->ldap->method('escape')->willReturnArgument(0);
         $this->ldap->expects($this->once())->method('query')->willReturn($query);
 
@@ -214,15 +186,13 @@ class CheckLdapCredentialsListenerTest extends TestCase
     {
         return new CheckPassportEvent(
             new TestAuthenticator(),
-            new Passport(new UserBadge('Wouter', function () { return new InMemoryUser('Wouter', null, ['ROLE_USER']); }), new PasswordCredentials($password), [$ldapBadge ?? new LdapBadge('app.ldap')])
+            new Passport(new UserBadge('Wouter', static fn () => new InMemoryUser('Wouter', null, ['ROLE_USER'])), new PasswordCredentials($password), [$ldapBadge ?? new LdapBadge('app.ldap')])
         );
     }
 
     private function createListener()
     {
-        $ldapLocator = new class(['app.ldap' => function () {
-            return $this->ldap;
-        }]) implements ContainerInterface {
+        $ldapLocator = new class(['app.ldap' => fn () => $this->ldap]) implements ContainerInterface {
             use ServiceLocatorTrait;
         };
 
@@ -238,13 +208,6 @@ if (interface_exists(AuthenticatorInterface::class)) {
         }
 
         public function authenticate(Request $request): Passport
-        {
-        }
-
-        /**
-         * @internal for compatibility with Symfony 5.4
-         */
-        public function createAuthenticatedToken(PassportInterface $passport, string $firewallName): TokenInterface
         {
         }
 

@@ -18,37 +18,25 @@ namespace Symfony\Component\Security\Core\Authentication\RememberMe;
  */
 final class PersistentToken implements PersistentTokenInterface
 {
-    private string $class;
-    private string $userIdentifier;
-    private string $series;
-    private string $tokenValue;
-    private \DateTime $lastUsed;
+    private \DateTimeImmutable $lastUsed;
 
-    public function __construct(string $class, string $userIdentifier, string $series, #[\SensitiveParameter] string $tokenValue, \DateTime $lastUsed)
-    {
-        if (empty($class)) {
-            throw new \InvalidArgumentException('$class must not be empty.');
-        }
+    public function __construct(
+        private string $userIdentifier,
+        private string $series,
+        #[\SensitiveParameter] private string $tokenValue,
+        \DateTimeInterface $lastUsed,
+    ) {
         if ('' === $userIdentifier) {
             throw new \InvalidArgumentException('$userIdentifier must not be empty.');
         }
-        if (empty($series)) {
+        if (!$series) {
             throw new \InvalidArgumentException('$series must not be empty.');
         }
-        if (empty($tokenValue)) {
+        if (!$tokenValue) {
             throw new \InvalidArgumentException('$tokenValue must not be empty.');
         }
 
-        $this->class = $class;
-        $this->userIdentifier = $userIdentifier;
-        $this->series = $series;
-        $this->tokenValue = $tokenValue;
-        $this->lastUsed = $lastUsed;
-    }
-
-    public function getClass(): string
-    {
-        return $this->class;
+        $this->lastUsed = \DateTimeImmutable::createFromInterface($lastUsed);
     }
 
     public function getUserIdentifier(): string
@@ -68,6 +56,6 @@ final class PersistentToken implements PersistentTokenInterface
 
     public function getLastUsed(): \DateTime
     {
-        return $this->lastUsed;
+        return \DateTime::createFromImmutable($this->lastUsed);
     }
 }

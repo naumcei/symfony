@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Messenger\Tests\Transport\Serialization\Normalizer;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\ErrorHandler\Exception\FlattenException;
 use Symfony\Component\Messenger\Transport\Serialization\Normalizer\FlattenExceptionNormalizer;
@@ -21,10 +22,7 @@ use Symfony\Component\Messenger\Transport\Serialization\Serializer;
  */
 class FlattenExceptionNormalizerTest extends TestCase
 {
-    /**
-     * @var FlattenExceptionNormalizer
-     */
-    private $normalizer;
+    private FlattenExceptionNormalizer $normalizer;
 
     protected function setUp(): void
     {
@@ -38,9 +36,7 @@ class FlattenExceptionNormalizerTest extends TestCase
         $this->assertFalse($this->normalizer->supportsNormalization(new \stdClass()));
     }
 
-    /**
-     * @dataProvider provideFlattenException
-     */
+    #[DataProvider('provideFlattenException')]
     public function testNormalize(FlattenException $exception)
     {
         $normalized = $this->normalizer->normalize($exception, null, $this->getMessengerContext());
@@ -63,7 +59,7 @@ class FlattenExceptionNormalizerTest extends TestCase
         $this->assertSame($exception->getStatusText(), $normalized['status_text']);
     }
 
-    public function provideFlattenException(): array
+    public static function provideFlattenException(): array
     {
         return [
             'instance from exception' => [FlattenException::createFromThrowable(new \RuntimeException('foo', 42))],

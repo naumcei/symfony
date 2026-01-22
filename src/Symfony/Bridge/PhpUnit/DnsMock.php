@@ -30,6 +30,7 @@ class DnsMock
         'NAPTR' => \DNS_NAPTR,
         'TXT' => \DNS_TXT,
         'HINFO' => \DNS_HINFO,
+        'CAA' => '\\' !== \DIRECTORY_SEPARATOR ? \DNS_CAA : 0,
     ];
 
     /**
@@ -37,12 +38,12 @@ class DnsMock
      *
      * @param array $hosts Mocked hosts as keys, arrays of DNS records as returned by dns_get_record() as values
      */
-    public static function withMockedHosts(array $hosts)
+    public static function withMockedHosts(array $hosts): void
     {
         self::$hosts = $hosts;
     }
 
-    public static function checkdnsrr($hostname, $type = 'MX')
+    public static function checkdnsrr($hostname, $type = 'MX'): bool
     {
         if (!self::$hosts) {
             return \checkdnsrr($hostname, $type);
@@ -63,7 +64,7 @@ class DnsMock
         return false;
     }
 
-    public static function getmxrr($hostname, &$mxhosts, &$weight = null)
+    public static function getmxrr($hostname, &$mxhosts, &$weight = null): bool
     {
         if (!self::$hosts) {
             return \getmxrr($hostname, $mxhosts, $weight);
@@ -161,7 +162,7 @@ class DnsMock
         return $records;
     }
 
-    public static function register($class)
+    public static function register($class): void
     {
         $self = static::class;
 
@@ -169,7 +170,7 @@ class DnsMock
         if (0 < strpos($class, '\\Tests\\')) {
             $ns = str_replace('\\Tests\\', '\\', $class);
             $mockedNs[] = substr($ns, 0, strrpos($ns, '\\'));
-        } elseif (0 === strpos($class, 'Tests\\')) {
+        } elseif (str_starts_with($class, 'Tests\\')) {
             $mockedNs[] = substr($class, 6, strrpos($class, '\\') - 6);
         }
         foreach ($mockedNs as $ns) {

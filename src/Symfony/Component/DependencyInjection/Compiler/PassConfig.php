@@ -22,11 +22,12 @@ use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
  */
 class PassConfig
 {
-    public const TYPE_AFTER_REMOVING = 'afterRemoving';
+    // In the order of execution
     public const TYPE_BEFORE_OPTIMIZATION = 'beforeOptimization';
-    public const TYPE_BEFORE_REMOVING = 'beforeRemoving';
     public const TYPE_OPTIMIZE = 'optimization';
+    public const TYPE_BEFORE_REMOVING = 'beforeRemoving';
     public const TYPE_REMOVE = 'removing';
+    public const TYPE_AFTER_REMOVING = 'afterRemoving';
 
     private MergeExtensionConfigurationPass $mergePass;
     private array $afterRemovingPasses;
@@ -55,6 +56,7 @@ class PassConfig
             new AutoAliasServicePass(),
             new ValidateEnvPlaceholdersPass(),
             new ResolveDecoratorStackPass(),
+            new ResolveAutowireInlineAttributesPass(),
             new ResolveChildDefinitionsPass(),
             new RegisterServiceSubscribersPass(),
             new ResolveParameterPlaceHoldersPass(false, false),
@@ -90,11 +92,16 @@ class PassConfig
             new DefinitionErrorExceptionPass(),
         ]];
 
-        $this->afterRemovingPasses = [[
-            new ResolveHotPathPass(),
-            new ResolveNoPreloadPass(),
-            new AliasDeprecatedPublicServicesPass(),
-        ]];
+        $this->afterRemovingPasses = [
+            0 => [
+                new ResolveHotPathPass(),
+                new ResolveNoPreloadPass(),
+                new AliasDeprecatedPublicServicesPass(),
+            ],
+            // Let build parameters be available as late as possible
+            // Don't remove array parameters since ResolveParameterPlaceHoldersPass doesn't resolve them
+            -2048 => [new RemoveBuildParametersPass(true)],
+        ];
     }
 
     /**
@@ -119,11 +126,11 @@ class PassConfig
      *
      * @throws InvalidArgumentException when a pass type doesn't exist
      */
-    public function addPass(CompilerPassInterface $pass, string $type = self::TYPE_BEFORE_OPTIMIZATION, int $priority = 0)
+    public function addPass(CompilerPassInterface $pass, string $type = self::TYPE_BEFORE_OPTIMIZATION, int $priority = 0): void
     {
         $property = $type.'Passes';
         if (!isset($this->$property)) {
-            throw new InvalidArgumentException(sprintf('Invalid type "%s".', $type));
+            throw new InvalidArgumentException(\sprintf('Invalid type "%s".', $type));
         }
 
         $passes = &$this->$property;
@@ -192,7 +199,7 @@ class PassConfig
         return $this->mergePass;
     }
 
-    public function setMergePass(CompilerPassInterface $pass)
+    public function setMergePass(CompilerPassInterface $pass): void
     {
         $this->mergePass = $pass;
     }
@@ -202,7 +209,7 @@ class PassConfig
      *
      * @param CompilerPassInterface[] $passes
      */
-    public function setAfterRemovingPasses(array $passes)
+    public function setAfterRemovingPasses(array $passes): void
     {
         $this->afterRemovingPasses = [$passes];
     }
@@ -212,7 +219,7 @@ class PassConfig
      *
      * @param CompilerPassInterface[] $passes
      */
-    public function setBeforeOptimizationPasses(array $passes)
+    public function setBeforeOptimizationPasses(array $passes): void
     {
         $this->beforeOptimizationPasses = [$passes];
     }
@@ -222,7 +229,7 @@ class PassConfig
      *
      * @param CompilerPassInterface[] $passes
      */
-    public function setBeforeRemovingPasses(array $passes)
+    public function setBeforeRemovingPasses(array $passes): void
     {
         $this->beforeRemovingPasses = [$passes];
     }
@@ -232,7 +239,7 @@ class PassConfig
      *
      * @param CompilerPassInterface[] $passes
      */
-    public function setOptimizationPasses(array $passes)
+    public function setOptimizationPasses(array $passes): void
     {
         $this->optimizationPasses = [$passes];
     }
@@ -242,7 +249,7 @@ class PassConfig
      *
      * @param CompilerPassInterface[] $passes
      */
-    public function setRemovingPasses(array $passes)
+    public function setRemovingPasses(array $passes): void
     {
         $this->removingPasses = [$passes];
     }

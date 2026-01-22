@@ -47,33 +47,23 @@ class ExceptionListener
 {
     use TargetPathTrait;
 
-    private TokenStorageInterface $tokenStorage;
-    private string $firewallName;
-    private ?AccessDeniedHandlerInterface $accessDeniedHandler;
-    private ?AuthenticationEntryPointInterface $authenticationEntryPoint;
-    private AuthenticationTrustResolverInterface $authenticationTrustResolver;
-    private ?string $errorPage;
-    private ?LoggerInterface $logger;
-    private HttpUtils $httpUtils;
-    private bool $stateless;
-
-    public function __construct(TokenStorageInterface $tokenStorage, AuthenticationTrustResolverInterface $trustResolver, HttpUtils $httpUtils, string $firewallName, AuthenticationEntryPointInterface $authenticationEntryPoint = null, string $errorPage = null, AccessDeniedHandlerInterface $accessDeniedHandler = null, LoggerInterface $logger = null, bool $stateless = false)
-    {
-        $this->tokenStorage = $tokenStorage;
-        $this->accessDeniedHandler = $accessDeniedHandler;
-        $this->httpUtils = $httpUtils;
-        $this->firewallName = $firewallName;
-        $this->authenticationEntryPoint = $authenticationEntryPoint;
-        $this->authenticationTrustResolver = $trustResolver;
-        $this->errorPage = $errorPage;
-        $this->logger = $logger;
-        $this->stateless = $stateless;
+    public function __construct(
+        private TokenStorageInterface $tokenStorage,
+        private AuthenticationTrustResolverInterface $authenticationTrustResolver,
+        private HttpUtils $httpUtils,
+        private string $firewallName,
+        private ?AuthenticationEntryPointInterface $authenticationEntryPoint = null,
+        private ?string $errorPage = null,
+        private ?AccessDeniedHandlerInterface $accessDeniedHandler = null,
+        private ?LoggerInterface $logger = null,
+        private bool $stateless = false,
+    ) {
     }
 
     /**
      * Registers a onKernelException listener to take care of security exceptions.
      */
-    public function register(EventDispatcherInterface $dispatcher)
+    public function register(EventDispatcherInterface $dispatcher): void
     {
         $dispatcher->addListener(KernelEvents::EXCEPTION, $this->onKernelException(...), 1);
     }
@@ -81,7 +71,7 @@ class ExceptionListener
     /**
      * Unregisters the dispatcher.
      */
-    public function unregister(EventDispatcherInterface $dispatcher)
+    public function unregister(EventDispatcherInterface $dispatcher): void
     {
         $dispatcher->removeListener(KernelEvents::EXCEPTION, $this->onKernelException(...));
     }
@@ -89,7 +79,7 @@ class ExceptionListener
     /**
      * Handles security related exceptions.
      */
-    public function onKernelException(ExceptionEvent $event)
+    public function onKernelException(ExceptionEvent $event): void
     {
         $exception = $event->getThrowable();
         do {
@@ -131,7 +121,7 @@ class ExceptionListener
         }
     }
 
-    private function handleAccessDeniedException(ExceptionEvent $event, AccessDeniedException $exception)
+    private function handleAccessDeniedException(ExceptionEvent $event, AccessDeniedException $exception): void
     {
         $event->setThrowable(new AccessDeniedHttpException($exception->getMessage(), $exception));
 
@@ -208,16 +198,10 @@ class ExceptionListener
             $this->throwUnauthorizedException($authException);
         }
 
-        if (!$response instanceof Response) {
-            $given = get_debug_type($response);
-
-            throw new \LogicException(sprintf('The "%s::start()" method must return a Response object ("%s" returned).', get_debug_type($this->authenticationEntryPoint), $given));
-        }
-
         return $response;
     }
 
-    protected function setTargetPath(Request $request)
+    protected function setTargetPath(Request $request): void
     {
         // session isn't required when using HTTP basic authentication mechanism for example
         if ($request->hasSession() && $request->isMethodSafe() && !$request->isXmlHttpRequest()) {
@@ -225,9 +209,9 @@ class ExceptionListener
         }
     }
 
-    private function throwUnauthorizedException(AuthenticationException $authException)
+    private function throwUnauthorizedException(AuthenticationException $authException): never
     {
-        $this->logger?->notice(sprintf('No Authentication entry point configured, returning a %s HTTP response. Configure "entry_point" on the firewall "%s" if you want to modify the response.', Response::HTTP_UNAUTHORIZED, $this->firewallName));
+        $this->logger?->notice(\sprintf('No Authentication entry point configured, returning a %s HTTP response. Configure "entry_point" on the firewall "%s" if you want to modify the response.', Response::HTTP_UNAUTHORIZED, $this->firewallName));
 
         throw new HttpException(Response::HTTP_UNAUTHORIZED, $authException->getMessage(), $authException, [], $authException->getCode());
     }

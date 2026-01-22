@@ -12,16 +12,19 @@
 namespace Symfony\Component\Notifier\Bridge\LinkedIn\Tests;
 
 use Symfony\Component\Notifier\Bridge\LinkedIn\LinkedInTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
 
-final class LinkedInTransportFactoryTest extends TransportFactoryTestCase
+final class LinkedInTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+
     public function createFactory(): LinkedInTransportFactory
     {
         return new LinkedInTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'linkedin://host.test',
@@ -29,18 +32,18 @@ final class LinkedInTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'linkedin://host'];
         yield [false, 'somethingElse://host'];
     }
 
-    public function incompleteDsnProvider(): iterable
+    public static function incompleteDsnProvider(): iterable
     {
         yield 'missing account or user_id' => ['linkedin://AccessTokenOrUserId@default'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://accessToken:UserId@default'];
     }

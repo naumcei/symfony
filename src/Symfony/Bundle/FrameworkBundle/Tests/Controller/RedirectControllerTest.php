@@ -11,6 +11,7 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Tests\Controller;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\RedirectController;
 use Symfony\Bundle\FrameworkBundle\Tests\TestCase;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -60,9 +61,7 @@ class RedirectControllerTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider provider
-     */
+    #[DataProvider('provider')]
     public function testRoute($permanent, $keepRequestMethod, $keepQueryParams, $ignoreAttributes, $expectedCode, $expectedAttributes)
     {
         $request = new Request();
@@ -103,7 +102,7 @@ class RedirectControllerTest extends TestCase
         $this->assertEquals($expectedCode, $returnResponse->getStatusCode());
     }
 
-    public function provider()
+    public static function provider(): array
     {
         return [
             [true, false, false, false, 301, ['additional-parameter' => 'value']],
@@ -183,6 +182,20 @@ class RedirectControllerTest extends TestCase
         $this->assertEquals(307, $returnResponse->getStatusCode());
     }
 
+    public function testProtocolRelative()
+    {
+        $request = new Request();
+        $controller = new RedirectController();
+
+        $returnResponse = $controller->urlRedirectAction($request, '//foo.bar/');
+        $this->assertRedirectUrl($returnResponse, 'http://foo.bar/');
+        $this->assertSame(302, $returnResponse->getStatusCode());
+
+        $returnResponse = $controller->urlRedirectAction($request, '//foo.bar/', false, 'https');
+        $this->assertRedirectUrl($returnResponse, 'https://foo.bar/');
+        $this->assertSame(302, $returnResponse->getStatusCode());
+    }
+
     public function testUrlRedirectDefaultPorts()
     {
         $host = 'www.example.com';
@@ -210,7 +223,7 @@ class RedirectControllerTest extends TestCase
         $this->assertRedirectUrl($returnValue, $expectedUrl);
     }
 
-    public function urlRedirectProvider()
+    public static function urlRedirectProvider(): array
     {
         return [
             // Standard ports
@@ -241,9 +254,7 @@ class RedirectControllerTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider urlRedirectProvider
-     */
+    #[DataProvider('urlRedirectProvider')]
     public function testUrlRedirect($scheme, $httpPort, $httpsPort, $requestScheme, $requestPort, $expectedPort)
     {
         $host = 'www.example.com';
@@ -262,7 +273,7 @@ class RedirectControllerTest extends TestCase
         $this->assertRedirectUrl($returnValue, $expectedUrl);
     }
 
-    public function pathQueryParamsProvider()
+    public static function pathQueryParamsProvider(): array
     {
         return [
             ['http://www.example.com/base/redirect-path', '/redirect-path',  ''],
@@ -273,9 +284,7 @@ class RedirectControllerTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider pathQueryParamsProvider
-     */
+    #[DataProvider('pathQueryParamsProvider')]
     public function testPathQueryParams($expectedUrl, $path, $queryString)
     {
         $scheme = 'http';

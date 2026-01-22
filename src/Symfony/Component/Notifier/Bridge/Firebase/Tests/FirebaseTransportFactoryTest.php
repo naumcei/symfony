@@ -12,19 +12,22 @@
 namespace Symfony\Component\Notifier\Bridge\Firebase\Tests;
 
 use Symfony\Component\Notifier\Bridge\Firebase\FirebaseTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
 
 /**
  * @author Oskar Stark <oskarstark@googlemail.com>
  */
-final class FirebaseTransportFactoryTest extends TransportFactoryTestCase
+final class FirebaseTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+
     public function createFactory(): FirebaseTransportFactory
     {
         return new FirebaseTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'firebase://host.test',
@@ -32,14 +35,20 @@ final class FirebaseTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'firebase://username:password@default'];
         yield [false, 'somethingElse://username:password@default'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://username:password@default'];
+    }
+
+    public static function incompleteDsnProvider(): iterable
+    {
+        yield ['firebase://:password@default'];
+        yield ['firebase://username@default'];
     }
 }

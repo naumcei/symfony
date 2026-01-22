@@ -11,14 +11,13 @@
 
 namespace Symfony\Component\Finder\Tests\Iterator;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Finder\Comparator\NumberComparator;
 use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
 
 class SizeRangeFilterIteratorTest extends RealIteratorTestCase
 {
-    /**
-     * @dataProvider getAcceptData
-     */
+    #[DataProvider('getAcceptData')]
     public function testAccept($size, $expected)
     {
         $inner = new InnerSizeIterator(self::$files);
@@ -28,7 +27,7 @@ class SizeRangeFilterIteratorTest extends RealIteratorTestCase
         $this->assertIterator($expected, $iterator);
     }
 
-    public function getAcceptData()
+    public static function getAcceptData()
     {
         $lessThan1KGreaterThan05K = [
             '.foo',
@@ -41,7 +40,7 @@ class SizeRangeFilterIteratorTest extends RealIteratorTestCase
         ];
 
         return [
-            [[new NumberComparator('< 1K'), new NumberComparator('> 0.5K')], $this->toAbsolute($lessThan1KGreaterThan05K)],
+            [[new NumberComparator('< 1K'), new NumberComparator('> 0.5K')], self::toAbsolute($lessThan1KGreaterThan05K)],
         ];
     }
 }

@@ -11,20 +11,22 @@
 
 namespace Symfony\Component\ErrorHandler\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\ErrorHandler\Tests\Fixtures\ExtendsDeprecatedParent;
 use Symfony\Component\ErrorHandler\DebugClassLoader;
 
 class DebugClassLoaderTest extends TestCase
 {
-    private $patchTypes;
-    private $errorReporting;
-    private $loader;
+    private string|false $patchTypes;
+    private int $errorReporting;
+    private array $loader;
 
     protected function setUp(): void
     {
         $this->patchTypes = getenv('SYMFONY_PATCH_TYPE_DECLARATIONS');
-        $this->errorReporting = error_reporting(E_ALL);
+        $this->errorReporting = error_reporting(\E_ALL);
         putenv('SYMFONY_PATCH_TYPE_DECLARATIONS=deprecations=1');
         $this->loader = [new DebugClassLoader([new ClassLoader(), 'loadClass']), 'loadClass'];
         spl_autoload_register($this->loader, true, true);
@@ -37,9 +39,7 @@ class DebugClassLoaderTest extends TestCase
         putenv('SYMFONY_PATCH_TYPE_DECLARATIONS'.(false !== $this->patchTypes ? '='.$this->patchTypes : ''));
     }
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testIdempotence()
     {
         DebugClassLoader::enable();
@@ -87,7 +87,7 @@ class DebugClassLoaderTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Case mismatch between class and real file names');
         if (!file_exists(__DIR__.'/Fixtures/CaseMismatch.php')) {
-            $this->markTestSkipped('Can only be run on case insensitive filesystems');
+            $this->markTestSkipped('Can only be run on case-insensitive filesystems');
         }
 
         class_exists(Fixtures\CaseMismatch::class, true);
@@ -115,14 +115,12 @@ class DebugClassLoaderTest extends TestCase
         $this->assertTrue(class_exists(Fixtures\ClassAlias::class, true));
     }
 
-    /**
-     * @dataProvider provideDeprecatedSuper
-     */
+    #[DataProvider('provideDeprecatedSuper')]
     public function testDeprecatedSuper(string $class, string $super, string $type)
     {
-        set_error_handler(function () { return false; });
+        set_error_handler(static fn () => false);
         $e = error_reporting(0);
-        trigger_error('', E_USER_DEPRECATED);
+        trigger_error('', \E_USER_DEPRECATED);
 
         class_exists('Test\\'.__NAMESPACE__.'\\'.$class, true);
 
@@ -133,14 +131,14 @@ class DebugClassLoaderTest extends TestCase
         unset($lastError['file'], $lastError['line']);
 
         $xError = [
-            'type' => E_USER_DEPRECATED,
+            'type' => \E_USER_DEPRECATED,
             'message' => 'The "Test\Symfony\Component\ErrorHandler\Tests\\'.$class.'" class '.$type.' "Symfony\Component\ErrorHandler\Tests\Fixtures\\'.$super.'" that is deprecated but this is a test deprecation notice.',
         ];
 
         $this->assertSame($xError, $lastError);
     }
 
-    public function provideDeprecatedSuper(): array
+    public static function provideDeprecatedSuper(): array
     {
         return [
             ['DeprecatedInterfaceClass', 'DeprecatedInterface', 'implements'],
@@ -150,9 +148,9 @@ class DebugClassLoaderTest extends TestCase
 
     public function testInterfaceExtendsDeprecatedInterface()
     {
-        set_error_handler(function () { return false; });
+        set_error_handler(static fn () => false);
         $e = error_reporting(0);
-        trigger_error('', E_USER_NOTICE);
+        trigger_error('', \E_USER_NOTICE);
 
         class_exists('Test\\'.NonDeprecatedInterfaceClass::class, true);
 
@@ -163,7 +161,7 @@ class DebugClassLoaderTest extends TestCase
         unset($lastError['file'], $lastError['line']);
 
         $xError = [
-            'type' => E_USER_NOTICE,
+            'type' => \E_USER_NOTICE,
             'message' => '',
         ];
 
@@ -172,9 +170,9 @@ class DebugClassLoaderTest extends TestCase
 
     public function testDeprecatedSuperInSameNamespace()
     {
-        set_error_handler(function () { return false; });
+        set_error_handler(static fn () => false);
         $e = error_reporting(0);
-        trigger_error('', E_USER_NOTICE);
+        trigger_error('', \E_USER_NOTICE);
 
         class_exists(ExtendsDeprecatedParent::class, true);
 
@@ -185,7 +183,7 @@ class DebugClassLoaderTest extends TestCase
         unset($lastError['file'], $lastError['line']);
 
         $xError = [
-            'type' => E_USER_NOTICE,
+            'type' => \E_USER_NOTICE,
             'message' => '',
         ];
 
@@ -195,8 +193,8 @@ class DebugClassLoaderTest extends TestCase
     public function testExtendedFinalClass()
     {
         $deprecations = [];
-        set_error_handler(function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
-        $e = error_reporting(E_USER_DEPRECATED);
+        set_error_handler(static function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
+        $e = error_reporting(\E_USER_DEPRECATED);
 
         require __DIR__.'/Fixtures/FinalClasses.php';
 
@@ -224,8 +222,8 @@ class DebugClassLoaderTest extends TestCase
     public function testExtendedFinalMethod()
     {
         $deprecations = [];
-        set_error_handler(function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
-        $e = error_reporting(E_USER_DEPRECATED);
+        set_error_handler(static function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
+        $e = error_reporting(\E_USER_DEPRECATED);
 
         class_exists(Fixtures\ExtendedFinalMethod::class, true);
 
@@ -242,9 +240,9 @@ class DebugClassLoaderTest extends TestCase
 
     public function testExtendedDeprecatedMethodDoesntTriggerAnyNotice()
     {
-        set_error_handler(function () { return false; });
+        set_error_handler(static fn () => false);
         $e = error_reporting(0);
-        trigger_error('', E_USER_NOTICE);
+        trigger_error('', \E_USER_NOTICE);
 
         class_exists('Test\\'.ExtendsAnnotatedClass::class, true);
 
@@ -254,14 +252,14 @@ class DebugClassLoaderTest extends TestCase
         $lastError = error_get_last();
         unset($lastError['file'], $lastError['line']);
 
-        $this->assertSame(['type' => E_USER_NOTICE, 'message' => ''], $lastError);
+        $this->assertSame(['type' => \E_USER_NOTICE, 'message' => ''], $lastError);
     }
 
     public function testInternalsUse()
     {
         $deprecations = [];
-        set_error_handler(function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
-        $e = error_reporting(E_USER_DEPRECATED);
+        set_error_handler(static function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
+        $e = error_reporting(\E_USER_DEPRECATED);
 
         class_exists('Test\\'.ExtendsInternals::class, true);
 
@@ -279,8 +277,8 @@ class DebugClassLoaderTest extends TestCase
     public function testExtendedMethodDefinesNewParameters()
     {
         $deprecations = [];
-        set_error_handler(function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
-        $e = error_reporting(E_USER_DEPRECATED);
+        set_error_handler(static function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
+        $e = error_reporting(\E_USER_DEPRECATED);
 
         class_exists(Fixtures\SubClassWithAnnotatedParameters::class, true);
 
@@ -301,8 +299,8 @@ class DebugClassLoaderTest extends TestCase
     public function testUseTraitWithInternalMethod()
     {
         $deprecations = [];
-        set_error_handler(function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
-        $e = error_reporting(E_USER_DEPRECATED);
+        set_error_handler(static function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
+        $e = error_reporting(\E_USER_DEPRECATED);
 
         class_exists('Test\\'.UseTraitWithInternalMethod::class, true);
 
@@ -315,8 +313,8 @@ class DebugClassLoaderTest extends TestCase
     public function testVirtualUse()
     {
         $deprecations = [];
-        set_error_handler(function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
-        $e = error_reporting(E_USER_DEPRECATED);
+        set_error_handler(static function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
+        $e = error_reporting(\E_USER_DEPRECATED);
 
         class_exists('Test\\'.ExtendsVirtual::class, true);
 
@@ -345,8 +343,8 @@ class DebugClassLoaderTest extends TestCase
     public function testVirtualUseWithMagicCall()
     {
         $deprecations = [];
-        set_error_handler(function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
-        $e = error_reporting(E_USER_DEPRECATED);
+        set_error_handler(static function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
+        $e = error_reporting(\E_USER_DEPRECATED);
 
         class_exists('Test\\'.ExtendsVirtualMagicCall::class, true);
 
@@ -364,8 +362,8 @@ class DebugClassLoaderTest extends TestCase
     public function testReturnType()
     {
         $deprecations = [];
-        set_error_handler(function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
-        $e = error_reporting(E_USER_DEPRECATED);
+        set_error_handler(static function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
+        $e = error_reporting(\E_USER_DEPRECATED);
 
         class_exists('Test\\'.ReturnType::class, true);
 
@@ -401,14 +399,31 @@ class DebugClassLoaderTest extends TestCase
             'Method "Symfony\Component\ErrorHandler\Tests\Fixtures\ReturnTypeParent::true()" might add "true" as a native return type declaration in the future. Do the same in child class "Test\Symfony\Component\ErrorHandler\Tests\ReturnType" now to avoid errors or add an explicit @return annotation to suppress this message.',
             'Method "Symfony\Component\ErrorHandler\Tests\Fixtures\ReturnTypeParent::never()" might add "never" as a native return type declaration in the future. Do the same in child class "Test\Symfony\Component\ErrorHandler\Tests\ReturnType" now to avoid errors or add an explicit @return annotation to suppress this message.',
             'Method "Symfony\Component\ErrorHandler\Tests\Fixtures\ReturnTypeParent::null()" might add "null" as a native return type declaration in the future. Do the same in child class "Test\Symfony\Component\ErrorHandler\Tests\ReturnType" now to avoid errors or add an explicit @return annotation to suppress this message.',
+            'Method "Symfony\Component\ErrorHandler\Tests\Fixtures\ReturnTypeParent::classConstant()" might add "string" as a native return type declaration in the future. Do the same in child class "Test\Symfony\Component\ErrorHandler\Tests\ReturnType" now to avoid errors or add an explicit @return annotation to suppress this message.',
+        ], $deprecations);
+    }
+
+    public function testReturnTypePhp83()
+    {
+        $deprecations = [];
+        set_error_handler(static function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
+        $e = error_reporting(\E_USER_DEPRECATED);
+
+        class_exists('Test\\'.ReturnTypePhp83::class, true);
+
+        error_reporting($e);
+        restore_error_handler();
+
+        $this->assertSame([
+            'Method "Symfony\Component\ErrorHandler\Tests\Fixtures\ReturnTypeParentPhp83::classConstantWithType()" might add "string" as a native return type declaration in the future. Do the same in child class "Test\Symfony\Component\ErrorHandler\Tests\ReturnTypePhp83" now to avoid errors or add an explicit @return annotation to suppress this message.',
         ], $deprecations);
     }
 
     public function testOverrideFinalProperty()
     {
         $deprecations = [];
-        set_error_handler(function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
-        $e = error_reporting(E_USER_DEPRECATED);
+        set_error_handler(static function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
+        $e = error_reporting(\E_USER_DEPRECATED);
 
         class_exists(Fixtures\OverrideFinalProperty::class, true);
         class_exists(Fixtures\FinalProperty\OverrideFinalPropertySameNamespace::class, true);
@@ -421,15 +436,15 @@ class DebugClassLoaderTest extends TestCase
             'The "Symfony\Component\ErrorHandler\Tests\Fixtures\FinalProperty\FinalProperty::$pub" property is considered final. You should not override it in "Symfony\Component\ErrorHandler\Tests\Fixtures\OverrideFinalProperty".',
             'The "Symfony\Component\ErrorHandler\Tests\Fixtures\FinalProperty\FinalProperty::$prot" property is considered final. You should not override it in "Symfony\Component\ErrorHandler\Tests\Fixtures\OverrideFinalProperty".',
             'The "Symfony\Component\ErrorHandler\Tests\Fixtures\FinalProperty\FinalProperty::$implicitlyFinal" property is considered final. You should not override it in "Symfony\Component\ErrorHandler\Tests\Fixtures\OverrideFinalProperty".',
-            'The "Test\Symfony\Component\ErrorHandler\Tests\FinalProperty\OutsideFinalProperty::$final" property is considered final. You should not override it in "Test\Symfony\Component\ErrorHandler\Tests\OverrideOutsideFinalProperty".'
+            'The "Test\Symfony\Component\ErrorHandler\Tests\FinalProperty\OutsideFinalProperty::$final" property is considered final. You should not override it in "Test\Symfony\Component\ErrorHandler\Tests\OverrideOutsideFinalProperty".',
         ], $deprecations);
     }
 
     public function testOverrideFinalConstant()
     {
         $deprecations = [];
-        set_error_handler(function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
-        $e = error_reporting(E_USER_DEPRECATED);
+        set_error_handler(static function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
+        $e = error_reporting(\E_USER_DEPRECATED);
 
         class_exists(Fixtures\FinalConstant\OverrideFinalConstant::class, true);
 
@@ -445,10 +460,10 @@ class DebugClassLoaderTest extends TestCase
     public function testOverrideFinalConstant81()
     {
         $deprecations = [];
-        set_error_handler(function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
-        $e = error_reporting(E_USER_DEPRECATED);
+        set_error_handler(static function ($type, $msg) use (&$deprecations) { $deprecations[] = $msg; });
+        $e = error_reporting(\E_USER_DEPRECATED);
 
-        class_exists( Fixtures\FinalConstant\OverrideFinalConstant81::class, true);
+        class_exists(Fixtures\FinalConstant\OverrideFinalConstant81::class, true);
 
         error_reporting($e);
         restore_error_handler();
@@ -497,7 +512,7 @@ class ClassLoader
             eval('namespace Test\\'.__NAMESPACE__.'; class NonDeprecatedInterfaceClass implements \\'.__NAMESPACE__.'\Fixtures\NonDeprecatedInterface {}');
         } elseif ('Test\\'.Float::class === $class) {
             eval('namespace Test\\'.__NAMESPACE__.'; class Float {}');
-        } elseif (str_starts_with($class, 'Test\\' . ExtendsFinalClass::class)) {
+        } elseif (str_starts_with($class, 'Test\\'.ExtendsFinalClass::class)) {
             $classShortName = substr($class, strrpos($class, '\\') + 1);
             eval('namespace Test\\'.__NAMESPACE__.'; class '.$classShortName.' extends \\'.__NAMESPACE__.'\Fixtures\\'.substr($classShortName, 7).' {}');
         } elseif ('Test\\'.ExtendsAnnotatedClass::class === $class) {
@@ -542,6 +557,8 @@ class ClassLoader
             }');
         } elseif ('Test\\'.ReturnType::class === $class) {
             return $fixtureDir.\DIRECTORY_SEPARATOR.'ReturnType.php';
+        } elseif ('Test\\'.ReturnTypePhp83::class === $class) {
+            return $fixtureDir.\DIRECTORY_SEPARATOR.'ReturnTypePhp83.php';
         } elseif ('Test\\'.Fixtures\OutsideInterface::class === $class) {
             return $fixtureDir.\DIRECTORY_SEPARATOR.'OutsideInterface.php';
         } elseif ('Test\\'.OverrideOutsideFinalProperty::class === $class) {
@@ -551,3 +568,5 @@ class ClassLoader
         }
     }
 }
+
+// @php-cs-fixer-ignore error_suppression This file is explicitly expected to not silence each of trigger_error calls

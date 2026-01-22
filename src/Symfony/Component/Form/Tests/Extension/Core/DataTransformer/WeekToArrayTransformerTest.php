@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Form\Tests\Extension\Core\DataTransformer;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Component\Form\Extension\Core\DataTransformer\WeekToArrayTransformer;
@@ -31,9 +32,7 @@ class WeekToArrayTransformerTest extends TestCase
         $this->assertSame(['year' => null, 'week' => null], $transformer->transform(null));
     }
 
-    /**
-     * @dataProvider transformationFailuresProvider
-     */
+    #[DataProvider('transformationFailuresProvider')]
     public function testTransformationFailures($input, string $message)
     {
         $this->expectException(TransformationFailedException::class);
@@ -43,7 +42,7 @@ class WeekToArrayTransformerTest extends TestCase
         $transformer->transform($input);
     }
 
-    public function transformationFailuresProvider(): array
+    public static function transformationFailuresProvider(): array
     {
         return [
             'malformed string' => ['lorem', 'Given data does not follow the date format "Y-\WW".'],
@@ -89,9 +88,7 @@ class WeekToArrayTransformerTest extends TestCase
         $this->assertNull($transformer->reverseTransform([]));
     }
 
-    /**
-     * @dataProvider reverseTransformationFailuresProvider
-     */
+    #[DataProvider('reverseTransformationFailuresProvider')]
     public function testReverseTransformFailures($input, string $message)
     {
         $this->expectException(TransformationFailedException::class);
@@ -101,7 +98,7 @@ class WeekToArrayTransformerTest extends TestCase
         $transformer->reverseTransform($input);
     }
 
-    public function reverseTransformationFailuresProvider(): array
+    public static function reverseTransformationFailuresProvider(): array
     {
         return [
             'missing year' => [['week' => 1], 'Key "year" is missing.'],

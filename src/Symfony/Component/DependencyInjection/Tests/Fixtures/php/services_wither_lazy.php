@@ -53,15 +53,15 @@ class Symfony_DI_PhpDumper_Service_Wither_Lazy extends Container
      *
      * @return \Symfony\Component\DependencyInjection\Tests\Compiler\Wither
      */
-    protected function getWitherService($lazyLoad = true)
+    protected static function getWitherService($container, $lazyLoad = true)
     {
         if (true === $lazyLoad) {
-            return $this->services['wither'] = $this->createProxy('WitherProxy94fa281', fn () => \WitherProxy94fa281::createLazyProxy(fn () => $this->getWitherService(false)));
+            return $container->services['wither'] = new \ReflectionClass('Symfony\Component\DependencyInjection\Tests\Compiler\Wither')->newLazyProxy(static fn () => self::getWitherService($container, false));
         }
 
         $instance = new \Symfony\Component\DependencyInjection\Tests\Compiler\Wither();
 
-        $a = new \Symfony\Component\DependencyInjection\Tests\Compiler\Foo();
+        $a = ($container->privates['Symfony\\Component\\DependencyInjection\\Tests\\Compiler\\Foo'] ??= new \Symfony\Component\DependencyInjection\Tests\Compiler\Foo());
 
         $instance = $instance->withFoo1($a);
         $instance = $instance->withFoo2($a);
@@ -70,19 +70,3 @@ class Symfony_DI_PhpDumper_Service_Wither_Lazy extends Container
         return $instance;
     }
 }
-
-class WitherProxy94fa281 extends \Symfony\Component\DependencyInjection\Tests\Compiler\Wither implements \Symfony\Component\VarExporter\LazyObjectInterface
-{
-    use \Symfony\Component\VarExporter\LazyProxyTrait;
-
-    private const LAZY_OBJECT_PROPERTY_SCOPES = [
-        'lazyObjectReal' => [self::class, 'lazyObjectReal', null],
-        "\0".self::class."\0lazyObjectReal" => [self::class, 'lazyObjectReal', null],
-        'foo' => [parent::class, 'foo', null],
-    ];
-}
-
-// Help opcache.preload discover always-needed symbols
-class_exists(\Symfony\Component\VarExporter\Internal\Hydrator::class);
-class_exists(\Symfony\Component\VarExporter\Internal\LazyObjectRegistry::class);
-class_exists(\Symfony\Component\VarExporter\Internal\LazyObjectState::class);

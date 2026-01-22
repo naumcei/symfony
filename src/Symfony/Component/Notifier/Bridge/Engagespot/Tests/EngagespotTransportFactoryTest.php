@@ -12,19 +12,22 @@
 namespace Symfony\Component\Notifier\Bridge\Engagespot\Tests;
 
 use Symfony\Component\Notifier\Bridge\Engagespot\EngagespotTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
 
 /**
  * @author Daniel GORGAN <https://github.com/danut007ro>
  */
-final class EngagespotTransportFactoryTest extends TransportFactoryTestCase
+final class EngagespotTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+
     public function createFactory(): EngagespotTransportFactory
     {
         return new EngagespotTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'engagespot://api.engagespot.co/2/campaigns?campaign_name=TEST',
@@ -32,14 +35,19 @@ final class EngagespotTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'engagespot://apiKey@default'];
         yield [false, 'somethingElse://username:password@default'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://username:password@default'];
+    }
+
+    public static function incompleteDsnProvider(): iterable
+    {
+        yield ['engagespot://default'];
     }
 }

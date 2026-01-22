@@ -11,14 +11,13 @@
 
 namespace Symfony\Component\Mailer\Tests\Transport\Smtp\Stream;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mailer\Transport\Smtp\Stream\AbstractStream;
 
 class AbstractStreamTest extends TestCase
 {
-    /**
-     * @dataProvider provideReplace
-     */
+    #[DataProvider('provideReplace')]
     public function testReplace(string $expected, string $from, string $to, array $chunks)
     {
         $result = '';
@@ -29,7 +28,7 @@ class AbstractStreamTest extends TestCase
         $this->assertSame($expected, $result);
     }
 
-    public function provideReplace()
+    public static function provideReplace()
     {
         yield ['ca', 'ab', 'c', ['a', 'b', 'a']];
         yield ['ac', 'ab', 'c', ['a', 'ab']];

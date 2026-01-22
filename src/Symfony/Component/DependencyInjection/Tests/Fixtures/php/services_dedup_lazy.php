@@ -49,10 +49,10 @@ class ProjectServiceContainer extends Container
      *
      * @return \stdClass
      */
-    protected function getBarService($lazyLoad = true)
+    protected static function getBarService($container, $lazyLoad = true)
     {
         if (true === $lazyLoad) {
-            return $this->services['bar'] = $this->createProxy('stdClassGhost5a8a5eb', fn () => \stdClassGhost5a8a5eb::createLazyGhost($this->getBarService(...)));
+            return $container->services['bar'] = new \ReflectionClass('stdClass')->newLazyGhost(static function ($proxy) use ($container) { self::getBarService($container, $proxy); });
         }
 
         return $lazyLoad;
@@ -63,10 +63,10 @@ class ProjectServiceContainer extends Container
      *
      * @return \stdClass
      */
-    protected function getBazService($lazyLoad = true)
+    protected static function getBazService($container, $lazyLoad = true)
     {
         if (true === $lazyLoad) {
-            return $this->services['baz'] = $this->createProxy('stdClassProxy5a8a5eb', fn () => \stdClassProxy5a8a5eb::createLazyProxy(fn () => $this->getBazService(false)));
+            return $container->services['baz'] = $container->createProxy('stdClassProxyAa01f12', static fn () => \stdClassProxyAa01f12::createLazyProxy(static fn () => self::getBazService($container, false)));
         }
 
         return \foo_bar();
@@ -77,10 +77,10 @@ class ProjectServiceContainer extends Container
      *
      * @return \stdClass
      */
-    protected function getBuzService($lazyLoad = true)
+    protected static function getBuzService($container, $lazyLoad = true)
     {
         if (true === $lazyLoad) {
-            return $this->services['buz'] = $this->createProxy('stdClassProxy5a8a5eb', fn () => \stdClassProxy5a8a5eb::createLazyProxy(fn () => $this->getBuzService(false)));
+            return $container->services['buz'] = $container->createProxy('stdClassProxyAa01f12', static fn () => \stdClassProxyAa01f12::createLazyProxy(static fn () => self::getBuzService($container, false)));
         }
 
         return \foo_bar();
@@ -91,19 +91,19 @@ class ProjectServiceContainer extends Container
      *
      * @return \stdClass
      */
-    protected function getFooService($lazyLoad = true)
+    protected static function getFooService($container, $lazyLoad = true)
     {
         if (true === $lazyLoad) {
-            return $this->services['foo'] = $this->createProxy('stdClassGhost5a8a5eb', fn () => \stdClassGhost5a8a5eb::createLazyGhost($this->getFooService(...)));
+            return $container->services['foo'] = new \ReflectionClass('stdClass')->newLazyGhost(static function ($proxy) use ($container) { self::getFooService($container, $proxy); });
         }
 
         return $lazyLoad;
     }
 }
 
-class stdClassGhost5a8a5eb extends \stdClass implements \Symfony\Component\VarExporter\LazyObjectInterface
+class stdClassProxyAa01f12 extends \stdClass implements \Symfony\Component\VarExporter\LazyObjectInterface
 {
-    use \Symfony\Component\VarExporter\LazyGhostTrait;
+    use \Symfony\Component\VarExporter\Internal\LazyDecoratorTrait;
 
     private const LAZY_OBJECT_PROPERTY_SCOPES = [];
 }
@@ -111,19 +111,3 @@ class stdClassGhost5a8a5eb extends \stdClass implements \Symfony\Component\VarEx
 // Help opcache.preload discover always-needed symbols
 class_exists(\Symfony\Component\VarExporter\Internal\Hydrator::class);
 class_exists(\Symfony\Component\VarExporter\Internal\LazyObjectRegistry::class);
-class_exists(\Symfony\Component\VarExporter\Internal\LazyObjectState::class);
-
-class stdClassProxy5a8a5eb extends \stdClass implements \Symfony\Component\VarExporter\LazyObjectInterface
-{
-    use \Symfony\Component\VarExporter\LazyProxyTrait;
-
-    private const LAZY_OBJECT_PROPERTY_SCOPES = [
-        'lazyObjectReal' => [self::class, 'lazyObjectReal', null],
-        "\0".self::class."\0lazyObjectReal" => [self::class, 'lazyObjectReal', null],
-    ];
-}
-
-// Help opcache.preload discover always-needed symbols
-class_exists(\Symfony\Component\VarExporter\Internal\Hydrator::class);
-class_exists(\Symfony\Component\VarExporter\Internal\LazyObjectRegistry::class);
-class_exists(\Symfony\Component\VarExporter\Internal\LazyObjectState::class);

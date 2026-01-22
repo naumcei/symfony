@@ -11,7 +11,9 @@
 
 namespace Symfony\Component\HttpKernel\Tests\Log;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\HttpKernel\Log\Logger;
@@ -22,15 +24,8 @@ use Symfony\Component\HttpKernel\Log\Logger;
  */
 class LoggerTest extends TestCase
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var string
-     */
-    private $tmpFile;
+    private Logger $logger;
+    private string $tmpFile;
 
     protected function setUp(): void
     {
@@ -67,9 +62,7 @@ class LoggerTest extends TestCase
         $this->assertInstanceOf(LoggerInterface::class, $this->logger);
     }
 
-    /**
-     * @dataProvider provideLevelsAndMessages
-     */
+    #[DataProvider('provideLevelsAndMessages')]
     public function testLogsAtAllLevels($level, $message)
     {
         $this->logger->{$level}($message, ['user' => 'Bob']);
@@ -82,7 +75,7 @@ class LoggerTest extends TestCase
         $this->assertLogsMatch($expected, $this->getLogs());
     }
 
-    public function provideLevelsAndMessages()
+    public static function provideLevelsAndMessages()
     {
         return [
             LogLevel::EMERGENCY => [LogLevel::EMERGENCY, 'message of level emergency with context: {user}'],
@@ -109,19 +102,19 @@ class LoggerTest extends TestCase
 
     public function testThrowsOnInvalidLevel()
     {
-        $this->expectException(\Psr\Log\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->logger->log('invalid level', 'Foo');
     }
 
     public function testThrowsOnInvalidMinLevel()
     {
-        $this->expectException(\Psr\Log\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         new Logger('invalid');
     }
 
     public function testInvalidOutput()
     {
-        $this->expectException(\Psr\Log\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         new Logger(LogLevel::DEBUG, '/');
     }
 
@@ -136,11 +129,7 @@ class LoggerTest extends TestCase
 
     public function testObjectCastToString()
     {
-        if (method_exists($this, 'createPartialMock')) {
-            $dummy = $this->createPartialMock(DummyTest::class, ['__toString']);
-        } else {
-            $dummy = $this->createPartialMock(DummyTest::class, ['__toString']);
-        }
+        $dummy = $this->createPartialMock(DummyTest::class, ['__toString']);
         $dummy->expects($this->atLeastOnce())
             ->method('__toString')
             ->willReturn('DUMMY');
@@ -185,9 +174,7 @@ class LoggerTest extends TestCase
 
     public function testFormatter()
     {
-        $this->logger = new Logger(LogLevel::DEBUG, $this->tmpFile, function ($level, $message, $context) {
-            return json_encode(['level' => $level, 'message' => $message, 'context' => $context]);
-        });
+        $this->logger = new Logger(LogLevel::DEBUG, $this->tmpFile, static fn ($level, $message, $context) => json_encode(['level' => $level, 'message' => $message, 'context' => $context]));
 
         $this->logger->error('An error', ['foo' => 'bar']);
         $this->logger->warning('A warning', ['baz' => 'bar']);

@@ -11,7 +11,9 @@
 
 namespace Symfony\Component\HttpKernel\Tests\Controller\ArgumentResolver;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\MapDateTime;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver\DateTimeValueResolver;
@@ -34,9 +36,12 @@ class DateTimeValueResolverTest extends TestCase
 
     public static function getTimeZones()
     {
-        yield ['UTC'];
-        yield ['Etc/GMT+9'];
-        yield ['Etc/GMT-14'];
+        yield ['UTC', false];
+        yield ['Pacific/Honolulu', false];
+        yield ['America/Toronto', false];
+        yield ['UTC', true];
+        yield ['Pacific/Honolulu', true];
+        yield ['America/Toronto', true];
     }
 
     public static function getClasses()
@@ -44,26 +49,6 @@ class DateTimeValueResolverTest extends TestCase
         yield [\DateTimeInterface::class];
         yield [\DateTime::class];
         yield [FooDateTime::class];
-    }
-
-    /**
-     * @group legacy
-     */
-    public function testSupports()
-    {
-        $resolver = new DateTimeValueResolver();
-
-        $argument = new ArgumentMetadata('dummy', \DateTime::class, false, false, null);
-        $request = self::requestWithAttributes(['dummy' => 'now']);
-        $this->assertTrue($resolver->supports($request, $argument));
-
-        $argument = new ArgumentMetadata('dummy', FooDateTime::class, false, false, null);
-        $request = self::requestWithAttributes(['dummy' => 'now']);
-        $this->assertTrue($resolver->supports($request, $argument));
-
-        $argument = new ArgumentMetadata('dummy', \stdClass::class, false, false, null);
-        $request = self::requestWithAttributes(['dummy' => 'now']);
-        $this->assertFalse($resolver->supports($request, $argument));
     }
 
     public function testUnsupportedArgument()
@@ -75,13 +60,11 @@ class DateTimeValueResolverTest extends TestCase
         $this->assertSame([], $resolver->resolve($request, $argument));
     }
 
-    /**
-     * @dataProvider getTimeZones
-     */
-    public function testFullDate(string $timezone)
+    #[DataProvider('getTimeZones')]
+    public function testFullDate(string $timezone, bool $withClock)
     {
-        date_default_timezone_set($timezone);
-        $resolver = new DateTimeValueResolver();
+        date_default_timezone_set($withClock ? 'UTC' : $timezone);
+        $resolver = new DateTimeValueResolver($withClock ? new MockClock('now', $timezone) : null);
 
         $argument = new ArgumentMetadata('dummy', \DateTimeImmutable::class, false, false, null);
         $request = self::requestWithAttributes(['dummy' => '2012-07-21 00:00:00']);
@@ -94,13 +77,11 @@ class DateTimeValueResolverTest extends TestCase
         $this->assertEquals('2012-07-21 00:00:00', $results[0]->format('Y-m-d H:i:s'));
     }
 
-    /**
-     * @dataProvider getTimeZones
-     */
-    public function testUnixTimestamp(string $timezone)
+    #[DataProvider('getTimeZones')]
+    public function testUnixTimestamp(string $timezone, bool $withClock)
     {
-        date_default_timezone_set($timezone);
-        $resolver = new DateTimeValueResolver();
+        date_default_timezone_set($withClock ? 'UTC' : $timezone);
+        $resolver = new DateTimeValueResolver($withClock ? new MockClock('now', $timezone) : null);
 
         $argument = new ArgumentMetadata('dummy', \DateTimeImmutable::class, false, false, null);
         $request = self::requestWithAttributes(['dummy' => '989541720']);
@@ -127,28 +108,50 @@ class DateTimeValueResolverTest extends TestCase
     }
 
     /**
-     * @dataProvider getTimeZones
+     * @param class-string<\DateTimeInterface> $class
      */
-    public function testNow(string $timezone)
+    #[DataProvider('getClasses')]
+    public function testNow(string $class)
     {
-        date_default_timezone_set($timezone);
+        date_default_timezone_set($timezone = 'Pacific/Honolulu');
         $resolver = new DateTimeValueResolver();
 
-        $argument = new ArgumentMetadata('dummy', \DateTime::class, false, false, null, false);
+        $argument = new ArgumentMetadata('dummy', $class, false, false, null, false);
         $request = self::requestWithAttributes(['dummy' => null]);
 
         $results = $resolver->resolve($request, $argument);
 
         $this->assertCount(1, $results);
-        $this->assertEquals('0', $results[0]->diff(new \DateTimeImmutable())->format('%s'));
+        $this->assertInstanceOf($class, $results[0]);
         $this->assertSame($timezone, $results[0]->getTimezone()->getName(), 'Default timezone');
+        $this->assertEquals('0', $results[0]->diff(new \DateTimeImmutable())->format('%s'));
     }
 
     /**
      * @param class-string<\DateTimeInterface> $class
-     *
-     * @dataProvider getClasses
      */
+    #[DataProvider('getClasses')]
+    public function testNowWithClock(string $class)
+    {
+        date_default_timezone_set('Pacific/Honolulu');
+        $clock = new MockClock('2022-02-20 22:20:02');
+        $resolver = new DateTimeValueResolver($clock);
+
+        $argument = new ArgumentMetadata('dummy', $class, false, false, null, false);
+        $request = self::requestWithAttributes(['dummy' => null]);
+
+        $results = $resolver->resolve($request, $argument);
+
+        $this->assertCount(1, $results);
+        $this->assertInstanceOf($class, $results[0]);
+        $this->assertSame('UTC', $results[0]->getTimezone()->getName(), 'Default timezone');
+        $this->assertEquals($clock->now(), $results[0]);
+    }
+
+    /**
+     * @param class-string<\DateTimeInterface> $class
+     */
+    #[DataProvider('getClasses')]
     public function testPreviouslyConvertedAttribute(string $class)
     {
         $resolver = new DateTimeValueResolver();
@@ -178,13 +181,11 @@ class DateTimeValueResolverTest extends TestCase
         $this->assertEquals('2016-09-08 00:00:00+00:00', $results[0]->format('Y-m-d H:i:sP'));
     }
 
-    /**
-     * @dataProvider getTimeZones
-     */
-    public function testDateTimeImmutable(string $timezone)
+    #[DataProvider('getTimeZones')]
+    public function testDateTimeImmutable(string $timezone, bool $withClock)
     {
-        date_default_timezone_set($timezone);
-        $resolver = new DateTimeValueResolver();
+        date_default_timezone_set($withClock ? 'UTC' : $timezone);
+        $resolver = new DateTimeValueResolver($withClock ? new MockClock('now', $timezone) : null);
 
         $argument = new ArgumentMetadata('dummy', \DateTimeImmutable::class, false, false, null);
         $request = self::requestWithAttributes(['dummy' => '2016-09-08 00:00:00 +05:00']);
@@ -197,13 +198,11 @@ class DateTimeValueResolverTest extends TestCase
         $this->assertEquals('2016-09-08 00:00:00', $results[0]->format('Y-m-d H:i:s'));
     }
 
-    /**
-     * @dataProvider getTimeZones
-     */
-    public function testWithFormat(string $timezone)
+    #[DataProvider('getTimeZones')]
+    public function testWithFormat(string $timezone, bool $withClock)
     {
-        date_default_timezone_set($timezone);
-        $resolver = new DateTimeValueResolver();
+        date_default_timezone_set($withClock ? 'UTC' : $timezone);
+        $resolver = new DateTimeValueResolver($withClock ? new MockClock('now', $timezone) : null);
 
         $argument = new ArgumentMetadata('dummy', \DateTimeInterface::class, false, false, null, false, [
             MapDateTime::class => new MapDateTime('m-d-y H:i:s'),
@@ -236,9 +235,7 @@ class DateTimeValueResolverTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideInvalidDates
-     */
+    #[DataProvider('provideInvalidDates')]
     public function test404Exception(ArgumentMetadata $argument, Request $request)
     {
         $resolver = new DateTimeValueResolver();

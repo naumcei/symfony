@@ -52,9 +52,9 @@ class ProjectServiceContainer extends Container
      *
      * @return \stdClass
      */
-    protected function getBarService()
+    protected static function getBarService($container)
     {
-        return $this->services['bar'] = new \stdClass(($this->privates['bar_%env(BAR)%'] ??= new \stdClass()));
+        return $container->services['bar'] = new \stdClass(($container->privates['bar_%env(BAR)%'] ??= new \stdClass()));
     }
 
     /**
@@ -62,26 +62,27 @@ class ProjectServiceContainer extends Container
      *
      * @return \stdClass
      */
-    protected function getFooService()
+    protected static function getFooService($container)
     {
-        return $this->services['foo'] = new \stdClass(($this->privates['bar_%env(BAR)%'] ??= new \stdClass()), ['baz_'.$this->getEnv('string:BAR') => new \stdClass()]);
+        return $container->services['foo'] = new \stdClass(($container->privates['bar_%env(BAR)%'] ??= new \stdClass()), ['baz_'.$container->getEnv('string:BAR') => new \stdClass()]);
     }
 
     public function getParameter(string $name): array|bool|string|int|float|\UnitEnum|null
     {
-        if (!(isset($this->parameters[$name]) || isset($this->loadedDynamicParameters[$name]) || \array_key_exists($name, $this->parameters))) {
+        if (isset($this->loadedDynamicParameters[$name])) {
+            $value = $this->loadedDynamicParameters[$name] ? $this->dynamicParameters[$name] : $this->getDynamicParameter($name);
+        } elseif (\array_key_exists($name, $this->parameters) && '.' !== ($name[0] ?? '')) {
+            $value = $this->parameters[$name];
+        } else {
             throw new ParameterNotFoundException($name);
         }
-        if (isset($this->loadedDynamicParameters[$name])) {
-            return $this->loadedDynamicParameters[$name] ? $this->dynamicParameters[$name] : $this->getDynamicParameter($name);
-        }
 
-        return $this->parameters[$name];
+        return $value;
     }
 
     public function hasParameter(string $name): bool
     {
-        return isset($this->parameters[$name]) || isset($this->loadedDynamicParameters[$name]) || \array_key_exists($name, $this->parameters);
+        return \array_key_exists($name, $this->parameters) || isset($this->loadedDynamicParameters[$name]);
     }
 
     public function setParameter(string $name, $value): void
@@ -91,12 +92,12 @@ class ProjectServiceContainer extends Container
 
     public function getParameterBag(): ParameterBagInterface
     {
-        if (null === $this->parameterBag) {
+        if (!isset($this->parameterBag)) {
             $parameters = $this->parameters;
             foreach ($this->loadedDynamicParameters as $name => $loaded) {
                 $parameters[$name] = $loaded ? $this->dynamicParameters[$name] : $this->getDynamicParameter($name);
             }
-            $this->parameterBag = new FrozenParameterBag($parameters);
+            $this->parameterBag = new FrozenParameterBag($parameters, []);
         }
 
         return $this->parameterBag;

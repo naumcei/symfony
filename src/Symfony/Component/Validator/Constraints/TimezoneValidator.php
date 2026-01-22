@@ -26,7 +26,7 @@ use Symfony\Component\Validator\Exception\UnexpectedValueException;
  */
 class TimezoneValidator extends ConstraintValidator
 {
-    public function validate(mixed $value, Constraint $constraint)
+    public function validate(mixed $value, Constraint $constraint): void
     {
         if (!$constraint instanceof Timezone) {
             throw new UnexpectedTypeException($constraint, Timezone::class);
@@ -52,8 +52,8 @@ class TimezoneValidator extends ConstraintValidator
         }
 
         if (
-            \in_array($value, self::getPhpTimezones($constraint->zone, $constraint->countryCode), true) ||
-            \in_array($value, self::getIntlTimezones($constraint->zone, $constraint->countryCode), true)
+            \in_array($value, self::getPhpTimezones($constraint->zone, $constraint->countryCode), true)
+            || \in_array($value, self::getIntlTimezones($constraint->zone, $constraint->countryCode), true)
         ) {
             return;
         }
@@ -72,7 +72,7 @@ class TimezoneValidator extends ConstraintValidator
               ->addViolation();
     }
 
-    private static function getPhpTimezones(int $zone, string $countryCode = null): array
+    private static function getPhpTimezones(int $zone, ?string $countryCode = null): array
     {
         if (null !== $countryCode) {
             try {
@@ -85,7 +85,7 @@ class TimezoneValidator extends ConstraintValidator
         return \DateTimeZone::listIdentifiers($zone);
     }
 
-    private static function getIntlTimezones(int $zone, string $countryCode = null): array
+    private static function getIntlTimezones(int $zone, ?string $countryCode = null): array
     {
         if (!class_exists(Timezones::class)) {
             return [];
@@ -111,9 +111,7 @@ class TimezoneValidator extends ConstraintValidator
                 continue;
             }
 
-            $filtered[] = array_filter($timezones, static function ($id) use ($const) {
-                return 0 === stripos($id, $const.'/');
-            });
+            $filtered[] = array_filter($timezones, static fn ($id) => 0 === stripos($id, $const.'/'));
         }
 
         return $filtered ? array_merge(...$filtered) : [];

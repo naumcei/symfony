@@ -1,5 +1,4 @@
 framework:
-    http_method_override: false
     messenger:
         reset_on_message: false
         routing:

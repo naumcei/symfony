@@ -25,11 +25,9 @@ use Twig\TwigFunction;
  */
 final class RoutingExtension extends AbstractExtension
 {
-    private UrlGeneratorInterface $generator;
-
-    public function __construct(UrlGeneratorInterface $generator)
-    {
-        $this->generator = $generator;
+    public function __construct(
+        private UrlGeneratorInterface $generator,
+    ) {
     }
 
     public function getFunctions(): array
@@ -79,8 +77,8 @@ final class RoutingExtension extends AbstractExtension
             $argsNode->hasNode(1) ? $argsNode->getNode(1) : null
         );
 
-        if (null === $paramsNode || $paramsNode instanceof ArrayExpression && \count($paramsNode) <= 2 &&
-            (!$paramsNode->hasNode(1) || $paramsNode->getNode(1) instanceof ConstantExpression)
+        if (null === $paramsNode || $paramsNode instanceof ArrayExpression && \count($paramsNode) <= 2
+            && (!$paramsNode->hasNode(1) || $paramsNode->getNode(1) instanceof ConstantExpression)
         ) {
             return ['html'];
         }

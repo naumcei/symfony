@@ -11,9 +11,10 @@
 
 namespace Symfony\Component\Mailer\Bridge\Mailchimp\Tests\Transport;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
-use Symfony\Component\HttpClient\Response\MockResponse;
+use Symfony\Component\HttpClient\Response\JsonMockResponse;
 use Symfony\Component\Mailer\Bridge\Mailchimp\Transport\MandrillHttpTransport;
 use Symfony\Component\Mailer\Exception\HttpTransportException;
 use Symfony\Component\Mailer\Header\MetadataHeader;
@@ -24,15 +25,13 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class MandrillHttpTransportTest extends TestCase
 {
-    /**
-     * @dataProvider getTransportData
-     */
+    #[DataProvider('getTransportData')]
     public function testToString(MandrillHttpTransport $transport, string $expected)
     {
         $this->assertSame($expected, (string) $transport);
     }
 
-    public function getTransportData()
+    public static function getTransportData()
     {
         return [
             [
@@ -68,7 +67,7 @@ class MandrillHttpTransportTest extends TestCase
             $this->assertStringContainsString('From: Fabien <fabpot@symfony.com>', $message);
             $this->assertStringContainsString('Hello There!', $message);
 
-            return new MockResponse(json_encode([['_id' => 'foobar']]), [
+            return new JsonMockResponse([['_id' => 'foobar']], [
                 'http_code' => 200,
             ]);
         });
@@ -88,11 +87,9 @@ class MandrillHttpTransportTest extends TestCase
 
     public function testSendThrowsForErrorResponse()
     {
-        $client = new MockHttpClient(function (string $method, string $url, array $options): ResponseInterface {
-            return new MockResponse(json_encode(['status' => 'error', 'message' => 'i\'m a teapot', 'code' => 418]), [
-                'http_code' => 418,
-            ]);
-        });
+        $client = new MockHttpClient(static fn (string $method, string $url, array $options): ResponseInterface => new JsonMockResponse(['status' => 'error', 'message' => 'i\'m a teapot', 'code' => 418], [
+            'http_code' => 418,
+        ]));
 
         $transport = new MandrillHttpTransport('KEY', $client);
 

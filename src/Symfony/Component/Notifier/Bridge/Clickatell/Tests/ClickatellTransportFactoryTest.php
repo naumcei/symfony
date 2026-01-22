@@ -12,16 +12,19 @@
 namespace Symfony\Component\Notifier\Bridge\Clickatell\Tests;
 
 use Symfony\Component\Notifier\Bridge\Clickatell\ClickatellTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
 
-class ClickatellTransportFactoryTest extends TransportFactoryTestCase
+class ClickatellTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+
     public function createFactory(): ClickatellTransportFactory
     {
         return new ClickatellTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'clickatell://host.test?from=0611223344',
@@ -29,18 +32,18 @@ class ClickatellTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'clickatell://authtoken@default?from=0611223344'];
         yield [false, 'somethingElse://authtoken@default?from=0611223344'];
     }
 
-    public function incompleteDsnProvider(): iterable
+    public static function incompleteDsnProvider(): iterable
     {
         yield 'missing auth token' => ['clickatell://host?from=FROM'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://authtoken@default?from=FROM'];
         yield ['somethingElse://authtoken@default']; // missing "from" option

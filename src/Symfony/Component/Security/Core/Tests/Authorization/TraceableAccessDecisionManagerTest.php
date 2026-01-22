@@ -11,21 +11,24 @@
 
 namespace Symfony\Component\Security\Core\Tests\Authorization;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManager;
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
 use Symfony\Component\Security\Core\Authorization\TraceableAccessDecisionManager;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
+use Symfony\Component\Security\Core\Exception\InvalidArgumentException;
+use Symfony\Component\Security\Core\Tests\Fixtures\DummyVoter;
 
 class TraceableAccessDecisionManagerTest extends TestCase
 {
-    /**
-     * @dataProvider provideObjectsAndLogs
-     */
+    #[DataProvider('provideObjectsAndLogs')]
     public function testDecideLog(array $expectedLog, array $attributes, $object, array $voterVotes, bool $result)
     {
-        $token = $this->createMock(TokenInterface::class);
+        $token = new NullToken();
         $admMock = $this->createMock(AccessDecisionManagerInterface::class);
 
         $adm = new TraceableAccessDecisionManager($admMock);
@@ -34,7 +37,7 @@ class TraceableAccessDecisionManagerTest extends TestCase
             ->expects($this->once())
             ->method('decide')
             ->with($token, $attributes, $object)
-            ->willReturnCallback(function ($token, $attributes, $object) use ($voterVotes, $adm, $result) {
+            ->willReturnCallback(static function ($token, $attributes, $object) use ($voterVotes, $adm, $result) {
                 foreach ($voterVotes as $voterVote) {
                     [$voter, $vote] = $voterVote;
                     $adm->addVoterVote($voter, $attributes, $vote);
@@ -49,10 +52,10 @@ class TraceableAccessDecisionManagerTest extends TestCase
         $this->assertEquals($expectedLog, $adm->getDecisionLog());
     }
 
-    public function provideObjectsAndLogs(): \Generator
+    public static function provideObjectsAndLogs(): \Generator
     {
-        $voter1 = $this->getMockForAbstractClass(VoterInterface::class);
-        $voter2 = $this->getMockForAbstractClass(VoterInterface::class);
+        $voter1 = new DummyVoter();
+        $voter2 = new DummyVoter();
 
         yield [
             [[
@@ -60,8 +63,8 @@ class TraceableAccessDecisionManagerTest extends TestCase
                 'object' => null,
                 'result' => true,
                 'voterDetails' => [
-                    ['voter' => $voter1, 'attributes' => ['ATTRIBUTE_1'], 'vote' => VoterInterface::ACCESS_GRANTED],
-                    ['voter' => $voter2, 'attributes' => ['ATTRIBUTE_1'], 'vote' => VoterInterface::ACCESS_GRANTED],
+                    ['voter' => $voter1, 'attributes' => ['ATTRIBUTE_1'], 'vote' => VoterInterface::ACCESS_GRANTED, 'reasons' => []],
+                    ['voter' => $voter2, 'attributes' => ['ATTRIBUTE_1'], 'vote' => VoterInterface::ACCESS_GRANTED, 'reasons' => []],
                 ],
             ]],
             ['ATTRIBUTE_1'],
@@ -78,8 +81,8 @@ class TraceableAccessDecisionManagerTest extends TestCase
                 'object' => true,
                 'result' => false,
                 'voterDetails' => [
-                    ['voter' => $voter1, 'attributes' => ['ATTRIBUTE_1', 'ATTRIBUTE_2'], 'vote' => VoterInterface::ACCESS_ABSTAIN],
-                    ['voter' => $voter2, 'attributes' => ['ATTRIBUTE_1', 'ATTRIBUTE_2'], 'vote' => VoterInterface::ACCESS_GRANTED],
+                    ['voter' => $voter1, 'attributes' => ['ATTRIBUTE_1', 'ATTRIBUTE_2'], 'vote' => VoterInterface::ACCESS_ABSTAIN, 'reasons' => []],
+                    ['voter' => $voter2, 'attributes' => ['ATTRIBUTE_1', 'ATTRIBUTE_2'], 'vote' => VoterInterface::ACCESS_GRANTED, 'reasons' => []],
                 ],
             ]],
             ['ATTRIBUTE_1', 'ATTRIBUTE_2'],
@@ -96,8 +99,8 @@ class TraceableAccessDecisionManagerTest extends TestCase
                 'object' => 'jolie string',
                 'result' => false,
                 'voterDetails' => [
-                    ['voter' => $voter1, 'attributes' => [null], 'vote' => VoterInterface::ACCESS_ABSTAIN],
-                    ['voter' => $voter2, 'attributes' => [null], 'vote' => VoterInterface::ACCESS_DENIED],
+                    ['voter' => $voter1, 'attributes' => [null], 'vote' => VoterInterface::ACCESS_ABSTAIN, 'reasons' => []],
+                    ['voter' => $voter2, 'attributes' => [null], 'vote' => VoterInterface::ACCESS_DENIED, 'reasons' => []],
                 ],
             ]],
             [null],
@@ -115,7 +118,7 @@ class TraceableAccessDecisionManagerTest extends TestCase
                 'result' => true,
                 'voterDetails' => [],
             ]],
-            'attributes' => [12],
+            [12],
             12345,
             [],
             true,
@@ -138,8 +141,8 @@ class TraceableAccessDecisionManagerTest extends TestCase
                 'object' => $x = [],
                 'result' => false,
                 'voterDetails' => [
-                    ['voter' => $voter1, 'attributes' => ['ATTRIBUTE_2'], 'vote' => VoterInterface::ACCESS_ABSTAIN],
-                    ['voter' => $voter2, 'attributes' => ['ATTRIBUTE_2'], 'vote' => VoterInterface::ACCESS_ABSTAIN],
+                    ['voter' => $voter1, 'attributes' => ['ATTRIBUTE_2'], 'vote' => VoterInterface::ACCESS_ABSTAIN, 'reasons' => []],
+                    ['voter' => $voter2, 'attributes' => ['ATTRIBUTE_2'], 'vote' => VoterInterface::ACCESS_ABSTAIN, 'reasons' => []],
                 ],
             ]],
             ['ATTRIBUTE_2'],
@@ -156,8 +159,8 @@ class TraceableAccessDecisionManagerTest extends TestCase
                 'object' => new \stdClass(),
                 'result' => false,
                 'voterDetails' => [
-                    ['voter' => $voter1, 'attributes' => [12.13], 'vote' => VoterInterface::ACCESS_DENIED],
-                    ['voter' => $voter2, 'attributes' => [12.13], 'vote' => VoterInterface::ACCESS_DENIED],
+                    ['voter' => $voter1, 'attributes' => [12.13], 'vote' => VoterInterface::ACCESS_DENIED, 'reasons' => []],
+                    ['voter' => $voter2, 'attributes' => [12.13], 'vote' => VoterInterface::ACCESS_DENIED, 'reasons' => []],
                 ],
             ]],
             [12.13],
@@ -175,38 +178,27 @@ class TraceableAccessDecisionManagerTest extends TestCase
      */
     public function testAccessDecisionManagerCalledByVoter()
     {
-        $voter1 = $this
-            ->getMockBuilder(VoterInterface::class)
-            ->setMethods(['vote'])
-            ->getMock();
+        $voter1 = $this->createStub(VoterInterface::class);
 
-        $voter2 = $this
-            ->getMockBuilder(VoterInterface::class)
-            ->setMethods(['vote'])
-            ->getMock();
+        $voter2 = $this->createStub(VoterInterface::class);
 
-        $voter3 = $this
-            ->getMockBuilder(VoterInterface::class)
-            ->setMethods(['vote'])
-            ->getMock();
+        $voter3 = $this->createStub(VoterInterface::class);
 
         $sut = new TraceableAccessDecisionManager(new AccessDecisionManager([$voter1, $voter2, $voter3]));
 
         $voter1
-            ->expects($this->any())
             ->method('vote')
-            ->willReturnCallback(function (TokenInterface $token, $subject, array $attributes) use ($sut, $voter1) {
-                $vote = \in_array('attr1', $attributes) ? VoterInterface::ACCESS_GRANTED : VoterInterface::ACCESS_ABSTAIN;
+            ->willReturnCallback(static function (TokenInterface $token, $subject, array $attributes) use ($sut, $voter1) {
+                $vote = \in_array('attr1', $attributes, true) ? VoterInterface::ACCESS_GRANTED : VoterInterface::ACCESS_ABSTAIN;
                 $sut->addVoterVote($voter1, $attributes, $vote);
 
                 return $vote;
             });
 
         $voter2
-            ->expects($this->any())
             ->method('vote')
-            ->willReturnCallback(function (TokenInterface $token, $subject, array $attributes) use ($sut, $voter2) {
-                if (\in_array('attr2', $attributes)) {
+            ->willReturnCallback(static function (TokenInterface $token, $subject, array $attributes) use ($sut, $voter2) {
+                if (\in_array('attr2', $attributes, true)) {
                     $vote = null == $subject ? VoterInterface::ACCESS_GRANTED : VoterInterface::ACCESS_DENIED;
                 } else {
                     $vote = VoterInterface::ACCESS_ABSTAIN;
@@ -218,10 +210,9 @@ class TraceableAccessDecisionManagerTest extends TestCase
             });
 
         $voter3
-            ->expects($this->any())
             ->method('vote')
-            ->willReturnCallback(function (TokenInterface $token, $subject, array $attributes) use ($sut, $voter3) {
-                if (\in_array('attr2', $attributes) && $subject) {
+            ->willReturnCallback(static function (TokenInterface $token, $subject, array $attributes) use ($sut, $voter3) {
+                if (\in_array('attr2', $attributes, true) && $subject) {
                     $vote = $sut->decide($token, $attributes) ? VoterInterface::ACCESS_GRANTED : VoterInterface::ACCESS_DENIED;
                 } else {
                     $vote = VoterInterface::ACCESS_ABSTAIN;
@@ -232,7 +223,7 @@ class TraceableAccessDecisionManagerTest extends TestCase
                 return $vote;
             });
 
-        $token = $this->createMock(TokenInterface::class);
+        $token = new NullToken();
         $sut->decide($token, ['attr1'], null);
         $sut->decide($token, ['attr2'], $obj = new \stdClass());
 
@@ -241,7 +232,7 @@ class TraceableAccessDecisionManagerTest extends TestCase
                 'attributes' => ['attr1'],
                 'object' => null,
                 'voterDetails' => [
-                    ['voter' => $voter1, 'attributes' => ['attr1'], 'vote' => VoterInterface::ACCESS_GRANTED],
+                    ['voter' => $voter1, 'attributes' => ['attr1'], 'vote' => VoterInterface::ACCESS_GRANTED, 'reasons' => []],
                 ],
                 'result' => true,
             ],
@@ -249,8 +240,8 @@ class TraceableAccessDecisionManagerTest extends TestCase
                 'attributes' => ['attr2'],
                 'object' => null,
                 'voterDetails' => [
-                    ['voter' => $voter1, 'attributes' => ['attr2'], 'vote' => VoterInterface::ACCESS_ABSTAIN],
-                    ['voter' => $voter2, 'attributes' => ['attr2'], 'vote' => VoterInterface::ACCESS_GRANTED],
+                    ['voter' => $voter1, 'attributes' => ['attr2'], 'vote' => VoterInterface::ACCESS_ABSTAIN, 'reasons' => []],
+                    ['voter' => $voter2, 'attributes' => ['attr2'], 'vote' => VoterInterface::ACCESS_GRANTED, 'reasons' => []],
                 ],
                 'result' => true,
             ],
@@ -258,9 +249,9 @@ class TraceableAccessDecisionManagerTest extends TestCase
                 'attributes' => ['attr2'],
                 'object' => $obj,
                 'voterDetails' => [
-                    ['voter' => $voter1, 'attributes' => ['attr2'], 'vote' => VoterInterface::ACCESS_ABSTAIN],
-                    ['voter' => $voter2, 'attributes' => ['attr2'], 'vote' => VoterInterface::ACCESS_DENIED],
-                    ['voter' => $voter3, 'attributes' => ['attr2'], 'vote' => VoterInterface::ACCESS_GRANTED],
+                    ['voter' => $voter1, 'attributes' => ['attr2'], 'vote' => VoterInterface::ACCESS_ABSTAIN, 'reasons' => []],
+                    ['voter' => $voter2, 'attributes' => ['attr2'], 'vote' => VoterInterface::ACCESS_DENIED, 'reasons' => []],
+                    ['voter' => $voter3, 'attributes' => ['attr2'], 'vote' => VoterInterface::ACCESS_GRANTED, 'reasons' => []],
                 ],
                 'result' => true,
             ],
@@ -269,10 +260,52 @@ class TraceableAccessDecisionManagerTest extends TestCase
 
     public function testCustomAccessDecisionManagerReturnsEmptyStrategy()
     {
-        $admMock = $this->createMock(AccessDecisionManagerInterface::class);
+        $admMock = $this->createStub(AccessDecisionManagerInterface::class);
 
         $adm = new TraceableAccessDecisionManager($admMock);
 
         $this->assertEquals('-', $adm->getStrategy());
+    }
+
+    public function testThrowsExceptionWhenMultipleAttributesNotAllowed()
+    {
+        $accessDecisionManager = new AccessDecisionManager();
+        $traceableAccessDecisionManager = new TraceableAccessDecisionManager($accessDecisionManager);
+        /** @var TokenInterface&MockObject $tokenMock */
+        $tokenMock = $this->createMock(TokenInterface::class);
+
+        $this->expectException(InvalidArgumentException::class);
+        $traceableAccessDecisionManager->decide($tokenMock, ['attr1', 'attr2']);
+    }
+
+    #[DataProvider('allowMultipleAttributesProvider')]
+    public function testAllowMultipleAttributes(array $attributes, bool $allowMultipleAttributes)
+    {
+        $accessDecisionManager = new AccessDecisionManager();
+        $traceableAccessDecisionManager = new TraceableAccessDecisionManager($accessDecisionManager);
+        /** @var TokenInterface&MockObject $tokenMock */
+        $tokenMock = $this->createMock(TokenInterface::class);
+
+        $isGranted = $traceableAccessDecisionManager->decide($tokenMock, $attributes, null, null, $allowMultipleAttributes);
+
+        $this->assertFalse($isGranted);
+    }
+
+    public static function allowMultipleAttributesProvider(): \Generator
+    {
+        yield [
+            ['attr1'],
+            false,
+        ];
+
+        yield [
+            ['attr1'],
+            true,
+        ];
+
+        yield [
+            ['attr1', 'attr2', 'attr3'],
+            true,
+        ];
     }
 }

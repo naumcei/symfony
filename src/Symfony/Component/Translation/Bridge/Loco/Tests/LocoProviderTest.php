@@ -11,7 +11,9 @@
 
 namespace Symfony\Component\Translation\Bridge\Loco\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\Translation\Bridge\Loco\LocoProvider;
@@ -23,45 +25,46 @@ use Symfony\Component\Translation\MessageCatalogue;
 use Symfony\Component\Translation\Provider\ProviderInterface;
 use Symfony\Component\Translation\Test\ProviderTestCase;
 use Symfony\Component\Translation\TranslatorBag;
+use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class LocoProviderTest extends ProviderTestCase
 {
-    public function createProvider(HttpClientInterface $client, LoaderInterface $loader, LoggerInterface $logger, string $defaultLocale, string $endpoint): ProviderInterface
+    public static function createProvider(HttpClientInterface $client, LoaderInterface $loader, LoggerInterface $logger, string $defaultLocale, string $endpoint, ?TranslatorBagInterface $translatorBag = null, ?string $restrictToStatus = null): ProviderInterface
     {
-        return new LocoProvider($client, $loader, $logger, $defaultLocale, $endpoint, $this->getTranslatorBag());
+        return new LocoProvider($client, $loader, $logger, $defaultLocale, $endpoint, $translatorBag ?? new TranslatorBag(), $restrictToStatus);
     }
 
-    public function toStringProvider(): iterable
+    public static function toStringProvider(): iterable
     {
         yield [
-            $this->createProvider($this->getClient()->withOptions([
+            self::createProvider((new MockHttpClient())->withOptions([
                 'base_uri' => 'https://localise.biz/api/',
                 'headers' => [
                     'Authorization' => 'Loco API_KEY',
                 ],
-            ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'localise.biz/api/'),
+            ]), new ArrayLoader(), new NullLogger(), 'en', 'localise.biz/api/'),
             'loco://localise.biz/api/',
         ];
 
         yield [
-            $this->createProvider($this->getClient()->withOptions([
+            self::createProvider((new MockHttpClient())->withOptions([
                 'base_uri' => 'https://example.com',
                 'headers' => [
                     'Authorization' => 'Loco API_KEY',
                 ],
-            ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'example.com'),
+            ]), new ArrayLoader(), new NullLogger(), 'en', 'example.com'),
             'loco://example.com',
         ];
 
         yield [
-            $this->createProvider($this->getClient()->withOptions([
+            self::createProvider((new MockHttpClient())->withOptions([
                 'base_uri' => 'https://example.com:99',
                 'headers' => [
                     'Authorization' => 'Loco API_KEY',
                 ],
-            ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'example.com:99'),
+            ]), new ArrayLoader(), new NullLogger(), 'en', 'example.com:99'),
             'loco://example.com:99',
         ];
     }
@@ -243,7 +246,7 @@ class LocoProviderTest extends ProviderTestCase
             'validators' => ['post.num_comments' => '{count, plural, one {# commentaire} other {# commentaires}}'],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://localise.biz/api/',
             'headers' => ['Authorization' => 'Loco API_KEY'],
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'localise.biz/api/');
@@ -277,7 +280,7 @@ class LocoProviderTest extends ProviderTestCase
             'messages' => ['a' => 'trans_en_a'],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://localise.biz/api/',
             'headers' => ['Authorization' => 'Loco API_KEY'],
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'localise.biz/api/');
@@ -329,7 +332,7 @@ class LocoProviderTest extends ProviderTestCase
             'messages' => ['a' => 'trans_en_a'],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://localise.biz/api/',
             'headers' => ['Authorization' => 'Loco API_KEY'],
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'localise.biz/api/');
@@ -389,7 +392,7 @@ class LocoProviderTest extends ProviderTestCase
             'messages' => ['a' => 'trans_en_a'],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://localise.biz/api/',
             'headers' => ['Authorization' => 'Loco API_KEY'],
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'localise.biz/api/');
@@ -449,7 +452,7 @@ class LocoProviderTest extends ProviderTestCase
             'messages' => ['a' => 'trans_en_a'],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://localise.biz/api/',
             'headers' => ['Authorization' => 'Loco API_KEY'],
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'localise.biz/api/');
@@ -523,7 +526,7 @@ class LocoProviderTest extends ProviderTestCase
             'messages' => ['a' => 'trans_en_a'],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://localise.biz/api/',
             'headers' => ['Authorization' => 'Loco API_KEY'],
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'localise.biz/api/');
@@ -600,7 +603,7 @@ class LocoProviderTest extends ProviderTestCase
             'messages' => ['a' => 'trans_fr_a'],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://localise.biz/api/',
             'headers' => ['Authorization' => 'Loco API_KEY'],
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'localise.biz/api/');
@@ -685,7 +688,7 @@ class LocoProviderTest extends ProviderTestCase
             'messages' => ['a' => 'trans_fr_a'],
         ]));
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://localise.biz/api/',
             'headers' => ['Authorization' => 'Loco API_KEY'],
         ]), $this->getLoader(), $this->getLogger(), $this->getDefaultLocale(), 'localise.biz/api/');
@@ -696,26 +699,20 @@ class LocoProviderTest extends ProviderTestCase
         $provider->write($translatorBag);
     }
 
-    /**
-     * @dataProvider getResponsesForOneLocaleAndOneDomain
-     */
+    #[DataProvider('getResponsesForOneLocaleAndOneDomain')]
     public function testReadForOneLocaleAndOneDomain(string $locale, string $domain, string $responseContent, TranslatorBag $expectedTranslatorBag)
     {
-        $loader = $this->getLoader();
-        $loader->expects($this->once())
+        $this->loader = $this->createMock(LoaderInterface::class);
+        $this->loader->expects($this->once())
             ->method('load')
             ->willReturn((new XliffFileLoader())->load($responseContent, $locale, $domain));
 
-        $this->getTranslatorBag()->expects($this->any())
-            ->method('getCatalogue')
-            ->willReturn(new MessageCatalogue($locale));
-
-        $provider = $this->createProvider((new MockHttpClient(new MockResponse($responseContent)))->withOptions([
+        $provider = self::createProvider((new MockHttpClient(new MockResponse($responseContent)))->withOptions([
             'base_uri' => 'https://localise.biz/api/',
             'headers' => [
                 'Authorization' => 'Loco API_KEY',
             ],
-        ]), $loader, $this->getLogger(), $this->getDefaultLocale(), 'localise.biz/api/');
+        ]), $this->loader, new NullLogger(), 'en', 'localise.biz/api/');
         $translatorBag = $provider->read([$domain], [$locale]);
         // We don't want to assert equality of metadata here, due to the ArrayLoader usage.
         foreach ($translatorBag->getCatalogues() as $catalogue) {
@@ -725,9 +722,7 @@ class LocoProviderTest extends ProviderTestCase
         $this->assertEquals($expectedTranslatorBag->getCatalogues(), $translatorBag->getCatalogues());
     }
 
-    /**
-     * @dataProvider getResponsesForManyLocalesAndManyDomains
-     */
+    #[DataProvider('getResponsesForManyLocalesAndManyDomains')]
     public function testReadForManyLocalesAndManyDomains(array $locales, array $domains, array $responseContents, TranslatorBag $expectedTranslatorBag)
     {
         $responses = [];
@@ -742,22 +737,21 @@ class LocoProviderTest extends ProviderTestCase
             }
         }
 
-        $loader = $this->getLoader();
-        $loader->expects($this->exactly(\count($consecutiveLoadArguments)))
+        $this->loader = $this->createMock(LoaderInterface::class);
+        $this->loader->expects($this->exactly(\count($consecutiveLoadArguments)))
             ->method('load')
-            ->withConsecutive(...$consecutiveLoadArguments)
-            ->willReturnOnConsecutiveCalls(...$consecutiveLoadReturns);
+            ->willReturnCallback(function (...$args) use (&$consecutiveLoadArguments, &$consecutiveLoadReturns) {
+                $this->assertSame(array_shift($consecutiveLoadArguments), $args);
 
-        $this->getTranslatorBag()->expects($this->any())
-            ->method('getCatalogue')
-            ->willReturn(new MessageCatalogue($locale));
+                return array_shift($consecutiveLoadReturns);
+            });
 
-        $provider = $this->createProvider((new MockHttpClient($responses))->withOptions([
+        $provider = self::createProvider((new MockHttpClient($responses))->withOptions([
             'base_uri' => 'https://localise.biz/api/',
             'headers' => [
                 'Authorization' => 'Loco API_KEY',
             ],
-        ]), $loader, $this->getLogger(), $this->getDefaultLocale(), 'localise.biz/api/');
+        ]), $this->loader, $this->getLogger(), 'en', 'localise.biz/api/');
         $translatorBag = $provider->read($domains, $locales);
         // We don't want to assert equality of metadata here, due to the ArrayLoader usage.
         foreach ($translatorBag->getCatalogues() as $catalogue) {
@@ -767,9 +761,7 @@ class LocoProviderTest extends ProviderTestCase
         $this->assertEquals($expectedTranslatorBag->getCatalogues(), $translatorBag->getCatalogues());
     }
 
-    /**
-     * @dataProvider getResponsesForReadWithLastModified
-     */
+    #[DataProvider('getResponsesForReadWithLastModified')]
     public function testReadWithLastModified(array $locales, array $domains, array $responseContents, array $lastModifieds, TranslatorBag $expectedTranslatorBag)
     {
         $responses = [];
@@ -795,15 +787,16 @@ class LocoProviderTest extends ProviderTestCase
             }
         }
 
-        $loader = $this->getLoader();
-        $loader->expects($this->exactly(\count($consecutiveLoadArguments)))
+        $this->loader = $this->createMock(LoaderInterface::class);
+        $this->loader->expects($this->exactly(\count($consecutiveLoadArguments)))
             ->method('load')
-            ->withConsecutive(...$consecutiveLoadArguments)
-            ->willReturnOnConsecutiveCalls(...$consecutiveLoadReturns);
+            ->willReturnCallback(function (...$args) use (&$consecutiveLoadArguments, &$consecutiveLoadReturns) {
+                $this->assertSame(array_shift($consecutiveLoadArguments), $args);
 
-        $this->translatorBag = new TranslatorBag();
+                return array_shift($consecutiveLoadReturns);
+            });
 
-        $provider = $this->createProvider(
+        $provider = self::createProvider(
             new MockHttpClient($responses, 'https://localise.biz/api/'),
             $this->getLoader(),
             $this->getLogger(),
@@ -833,12 +826,13 @@ class LocoProviderTest extends ProviderTestCase
             }
         }
 
-        $provider = $this->createProvider(
+        $provider = self::createProvider(
             new MockHttpClient($responses, 'https://localise.biz/api/'),
             $this->getLoader(),
             $this->getLogger(),
             $this->getDefaultLocale(),
-            'localise.biz/api/'
+            'localise.biz/api/',
+            $this->getTranslatorBag()
         );
 
         $translatorBag = $provider->read($domains, $locales);
@@ -858,7 +852,7 @@ class LocoProviderTest extends ProviderTestCase
             'validators' => ['post.num_comments' => '{count, plural, one {# commentaire} other {# commentaires}}'],
         ]));
 
-        $provider = $this->createProvider(
+        $provider = self::createProvider(
             new MockHttpClient([
                 function (string $method, string $url, array $options = []): ResponseInterface {
                     $this->assertSame('GET', $method);
@@ -903,7 +897,7 @@ class LocoProviderTest extends ProviderTestCase
             'messages' => ['a' => 'trans_en_a'],
         ]));
 
-        $provider = $this->createProvider(
+        $provider = self::createProvider(
             new MockHttpClient([
                 function (string $method, string $url, array $options = []): ResponseInterface {
                     $this->assertSame('GET', $method);
@@ -931,7 +925,7 @@ class LocoProviderTest extends ProviderTestCase
         $provider->delete($translatorBag);
     }
 
-    public function getResponsesForOneLocaleAndOneDomain(): \Generator
+    public static function getResponsesForOneLocaleAndOneDomain(): \Generator
     {
         $arrayLoader = new ArrayLoader();
 
@@ -942,26 +936,25 @@ class LocoProviderTest extends ProviderTestCase
         ], 'en', 'messages+intl-icu'));
 
         yield ['en', 'messages+intl-icu', <<<'XLIFF'
-<?xml version="1.0" encoding="UTF-8"?>
-<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
-  <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
-    <header>
-      <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
-    </header>
-    <body>
-      <trans-unit id="loco:5fd89b853ee27904dd6c5f67" resname="index.hello" datatype="plaintext" extradata="loco:format=icu">
-        <source>index.hello</source>
-        <target state="translated">Hello</target>
-      </trans-unit>
-      <trans-unit id="loco:5fd89b8542e5aa5cc27457e2" resname="index.greetings" datatype="plaintext" extradata="loco:format=icu">
-        <source>index.greetings</source>
-        <target state="translated">Welcome, {firstname}!</target>
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
-XLIFF
-            ,
+            <?xml version="1.0" encoding="UTF-8"?>
+            <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
+              <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
+                <header>
+                  <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
+                </header>
+                <body>
+                  <trans-unit id="loco:5fd89b853ee27904dd6c5f67" resname="index.hello" datatype="plaintext" extradata="loco:format=icu">
+                    <source>index.hello</source>
+                    <target state="translated">Hello</target>
+                  </trans-unit>
+                  <trans-unit id="loco:5fd89b8542e5aa5cc27457e2" resname="index.greetings" datatype="plaintext" extradata="loco:format=icu">
+                    <source>index.greetings</source>
+                    <target state="translated">Welcome, {firstname}!</target>
+                  </trans-unit>
+                </body>
+              </file>
+            </xliff>
+            XLIFF,
             $expectedTranslatorBagEn,
         ];
 
@@ -972,31 +965,30 @@ XLIFF
         ], 'fr', 'messages+intl-icu'));
 
         yield ['fr', 'messages+intl-icu', <<<'XLIFF'
-<?xml version="1.0" encoding="UTF-8"?>
-<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
-  <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
-    <header>
-      <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
-    </header>
-    <body>
-      <trans-unit id="loco:5fd89b853ee27904dd6c5f67" resname="index.hello" datatype="plaintext" extradata="loco:format=icu">
-        <source>index.hello</source>
-        <target state="translated">Bonjour</target>
-      </trans-unit>
-      <trans-unit id="loco:5fd89b8542e5aa5cc27457e2" resname="index.greetings" datatype="plaintext" extradata="loco:format=icu">
-        <source>index.greetings</source>
-        <target state="translated">Bienvenue, {firstname} !</target>
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
-XLIFF
-            ,
+            <?xml version="1.0" encoding="UTF-8"?>
+            <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
+              <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
+                <header>
+                  <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
+                </header>
+                <body>
+                  <trans-unit id="loco:5fd89b853ee27904dd6c5f67" resname="index.hello" datatype="plaintext" extradata="loco:format=icu">
+                    <source>index.hello</source>
+                    <target state="translated">Bonjour</target>
+                  </trans-unit>
+                  <trans-unit id="loco:5fd89b8542e5aa5cc27457e2" resname="index.greetings" datatype="plaintext" extradata="loco:format=icu">
+                    <source>index.greetings</source>
+                    <target state="translated">Bienvenue, {firstname} !</target>
+                  </trans-unit>
+                </body>
+              </file>
+            </xliff>
+            XLIFF,
             $expectedTranslatorBagFr,
         ];
     }
 
-    public function getResponsesForManyLocalesAndManyDomains(): \Generator
+    public static function getResponsesForManyLocalesAndManyDomains(): \Generator
     {
         $arrayLoader = new ArrayLoader();
 
@@ -1028,131 +1020,125 @@ XLIFF
             [
                 'en' => [
                     'messages' => <<<'XLIFF'
-<?xml version="1.0" encoding="UTF-8"?>
-<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
-  <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
-    <header>
-      <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
-    </header>
-    <body>
-      <trans-unit id="loco:5fd89b853ee27904dd6c5f67" resname="index.hello" datatype="plaintext">
-        <source>index.hello</source>
-        <target state="translated">Hello</target>
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
-XLIFF
-                    ,
+                        <?xml version="1.0" encoding="UTF-8"?>
+                        <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
+                          <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
+                            <header>
+                              <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
+                            </header>
+                            <body>
+                              <trans-unit id="loco:5fd89b853ee27904dd6c5f67" resname="index.hello" datatype="plaintext">
+                                <source>index.hello</source>
+                                <target state="translated">Hello</target>
+                              </trans-unit>
+                            </body>
+                          </file>
+                        </xliff>
+                        XLIFF,
                     'messages+intl-icu' => <<<'XLIFF'
-<?xml version="1.0" encoding="UTF-8"?>
-<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
-  <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
-    <header>
-      <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
-    </header>
-    <body>
-      <trans-unit id="loco:5fd89b8542e5aa5cc27457e2" resname="index.greetings" datatype="plaintext" extradata="loco:format=icu">
-        <source>index.greetings</source>
-        <target state="translated">Welcome, {firstname}!</target>
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
-XLIFF
-                    ,
+                        <?xml version="1.0" encoding="UTF-8"?>
+                        <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
+                          <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
+                            <header>
+                              <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
+                            </header>
+                            <body>
+                              <trans-unit id="loco:5fd89b8542e5aa5cc27457e2" resname="index.greetings" datatype="plaintext" extradata="loco:format=icu">
+                                <source>index.greetings</source>
+                                <target state="translated">Welcome, {firstname}!</target>
+                              </trans-unit>
+                            </body>
+                          </file>
+                        </xliff>
+                        XLIFF,
                     'validators' => <<<'XLIFF'
-<?xml version="1.0" encoding="UTF-8"?>
-<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
-  <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
-    <header>
-      <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
-    </header>
-    <body>
-      <trans-unit id="loco:5fd89b853ee27904dd6c5f68" resname="firstname.error" datatype="plaintext">
-        <source>firstname.error</source>
-        <target state="translated">Firstname must contains only letters.</target>
-      </trans-unit>
-      <trans-unit id="loco:5fd89b8542e5aa5cc27457e3" resname="lastname.error" datatype="plaintext" extradata="loco:format=icu">
-        <source>lastname.error</source>
-        <target state="translated">Lastname must contains only letters.</target>
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
-XLIFF
-                    ,
+                        <?xml version="1.0" encoding="UTF-8"?>
+                        <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
+                          <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
+                            <header>
+                              <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
+                            </header>
+                            <body>
+                              <trans-unit id="loco:5fd89b853ee27904dd6c5f68" resname="firstname.error" datatype="plaintext">
+                                <source>firstname.error</source>
+                                <target state="translated">Firstname must contains only letters.</target>
+                              </trans-unit>
+                              <trans-unit id="loco:5fd89b8542e5aa5cc27457e3" resname="lastname.error" datatype="plaintext" extradata="loco:format=icu">
+                                <source>lastname.error</source>
+                                <target state="translated">Lastname must contains only letters.</target>
+                              </trans-unit>
+                            </body>
+                          </file>
+                        </xliff>
+                        XLIFF,
                 ],
                 'fr' => [
                     'messages' => <<<'XLIFF'
-<?xml version="1.0" encoding="UTF-8"?>
-<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
-  <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
-    <header>
-      <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
-    </header>
-    <body>
-      <trans-unit id="loco:5fd89b853ee27904dd6c5f67" resname="index.hello" datatype="plaintext">
-        <source>index.hello</source>
-        <target state="translated">Bonjour</target>
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
-XLIFF
-                    ,
+                        <?xml version="1.0" encoding="UTF-8"?>
+                        <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
+                          <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
+                            <header>
+                              <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
+                            </header>
+                            <body>
+                              <trans-unit id="loco:5fd89b853ee27904dd6c5f67" resname="index.hello" datatype="plaintext">
+                                <source>index.hello</source>
+                                <target state="translated">Bonjour</target>
+                              </trans-unit>
+                            </body>
+                          </file>
+                        </xliff>
+                        XLIFF,
                     'messages+intl-icu' => <<<'XLIFF'
-<?xml version="1.0" encoding="UTF-8"?>
-<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
-  <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
-    <header>
-      <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
-    </header>
-    <body>
-      <trans-unit id="loco:5fd89b8542e5aa5cc27457e2" resname="index.greetings" datatype="plaintext" extradata="loco:format=icu">
-        <source>index.greetings</source>
-        <target state="translated">Bienvenue, {firstname} !</target>
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
-XLIFF
-                    ,
+                        <?xml version="1.0" encoding="UTF-8"?>
+                        <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
+                          <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
+                            <header>
+                              <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
+                            </header>
+                            <body>
+                              <trans-unit id="loco:5fd89b8542e5aa5cc27457e2" resname="index.greetings" datatype="plaintext" extradata="loco:format=icu">
+                                <source>index.greetings</source>
+                                <target state="translated">Bienvenue, {firstname} !</target>
+                              </trans-unit>
+                            </body>
+                          </file>
+                        </xliff>
+                        XLIFF,
                     'validators' => <<<'XLIFF'
-<?xml version="1.0" encoding="UTF-8"?>
-<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
-  <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
-    <header>
-      <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
-    </header>
-    <body>
-      <trans-unit id="loco:5fd89b853ee27904dd6c5f68" resname="firstname.error" datatype="plaintext">
-        <source>firstname.error</source>
-        <target state="translated">Le prénom ne peut contenir que des lettres.</target>
-      </trans-unit>
-      <trans-unit id="loco:5fd89b8542e5aa5cc27457e3" resname="lastname.error" datatype="plaintext" extradata="loco:format=icu">
-        <source>lastname.error</source>
-        <target state="translated">Le nom de famille ne peut contenir que des lettres.</target>
-      </trans-unit>
-    </body>
-  </file>
-</xliff>
-XLIFF
-                    ,
+                        <?xml version="1.0" encoding="UTF-8"?>
+                        <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
+                          <file original="https://localise.biz/user/symfony-translation-provider" source-language="en" datatype="database" tool-id="loco">
+                            <header>
+                              <tool tool-id="loco" tool-name="Loco" tool-version="1.0.25 20201211-1" tool-company="Loco"/>
+                            </header>
+                            <body>
+                              <trans-unit id="loco:5fd89b853ee27904dd6c5f68" resname="firstname.error" datatype="plaintext">
+                                <source>firstname.error</source>
+                                <target state="translated">Le prénom ne peut contenir que des lettres.</target>
+                              </trans-unit>
+                              <trans-unit id="loco:5fd89b8542e5aa5cc27457e3" resname="lastname.error" datatype="plaintext" extradata="loco:format=icu">
+                                <source>lastname.error</source>
+                                <target state="translated">Le nom de famille ne peut contenir que des lettres.</target>
+                              </trans-unit>
+                            </body>
+                          </file>
+                        </xliff>
+                        XLIFF,
                 ],
             ],
             $expectedTranslatorBag,
         ];
     }
 
-    public function getResponsesForReadWithLastModified(): \Generator
+    public static function getResponsesForReadWithLastModified(): \Generator
     {
         $lastModifieds = [
             'en' => 'Tue, 16 Nov 2021 11:35:24 GMT',
             'fr' => 'Wed, 17 Nov 2021 11:22:33 GMT',
         ];
 
-        foreach ($this->getResponsesForManyLocalesAndManyDomains() as [$locales, $domains, $responseContents, $expectedTranslatorBag]) {
+        foreach (self::getResponsesForManyLocalesAndManyDomains() as [$locales, $domains, $responseContents, $expectedTranslatorBag]) {
             foreach ($locales as $locale) {
                 foreach ($domains as $domain) {
                     $catalogue = $expectedTranslatorBag->getCatalogue($locale);
@@ -1162,5 +1148,60 @@ XLIFF
 
             yield [$locales, $domains, $responseContents, $lastModifieds, $expectedTranslatorBag];
         }
+    }
+
+    public function testReadForAllDomains()
+    {
+        $this->loader = $this->createMock(LoaderInterface::class);
+        $this->loader->expects($this->once())
+            ->method('load')
+            ->willReturn(new MessageCatalogue('fr'));
+
+        $provider = self::createProvider(
+            new MockHttpClient([
+                function (string $method, string $url, array $options = []): ResponseInterface {
+                    $this->assertSame('GET', $method);
+                    $this->assertSame('https://localise.biz/api/export/locale/fr.xlf?filter=&status=translated%2Cblank-translation', $url);
+                    $this->assertSame(['filter' => '', 'status' => 'translated,blank-translation'], $options['query']);
+
+                    return new MockResponse();
+                },
+            ], 'https://localise.biz/api/'),
+            $this->getLoader(),
+            $this->getLogger(),
+            $this->getDefaultLocale(),
+            'localise.biz/api/',
+        );
+
+        $this->translatorBag = $provider->read(['*'], ['fr']);
+    }
+
+    public function testReadWithRestrictToStatus()
+    {
+        $this->loader = $this->createMock(LoaderInterface::class);
+        $this->loader
+            ->expects($this->once())
+            ->method('load')
+            ->willReturn(new MessageCatalogue('fr'));
+
+        $provider = self::createProvider(
+            new MockHttpClient([
+                function (string $method, string $url, array $options = []): ResponseInterface {
+                    $this->assertSame('GET', $method);
+                    $this->assertSame('https://localise.biz/api/export/locale/de.xlf?filter=messages&status=translated%2Cprovisional', $url);
+                    $this->assertSame(['filter' => 'messages', 'status' => 'translated,provisional'], $options['query']);
+
+                    return new MockResponse();
+                },
+            ], 'https://localise.biz/api/'),
+            $this->getLoader(),
+            $this->getLogger(),
+            $this->getDefaultLocale(),
+            'localise.biz/api/',
+            null,
+            'translated,provisional'
+        );
+
+        $this->translatorBag = $provider->read(['messages'], ['de']);
     }
 }

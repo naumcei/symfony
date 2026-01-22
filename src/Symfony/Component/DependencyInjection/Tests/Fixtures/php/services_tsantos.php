@@ -37,18 +37,12 @@ class ProjectServiceContainer extends Container
         return true;
     }
 
-    public function getRemovedIds(): array
-    {
-        return [
-        ];
-    }
-
     /**
      * Gets the public 'tsantos_serializer' shared service.
      *
      * @return \TSantos\Serializer\EventEmitterSerializer
      */
-    protected function getTsantosSerializerService()
+    protected static function getTsantosSerializerService($container)
     {
         $a = new \TSantos\Serializer\NormalizerRegistry();
 
@@ -57,7 +51,7 @@ class ProjectServiceContainer extends Container
         $c = new \TSantos\Serializer\EventDispatcher\EventDispatcher();
         $c->addSubscriber(new \TSantos\SerializerBundle\EventListener\StopwatchListener(new \Symfony\Component\Stopwatch\Stopwatch(true)));
 
-        $this->services['tsantos_serializer'] = $instance = new \TSantos\Serializer\EventEmitterSerializer(new \TSantos\Serializer\Encoder\JsonEncoder(), $a, $c);
+        $container->services['tsantos_serializer'] = $instance = new \TSantos\Serializer\EventEmitterSerializer(new \TSantos\Serializer\Encoder\JsonEncoder(), $a, $c);
 
         $b->setSerializer($instance);
         $d = new \TSantos\Serializer\Normalizer\JsonNormalizer();

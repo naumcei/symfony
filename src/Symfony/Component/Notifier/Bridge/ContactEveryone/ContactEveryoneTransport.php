@@ -29,29 +29,26 @@ final class ContactEveryoneTransport extends AbstractTransport
 {
     protected const HOST = 'contact-everyone.orange-business.com';
 
-    private string $token;
-    private ?string $diffusionName;
-    private ?string $category;
-
-    public function __construct(#[\SensitiveParameter] string $token, ?string $diffusionName, ?string $category, HttpClientInterface $client = null, EventDispatcherInterface $dispatcher = null)
-    {
-        $this->token = $token;
-        $this->diffusionName = $diffusionName;
-        $this->category = $category;
-
+    public function __construct(
+        #[\SensitiveParameter] private string $token,
+        private ?string $diffusionName,
+        private ?string $category,
+        ?HttpClientInterface $client = null,
+        ?EventDispatcherInterface $dispatcher = null,
+    ) {
         parent::__construct($client, $dispatcher);
     }
 
     public function __toString(): string
     {
-        $dsn = sprintf('contact-everyone://%s', $this->getEndpoint());
+        $dsn = \sprintf('contact-everyone://%s', $this->getEndpoint());
 
         if ($this->diffusionName) {
-            $dsn .= sprintf('?diffusionname=%s', $this->diffusionName);
+            $dsn .= \sprintf('?diffusionname=%s', $this->diffusionName);
         }
 
         if ($this->category) {
-            $dsn .= sprintf('%scategory=%s', (null === $this->diffusionName) ? '?' : '&', $this->category);
+            $dsn .= \sprintf('%scategory=%s', (null === $this->diffusionName) ? '?' : '&', $this->category);
         }
 
         return $dsn;
@@ -59,7 +56,7 @@ final class ContactEveryoneTransport extends AbstractTransport
 
     public function supports(MessageInterface $message): bool
     {
-        return $message instanceof SmsMessage;
+        return $message instanceof SmsMessage && (null === $message->getOptions() || $message->getOptions() instanceof ContactEveryoneOptions);
     }
 
     protected function doSend(MessageInterface $message): SentMessage
@@ -69,17 +66,20 @@ final class ContactEveryoneTransport extends AbstractTransport
         }
 
         if ('' !== $message->getFrom()) {
-            throw new InvalidArgumentException(sprintf('The "%s" transport does not support "from" in "%s".', __CLASS__, SmsMessage::class));
+            throw new InvalidArgumentException(\sprintf('The "%s" transport does not support "from" in "%s".', __CLASS__, SmsMessage::class));
         }
 
-        $endpoint = sprintf('https://%s/api/light/diffusions/sms', self::HOST);
+        $options = $message->getOptions()?->toArray() ?? [];
+        $options['category'] ??= $this->category;
+        $options['diffusionname'] ??= $this->diffusionName;
+        $options['xcharset'] ??= 'true';
+        $options['token'] = $this->token;
+        $options['to'] = $message->getPhone();
+        $options['msg'] = $message->getSubject();
+
+        $endpoint = \sprintf('https://%s/api/light/diffusions/sms', $this->getEndpoint());
         $response = $this->client->request('POST', $endpoint, [
-            'query' => [
-                'xcharset' => 'true',
-                'token' => $this->token,
-                'to' => $message->getPhone(),
-                'msg' => $message->getSubject(),
-            ],
+            'query' => array_filter($options),
         ]);
 
         try {
@@ -90,13 +90,13 @@ final class ContactEveryoneTransport extends AbstractTransport
 
         if (200 !== $statusCode) {
             $error = $response->toArray(false);
-            throw new TransportException(sprintf('Unable to send the Contact Everyone message with following error: "%s". For further details, please check this logId: "%s".', $error['message'], $error['logId']), $response);
+            throw new TransportException(\sprintf('Unable to send the Contact Everyone message with following error: "%s". For further details, please check this logId: "%s".', $error['message'], $error['logId']), $response);
         }
 
         $result = $response->getContent(false);
 
         $sentMessage = new SentMessage($message, (string) $this);
-        $sentMessage->setMessageId($result ?? '');
+        $sentMessage->setMessageId($result);
 
         return $sentMessage;
     }

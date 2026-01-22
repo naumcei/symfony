@@ -11,8 +11,8 @@
 
 namespace Symfony\Component\Messenger\Bridge\Doctrine\Tests\Transport;
 
-use Doctrine\DBAL\Cache\ArrayResult;
-use Doctrine\DBAL\Cache\ArrayStatement;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\Result as DriverResult;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Result;
@@ -30,7 +30,8 @@ class PostgreSqlConnectionTest extends TestCase
         $this->expectException(\BadMethodCallException::class);
         $this->expectExceptionMessage('Cannot serialize '.PostgreSqlConnection::class);
 
-        $driverConnection = $this->createMock(\Doctrine\DBAL\Connection::class);
+        $driverConnection = $this->createStub(Connection::class);
+        $driverConnection->method('executeStatement')->willReturn(1);
 
         $connection = new PostgreSqlConnection([], $driverConnection);
         serialize($connection);
@@ -41,15 +42,17 @@ class PostgreSqlConnectionTest extends TestCase
         $this->expectException(\BadMethodCallException::class);
         $this->expectExceptionMessage('Cannot unserialize '.PostgreSqlConnection::class);
 
-        $driverConnection = $this->createMock(\Doctrine\DBAL\Connection::class);
+        $driverConnection = $this->createStub(Connection::class);
+        $driverConnection->method('executeStatement')->willReturn(1);
 
         $connection = new PostgreSqlConnection([], $driverConnection);
-        $connection->__wakeup();
+        $connection->__unserialize([]);
     }
 
     public function testListenOnConnection()
     {
-        $driverConnection = $this->createMock(\Doctrine\DBAL\Connection::class);
+        $driverConnection = $this->createMock(Connection::class);
+        $driverConnection->method('executeStatement')->willReturn(1);
 
         $driverConnection
             ->expects(self::any())
@@ -61,10 +64,10 @@ class PostgreSqlConnectionTest extends TestCase
             ->method('createQueryBuilder')
             ->willReturn(new QueryBuilder($driverConnection));
 
-        $wrappedConnection = new class() {
-            private $notifyCalls = 0;
+        $wrappedConnection = new class {
+            private int $notifyCalls = 0;
 
-            public function pgsqlGetNotify()
+            public function getNotify()
             {
                 ++$this->notifyCalls;
 
@@ -77,29 +80,19 @@ class PostgreSqlConnectionTest extends TestCase
             }
         };
 
-        // dbal 2.x
-        if (interface_exists(Result::class)) {
-            $driverConnection
-                ->expects(self::exactly(2))
-                ->method('getWrappedConnection')
-                ->willReturn($wrappedConnection);
+        $driverConnection
+            ->expects(self::exactly(2))
+            ->method('getNativeConnection')
+            ->willReturn($wrappedConnection);
 
-            $driverConnection
-                ->expects(self::any())
-                ->method('executeQuery')
-                ->willReturn(new ArrayStatement([]));
-        } else {
-            // dbal 3.x
-            $driverConnection
-                ->expects(self::exactly(2))
-                ->method('getNativeConnection')
-                ->willReturn($wrappedConnection);
+        $driverResult = $this->createStub(DriverResult::class);
+        $driverResult->method('fetchAssociative')
+            ->willReturn(false);
+        $driverConnection
+            ->expects(self::any())
+            ->method('executeQuery')
+            ->willReturn(new Result($driverResult, $driverConnection));
 
-            $driverConnection
-                ->expects(self::any())
-                ->method('executeQuery')
-                ->willReturn(new Result(new ArrayResult([]), $driverConnection));
-        }
         $connection = new PostgreSqlConnection(['table_name' => 'queue_table'], $driverConnection);
 
         $connection->get(); // first time we have queueEmptiedAt === null, fallback on the parent implementation
@@ -107,44 +100,5 @@ class PostgreSqlConnectionTest extends TestCase
         $connection->get();
 
         $this->assertSame(2, $wrappedConnection->countNotifyCalls());
-    }
-
-    public function testGetExtraSetupSql()
-    {
-        $driverConnection = $this->createMock(\Doctrine\DBAL\Connection::class);
-        $connection = new PostgreSqlConnection(['table_name' => 'queue_table'], $driverConnection);
-
-        $table = new Table('queue_table');
-        $table->addOption('_symfony_messenger_table_name', 'queue_table');
-        $sql = implode("\n", $connection->getExtraSetupSqlForTable($table));
-
-        $this->assertStringContainsString('CREATE TRIGGER', $sql);
-
-        // We MUST NOT use transaction, that will mess with the PDO in PHP 8
-        $this->assertStringNotContainsString('BEGIN;', $sql);
-        $this->assertStringNotContainsString('COMMIT;', $sql);
-    }
-
-    public function testTransformTableNameWithSchemaToValidProcedureName()
-    {
-        $driverConnection = $this->createMock(\Doctrine\DBAL\Connection::class);
-        $connection = new PostgreSqlConnection(['table_name' => 'schema.queue_table'], $driverConnection);
-
-        $table = new Table('schema.queue_table');
-        $table->addOption('_symfony_messenger_table_name', 'schema.queue_table');
-        $sql = implode("\n", $connection->getExtraSetupSqlForTable($table));
-
-        $this->assertStringContainsString('CREATE OR REPLACE FUNCTION schema.notify_queue_table', $sql);
-        $this->assertStringContainsString('FOR EACH ROW EXECUTE PROCEDURE schema.notify_queue_table()', $sql);
-    }
-
-    public function testGetExtraSetupSqlWrongTable()
-    {
-        $driverConnection = $this->createMock(\Doctrine\DBAL\Connection::class);
-        $connection = new PostgreSqlConnection(['table_name' => 'queue_table'], $driverConnection);
-
-        $table = new Table('queue_table');
-        // don't set the _symfony_messenger_table_name option
-        $this->assertSame([], $connection->getExtraSetupSqlForTable($table));
     }
 }

@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Translation\Tests\Command;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
@@ -26,7 +27,7 @@ use Symfony\Component\Translation\Command\XliffLintCommand;
  */
 class XliffLintCommandTest extends TestCase
 {
-    private $files;
+    private array $files;
 
     public function testLintCorrectFile()
     {
@@ -57,9 +58,7 @@ class XliffLintCommandTest extends TestCase
         $this->assertStringContainsString('OK', trim($tester->getDisplay()));
     }
 
-    /**
-     * @dataProvider provideStrictFilenames
-     */
+    #[DataProvider('provideStrictFilenames')]
     public function testStrictFilenames($requireStrictFileNames, $fileNamePattern, $targetLanguage, $mustFail)
     {
         $tester = $this->createCommandTester($requireStrictFileNames);
@@ -120,10 +119,11 @@ class XliffLintCommandTest extends TestCase
 
     public function testLintFileNotReadable()
     {
-        $this->expectException(\RuntimeException::class);
         $tester = $this->createCommandTester();
         $filename = $this->createFile();
         unlink($filename);
+
+        $this->expectException(\RuntimeException::class);
 
         $tester->execute(['filename' => $filename], ['decorated' => false]);
     }
@@ -132,12 +132,14 @@ class XliffLintCommandTest extends TestCase
     {
         $command = new XliffLintCommand();
         $expected = <<<EOF
-Or of a whole directory:
+            Or of a whole directory:
 
-  <info>php %command.full_name% dirname</info>
-  <info>php %command.full_name% dirname --format=json</info>
+              <info>php %command.full_name% dirname</info>
 
-EOF;
+            The <info>--format</info> option specifies the format of the command output:
+
+              <info>php %command.full_name% dirname --format=json</info>
+            EOF;
 
         $this->assertStringContainsString($expected, $command->getHelp());
     }
@@ -182,20 +184,20 @@ EOF;
     private function createFile($sourceContent = 'note', $targetLanguage = 'en', $fileNamePattern = 'messages.%locale%.xlf'): string
     {
         $xliffContent = <<<XLIFF
-<?xml version="1.0"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file source-language="en" target-language="$targetLanguage" datatype="plaintext" original="file.ext">
-        <body>
-            <trans-unit id="note">
-                <source>$sourceContent</source>
-                <target>NOTE</target>
-            </trans-unit>
-        </body>
-    </file>
-</xliff>
-XLIFF;
+            <?xml version="1.0"?>
+            <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+                <file source-language="en" target-language="$targetLanguage" datatype="plaintext" original="file.ext">
+                    <body>
+                        <trans-unit id="note">
+                            <source>$sourceContent</source>
+                            <target>NOTE</target>
+                        </trans-unit>
+                    </body>
+                </file>
+            </xliff>
+            XLIFF;
 
-        $filename = sprintf('%s/translation-xliff-lint-test/%s', sys_get_temp_dir(), str_replace('%locale%', 'en', $fileNamePattern));
+        $filename = \sprintf('%s/translation-xliff-lint-test/%s', sys_get_temp_dir(), str_replace('%locale%', 'en', $fileNamePattern));
         file_put_contents($filename, $xliffContent);
 
         $this->files[] = $filename;
@@ -207,14 +209,12 @@ XLIFF;
     {
         if (!$application) {
             $application = new Application();
-            $application->add(new XliffLintCommand(null, null, null, $requireStrictFileNames));
+            $application->addCommand(new XliffLintCommand(null, null, null, $requireStrictFileNames));
         }
 
         $command = $application->find('lint:xliff');
 
-        if ($application) {
-            $command->setApplication($application);
-        }
+        $command->setApplication($application);
 
         return $command;
     }
@@ -240,7 +240,7 @@ XLIFF;
         @rmdir(sys_get_temp_dir().'/translation-xliff-lint-test');
     }
 
-    public function provideStrictFilenames()
+    public static function provideStrictFilenames()
     {
         yield [false, 'messages.%locale%.xlf', 'en', false];
         yield [false, 'messages.%locale%.xlf', 'es', true];
@@ -252,9 +252,7 @@ XLIFF;
         yield [true, '%locale%.messages.xlf', 'es', true];
     }
 
-    /**
-     * @dataProvider provideCompletionSuggestions
-     */
+    #[DataProvider('provideCompletionSuggestions')]
     public function testComplete(array $input, array $expectedSuggestions)
     {
         $tester = new CommandCompletionTester($this->createCommand());
@@ -262,7 +260,7 @@ XLIFF;
         $this->assertSame($expectedSuggestions, $tester->complete($input));
     }
 
-    public function provideCompletionSuggestions()
+    public static function provideCompletionSuggestions()
     {
         yield 'option' => [['--format', ''], ['txt', 'json', 'github']];
     }

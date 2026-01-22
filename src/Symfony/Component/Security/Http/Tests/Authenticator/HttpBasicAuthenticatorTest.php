@@ -11,10 +11,9 @@
 
 namespace Symfony\Component\Security\Http\Tests\Authenticator;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
-use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Security\Core\User\InMemoryUser;
 use Symfony\Component\Security\Core\User\InMemoryUserProvider;
 use Symfony\Component\Security\Http\Authenticator\HttpBasicAuthenticator;
@@ -24,21 +23,12 @@ use Symfony\Component\Security\Http\Tests\Authenticator\Fixtures\PasswordUpgrade
 
 class HttpBasicAuthenticatorTest extends TestCase
 {
-    private $userProvider;
-    private $hasherFactory;
-    private $hasher;
-    private $authenticator;
+    private InMemoryUserProvider $userProvider;
+    private HttpBasicAuthenticator $authenticator;
 
     protected function setUp(): void
     {
         $this->userProvider = new InMemoryUserProvider();
-        $this->hasherFactory = $this->createMock(PasswordHasherFactoryInterface::class);
-        $this->hasher = $this->createMock(PasswordHasherInterface::class);
-        $this->hasherFactory
-            ->expects($this->any())
-            ->method('getPasswordHasher')
-            ->willReturn($this->hasher);
-
         $this->authenticator = new HttpBasicAuthenticator('test', $this->userProvider);
     }
 
@@ -57,9 +47,7 @@ class HttpBasicAuthenticatorTest extends TestCase
         $this->assertTrue($user->isEqualTo($passport->getUser()));
     }
 
-    /**
-     * @dataProvider provideMissingHttpBasicServerParameters
-     */
+    #[DataProvider('provideMissingHttpBasicServerParameters')]
     public function testHttpBasicServerParametersMissing(array $serverParameters)
     {
         $request = new Request([], [], [], [], [], $serverParameters);
@@ -67,7 +55,7 @@ class HttpBasicAuthenticatorTest extends TestCase
         $this->assertFalse($this->authenticator->supports($request));
     }
 
-    public function provideMissingHttpBasicServerParameters()
+    public static function provideMissingHttpBasicServerParameters()
     {
         return [
             [[]],

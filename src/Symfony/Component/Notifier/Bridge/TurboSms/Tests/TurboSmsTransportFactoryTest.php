@@ -12,16 +12,21 @@
 namespace Symfony\Component\Notifier\Bridge\TurboSms\Tests;
 
 use Symfony\Component\Notifier\Bridge\TurboSms\TurboSmsTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
+use Symfony\Component\Notifier\Test\MissingRequiredOptionTestTrait;
 
-final class TurboSmsTransportFactoryTest extends TransportFactoryTestCase
+final class TurboSmsTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+    use MissingRequiredOptionTestTrait;
+
     public function createFactory(): TurboSmsTransportFactory
     {
         return new TurboSmsTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'turbosms://host.test?from=acme',
@@ -34,20 +39,25 @@ final class TurboSmsTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'turbosms://authToken@default?from=acme'];
         yield [false, 'somethingElse://authToken@default?from=acme'];
     }
 
-    public function missingRequiredOptionProvider(): iterable
+    public static function missingRequiredOptionProvider(): iterable
     {
         yield 'missing option: from' => ['turbosms://authToken@default'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://authToken@default?from=acme'];
         yield ['somethingElse://authToken@default'];
+    }
+
+    public static function incompleteDsnProvider(): iterable
+    {
+        yield ['turbosms://default?from=acme'];
     }
 }

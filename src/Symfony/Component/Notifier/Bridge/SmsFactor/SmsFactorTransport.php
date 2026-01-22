@@ -17,7 +17,6 @@ use Symfony\Component\Notifier\Message\MessageInterface;
 use Symfony\Component\Notifier\Message\SentMessage;
 use Symfony\Component\Notifier\Message\SmsMessage;
 use Symfony\Component\Notifier\Transport\AbstractTransport;
-use Symfony\Component\Uid\Uuid;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -29,31 +28,24 @@ final class SmsFactorTransport extends AbstractTransport
 {
     protected const HOST = 'api.smsfactor.com';
 
-    private string $tokenApi;
-    private ?string $sender;
-    private ?SmsFactorPushType $pushType;
-
-    public function __construct(#[\SensitiveParameter] string $tokenApi, ?string $sender, ?SmsFactorPushType $pushType, HttpClientInterface $client = null, EventDispatcherInterface $dispatcher = null)
-    {
-        $this->tokenApi = $tokenApi;
-        $this->sender = $sender;
-        $this->pushType = $pushType;
-
+    public function __construct(
+        #[\SensitiveParameter] private string $tokenApi,
+        private ?string $sender,
+        private ?SmsFactorPushType $pushType,
+        ?HttpClientInterface $client = null,
+        ?EventDispatcherInterface $dispatcher = null,
+    ) {
         parent::__construct($client, $dispatcher);
     }
 
     public function __toString(): string
     {
-        $arguments = [];
-        if (null !== $this->sender) {
-            $arguments[] = sprintf('sender=%s', $this->sender);
-        }
+        $query = array_filter([
+            'sender' => $this->sender,
+            'push_type' => $this->pushType?->value,
+        ]);
 
-        if (null !== $this->pushType) {
-            $arguments[] = sprintf('push_type=%s', $this->pushType->value);
-        }
-
-        return sprintf('sms-factor://%s?%s', $this->getEndpoint(), implode('&', $arguments));
+        return \sprintf('sms-factor://%s%s', $this->getEndpoint(), $query ? '?'.http_build_query($query, '', '&') : '');
     }
 
     public function supports(MessageInterface $message): bool
@@ -67,27 +59,19 @@ final class SmsFactorTransport extends AbstractTransport
             throw new UnsupportedMessageTypeException(__CLASS__, SmsMessage::class, $message);
         }
 
-        $messageId = Uuid::v4()->toRfc4122();
+        $messageId = bin2hex(random_bytes(7));
         $query = [
             'to' => $message->getPhone(),
             'text' => $message->getSubject(),
             'gsmsmsid' => $messageId,
+            'sender' => $message->getFrom() ?: $this->sender,
+            'pushtype' => $this->pushType?->value,
         ];
 
-        if ('' !== $message->getFrom()) {
-            $query['sender'] = $message->getFrom();
-        } elseif (null !== $this->sender) {
-            $query['sender'] = $this->sender;
-        }
-
-        if (null !== $this->pushType) {
-            $query['pushtype'] = $this->pushType->value;
-        }
-
         $response = $this->client->request('GET', 'https://'.$this->getEndpoint().'/send', [
-            'query' => $query,
+            'query' => array_filter($query),
+            'auth_bearer' => $this->tokenApi,
             'headers' => [
-                'Authorization' => sprintf('Bearer %s', $this->tokenApi),
                 'Accept' => 'application/json',
             ],
         ]);

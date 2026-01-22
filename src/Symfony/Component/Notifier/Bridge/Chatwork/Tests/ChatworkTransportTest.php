@@ -12,52 +12,42 @@
 namespace Symfony\Component\Notifier\Bridge\Chatwork\Tests;
 
 use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\Notifier\Bridge\Chatwork\ChatworkTransport;
 use Symfony\Component\Notifier\Exception\TransportException;
 use Symfony\Component\Notifier\Message\ChatMessage;
-use Symfony\Component\Notifier\Message\MessageInterface;
 use Symfony\Component\Notifier\Message\SmsMessage;
 use Symfony\Component\Notifier\Test\TransportTestCase;
+use Symfony\Component\Notifier\Tests\Transport\DummyMessage;
 use Symfony\Component\Notifier\Transport\TransportInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class ChatworkTransportTest extends TransportTestCase
 {
-    public function createTransport(HttpClientInterface $client = null): TransportInterface
+    public static function createTransport(?HttpClientInterface $client = null): TransportInterface
     {
-        return (new ChatworkTransport('testToken', 'testRoomId', $client ?? $this->createMock(HttpClientInterface::class)))->setHost('host.test');
+        return (new ChatworkTransport('testToken', 'testRoomId', $client ?? new MockHttpClient()))->setHost('host.test');
     }
 
-    public function toStringProvider(): iterable
+    public static function toStringProvider(): iterable
     {
-        yield ['chatwork://host.test?room_id=testRoomId', $this->createTransport()];
+        yield ['chatwork://host.test?room_id=testRoomId', self::createTransport()];
     }
 
-    public function supportedMessagesProvider(): iterable
+    public static function supportedMessagesProvider(): iterable
     {
         yield [new ChatMessage('Hello!')];
     }
 
-    public function unsupportedMessagesProvider(): iterable
+    public static function unsupportedMessagesProvider(): iterable
     {
         yield [new SmsMessage('0611223344', 'Hello!')];
-        yield [$this->createMock(MessageInterface::class)];
+        yield [new DummyMessage()];
     }
 
     public function testWithErrorResponseThrows()
     {
-        $response = $this->createMock(ResponseInterface::class);
-        $response->expects($this->exactly(2))
-            ->method('getStatusCode')
-            ->willReturn(400);
-        $response->expects($this->once())
-            ->method('getContent')
-            ->willReturn(json_encode(['errors' => ['first error', 'second error']]));
-
-        $client = new MockHttpClient(static function () use ($response): ResponseInterface {
-            return $response;
-        });
+        $client = new MockHttpClient(new MockResponse(json_encode(['errors' => ['first error', 'second error']]), ['http_code' => 400]));
 
         $transport = $this->createTransport($client);
 

@@ -12,16 +12,19 @@
 namespace Symfony\Component\Notifier\Bridge\Zendesk\Tests;
 
 use Symfony\Component\Notifier\Bridge\Zendesk\ZendeskTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
 
-final class ZendeskTransportFactoryTest extends TransportFactoryTestCase
+final class ZendeskTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+
     public function createFactory(): ZendeskTransportFactory
     {
         return new ZendeskTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'zendesk://subdomain.zendesk.com',
@@ -29,19 +32,19 @@ final class ZendeskTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'zendesk://host'];
         yield [false, 'somethingElse://host'];
     }
 
-    public function incompleteDsnProvider(): iterable
+    public static function incompleteDsnProvider(): iterable
     {
         yield 'missing email or token' => ['zendesk://testOneOfEmailOrToken@host'];
         yield 'wrong host' => ['zendesk://testEmail:Token@host.com'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://email:token@host'];
     }

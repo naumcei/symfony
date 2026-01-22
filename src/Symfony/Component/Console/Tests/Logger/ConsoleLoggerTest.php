@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Console\Tests\Logger;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
@@ -26,10 +27,7 @@ use Symfony\Component\Console\Tests\Fixtures\DummyOutput;
  */
 class ConsoleLoggerTest extends TestCase
 {
-    /**
-     * @var DummyOutput
-     */
-    protected $output;
+    protected DummyOutput $output;
 
     public function getLogger(): LoggerInterface
     {
@@ -57,9 +55,7 @@ class ConsoleLoggerTest extends TestCase
         return $this->output->getLogs();
     }
 
-    /**
-     * @dataProvider provideOutputMappingParams
-     */
+    #[DataProvider('provideOutputMappingParams')]
     public function testOutputMapping($logLevel, $outputVerbosity, $isOutput, $addVerbosityLevelMap = [])
     {
         $out = new BufferedOutput($outputVerbosity);
@@ -69,7 +65,7 @@ class ConsoleLoggerTest extends TestCase
         $this->assertEquals($isOutput ? "[$logLevel] foo bar".\PHP_EOL : '', $logs);
     }
 
-    public function provideOutputMappingParams()
+    public static function provideOutputMappingParams()
     {
         $quietMap = [LogLevel::EMERGENCY => OutputInterface::VERBOSITY_QUIET];
 
@@ -107,9 +103,7 @@ class ConsoleLoggerTest extends TestCase
         $this->assertInstanceOf(LoggerInterface::class, $this->getLogger());
     }
 
-    /**
-     * @dataProvider provideLevelsAndMessages
-     */
+    #[DataProvider('provideLevelsAndMessages')]
     public function testLogsAtAllLevels($level, $message)
     {
         $logger = $this->getLogger();
@@ -123,7 +117,7 @@ class ConsoleLoggerTest extends TestCase
         $this->assertEquals($expected, $this->getLogs());
     }
 
-    public function provideLevelsAndMessages()
+    public static function provideLevelsAndMessages()
     {
         return [
             LogLevel::EMERGENCY => [LogLevel::EMERGENCY, 'message of level emergency with context: {user}'],
@@ -140,8 +134,7 @@ class ConsoleLoggerTest extends TestCase
     public function testThrowsOnInvalidLevel()
     {
         $this->expectException(InvalidArgumentException::class);
-        $logger = $this->getLogger();
-        $logger->log('invalid level', 'Foo');
+        $this->getLogger()->log('invalid level', 'Foo');
     }
 
     public function testContextReplacement()
@@ -155,14 +148,7 @@ class ConsoleLoggerTest extends TestCase
 
     public function testObjectCastToString()
     {
-        if (method_exists($this, 'createPartialMock')) {
-            $dummy = $this->createPartialMock(DummyTest::class, ['__toString']);
-        } else {
-            $dummy = $this->createPartialMock(DummyTest::class, ['__toString']);
-        }
-        $dummy->method('__toString')->willReturn('DUMMY');
-
-        $this->getLogger()->warning($dummy);
+        $this->getLogger()->warning(new DummyTest());
 
         $expected = ['warning DUMMY'];
         $this->assertEquals($expected, $this->getLogs());
@@ -205,5 +191,6 @@ class DummyTest
 {
     public function __toString(): string
     {
+        return 'DUMMY';
     }
 }

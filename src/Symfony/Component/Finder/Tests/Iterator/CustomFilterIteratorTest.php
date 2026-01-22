@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Finder\Tests\Iterator;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Finder\Iterator\CustomFilterIterator;
 
 class CustomFilterIteratorTest extends IteratorTestCase
@@ -21,9 +22,7 @@ class CustomFilterIteratorTest extends IteratorTestCase
         new CustomFilterIterator(new Iterator(), ['foo']);
     }
 
-    /**
-     * @dataProvider getAcceptData
-     */
+    #[DataProvider('getAcceptData')]
     public function testAccept($filters, $expected)
     {
         $inner = new Iterator(['test.php', 'test.py', 'foo.php']);
@@ -33,11 +32,11 @@ class CustomFilterIteratorTest extends IteratorTestCase
         $this->assertIterator($expected, $iterator);
     }
 
-    public function getAcceptData()
+    public static function getAcceptData()
     {
         return [
-            [[function (\SplFileInfo $fileinfo) { return false; }], []],
-            [[function (\SplFileInfo $fileinfo) { return str_starts_with($fileinfo, 'test'); }], ['test.php', 'test.py']],
+            [[static fn (\SplFileInfo $fileinfo) => false], []],
+            [[static fn (\SplFileInfo $fileinfo) => str_starts_with($fileinfo, 'test')], ['test.php', 'test.py']],
             [['is_dir'], []],
         ];
     }

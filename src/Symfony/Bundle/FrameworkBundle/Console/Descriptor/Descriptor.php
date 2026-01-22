@@ -15,6 +15,7 @@ use Symfony\Component\Config\Resource\ClassExistenceResource;
 use Symfony\Component\Console\Descriptor\DescriptorInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\Alias;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use Symfony\Component\DependencyInjection\Compiler\AnalyzeServiceReferencesPass;
 use Symfony\Component\DependencyInjection\Compiler\ServiceReferenceGraphEdge;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -33,12 +34,9 @@ use Symfony\Component\Routing\RouteCollection;
  */
 abstract class Descriptor implements DescriptorInterface
 {
-    /**
-     * @var OutputInterface
-     */
-    protected $output;
+    protected OutputInterface $output;
 
-    public function describe(OutputInterface $output, mixed $object, array $options = [])
+    public function describe(OutputInterface $output, mixed $object, array $options = []): void
     {
         $this->output = $output;
 
@@ -46,21 +44,26 @@ abstract class Descriptor implements DescriptorInterface
             (new AnalyzeServiceReferencesPass(false, false))->process($object);
         }
 
+        $deprecatedParameters = [];
+        if ($object instanceof ContainerBuilder && isset($options['parameter']) && ($parameterBag = $object->getParameterBag()) instanceof ParameterBag) {
+            $deprecatedParameters = $parameterBag->allDeprecated();
+        }
+
         match (true) {
-            $object instanceof RouteCollection => $this->describeRouteCollection($object, $options),
+            $object instanceof RouteCollection => $this->describeRouteCollection($this->filterRoutesByHttpMethod($object, $options['method'] ?? ''), $options),
             $object instanceof Route => $this->describeRoute($object, $options),
             $object instanceof ParameterBag => $this->describeContainerParameters($object, $options),
             $object instanceof ContainerBuilder && !empty($options['env-vars']) => $this->describeContainerEnvVars($this->getContainerEnvVars($object), $options),
             $object instanceof ContainerBuilder && isset($options['group_by']) && 'tags' === $options['group_by'] => $this->describeContainerTags($object, $options),
             $object instanceof ContainerBuilder && isset($options['id']) => $this->describeContainerService($this->resolveServiceDefinition($object, $options['id']), $options, $object),
-            $object instanceof ContainerBuilder && isset($options['parameter']) => $this->describeContainerParameter($object->resolveEnvPlaceholders($object->getParameter($options['parameter'])), $options),
+            $object instanceof ContainerBuilder && isset($options['parameter']) => $this->describeContainerParameter($object->resolveEnvPlaceholders($object->getParameter($options['parameter'])), $deprecatedParameters[$options['parameter']] ?? null, $options),
             $object instanceof ContainerBuilder && isset($options['deprecations']) => $this->describeContainerDeprecations($object, $options),
             $object instanceof ContainerBuilder => $this->describeContainerServices($object, $options),
             $object instanceof Definition => $this->describeContainerDefinition($object, $options),
             $object instanceof Alias => $this->describeContainerAlias($object, $options),
             $object instanceof EventDispatcherInterface => $this->describeEventDispatcherListeners($object, $options),
             \is_callable($object) => $this->describeCallable($object, $options),
-            default => throw new \InvalidArgumentException(sprintf('Object of type "%s" is not describable.', get_debug_type($object))),
+            default => throw new \InvalidArgumentException(\sprintf('Object of type "%s" is not describable.', get_debug_type($object))),
         };
 
         if ($object instanceof ContainerBuilder) {
@@ -73,18 +76,18 @@ abstract class Descriptor implements DescriptorInterface
         return $this->output;
     }
 
-    protected function write(string $content, bool $decorated = false)
+    protected function write(string $content, bool $decorated = false): void
     {
         $this->output->write($content, false, $decorated ? OutputInterface::OUTPUT_NORMAL : OutputInterface::OUTPUT_RAW);
     }
 
-    abstract protected function describeRouteCollection(RouteCollection $routes, array $options = []);
+    abstract protected function describeRouteCollection(RouteCollection $routes, array $options = []): void;
 
-    abstract protected function describeRoute(Route $route, array $options = []);
+    abstract protected function describeRoute(Route $route, array $options = []): void;
 
-    abstract protected function describeContainerParameters(ParameterBag $parameters, array $options = []);
+    abstract protected function describeContainerParameters(ParameterBag $parameters, array $options = []): void;
 
-    abstract protected function describeContainerTags(ContainerBuilder $builder, array $options = []);
+    abstract protected function describeContainerTags(ContainerBuilder $container, array $options = []): void;
 
     /**
      * Describes a container service by its name.
@@ -94,7 +97,7 @@ abstract class Descriptor implements DescriptorInterface
      *
      * @param Definition|Alias|object $service
      */
-    abstract protected function describeContainerService(object $service, array $options = [], ContainerBuilder $builder = null);
+    abstract protected function describeContainerService(object $service, array $options = [], ?ContainerBuilder $container = null): void;
 
     /**
      * Describes container services.
@@ -102,17 +105,17 @@ abstract class Descriptor implements DescriptorInterface
      * Common options are:
      * * tag: filters described services by given tag
      */
-    abstract protected function describeContainerServices(ContainerBuilder $builder, array $options = []);
+    abstract protected function describeContainerServices(ContainerBuilder $container, array $options = []): void;
 
-    abstract protected function describeContainerDeprecations(ContainerBuilder $builder, array $options = []): void;
+    abstract protected function describeContainerDeprecations(ContainerBuilder $container, array $options = []): void;
 
-    abstract protected function describeContainerDefinition(Definition $definition, array $options = [], ContainerBuilder $builder = null);
+    abstract protected function describeContainerDefinition(Definition $definition, array $options = [], ?ContainerBuilder $container = null): void;
 
-    abstract protected function describeContainerAlias(Alias $alias, array $options = [], ContainerBuilder $builder = null);
+    abstract protected function describeContainerAlias(Alias $alias, array $options = [], ?ContainerBuilder $container = null): void;
 
-    abstract protected function describeContainerParameter(mixed $parameter, array $options = []);
+    abstract protected function describeContainerParameter(mixed $parameter, ?array $deprecation, array $options = []): void;
 
-    abstract protected function describeContainerEnvVars(array $envs, array $options = []);
+    abstract protected function describeContainerEnvVars(array $envs, array $options = []): void;
 
     /**
      * Describes event dispatcher listeners.
@@ -120,9 +123,9 @@ abstract class Descriptor implements DescriptorInterface
      * Common options are:
      * * name: name of listened event
      */
-    abstract protected function describeEventDispatcherListeners(EventDispatcherInterface $eventDispatcher, array $options = []);
+    abstract protected function describeEventDispatcherListeners(EventDispatcherInterface $eventDispatcher, array $options = []): void;
 
-    abstract protected function describeCallable(mixed $callable, array $options = []);
+    abstract protected function describeCallable(mixed $callable, array $options = []): void;
 
     protected function formatValue(mixed $value): string
     {
@@ -131,7 +134,7 @@ abstract class Descriptor implements DescriptorInterface
         }
 
         if (\is_object($value)) {
-            return sprintf('object(%s)', $value::class);
+            return \sprintf('object(%s)', $value::class);
         }
 
         if (\is_string($value)) {
@@ -170,15 +173,15 @@ abstract class Descriptor implements DescriptorInterface
         return (string) $value;
     }
 
-    protected function resolveServiceDefinition(ContainerBuilder $builder, string $serviceId): mixed
+    protected function resolveServiceDefinition(ContainerBuilder $container, string $serviceId): mixed
     {
-        if ($builder->hasDefinition($serviceId)) {
-            return $builder->getDefinition($serviceId);
+        if ($container->hasDefinition($serviceId)) {
+            return $container->getDefinition($serviceId);
         }
 
         // Some service IDs don't have a Definition, they're aliases
-        if ($builder->hasAlias($serviceId)) {
-            return $builder->getAlias($serviceId);
+        if ($container->hasAlias($serviceId)) {
+            return $container->getAlias($serviceId);
         }
 
         if ('service_container' === $serviceId) {
@@ -186,18 +189,18 @@ abstract class Descriptor implements DescriptorInterface
         }
 
         // the service has been injected in some special way, just return the service
-        return $builder->get($serviceId);
+        return $container->get($serviceId);
     }
 
-    protected function findDefinitionsByTag(ContainerBuilder $builder, bool $showHidden): array
+    protected function findDefinitionsByTag(ContainerBuilder $container, bool $showHidden): array
     {
         $definitions = [];
-        $tags = $builder->findTags();
+        $tags = $container->findTags();
         asort($tags);
 
         foreach ($tags as $tag) {
-            foreach ($builder->findTaggedServiceIds($tag) as $serviceId => $attributes) {
-                $definition = $this->resolveServiceDefinition($builder, $serviceId);
+            foreach ($container->findTaggedServiceIds($tag) as $serviceId => $attributes) {
+                $definition = $this->resolveServiceDefinition($container, $serviceId);
 
                 if ($showHidden xor '.' === ($serviceId[0] ?? null)) {
                     continue;
@@ -214,7 +217,7 @@ abstract class Descriptor implements DescriptorInterface
         return $definitions;
     }
 
-    protected function sortParameters(ParameterBag $parameters)
+    protected function sortParameters(ParameterBag $parameters): array
     {
         $parameters = $parameters->all();
         ksort($parameters);
@@ -222,7 +225,7 @@ abstract class Descriptor implements DescriptorInterface
         return $parameters;
     }
 
-    protected function sortServiceIds(array $serviceIds)
+    protected function sortServiceIds(array $serviceIds): array
     {
         asort($serviceIds);
 
@@ -241,9 +244,7 @@ abstract class Descriptor implements DescriptorInterface
                 }
             }
         }
-        uasort($maxPriority, function ($a, $b) {
-            return $b <=> $a;
-        });
+        uasort($maxPriority, static fn ($a, $b) => $b <=> $a);
 
         return array_keys($maxPriority);
     }
@@ -258,16 +259,51 @@ abstract class Descriptor implements DescriptorInterface
         return $sortedTags;
     }
 
+    protected function resolvePriorityServiceTags(ContainerBuilder $container, Definition $definition, ?string $tagName = null): array
+    {
+        $tags = null !== $tagName ? $definition->getTag($tagName) : $definition->getTags();
+
+        $priority = ($container->getReflectionClass($definition->getClass())?->getAttributes(AsTaggedItem::class)[0] ?? null)?->newInstance()->priority;
+        if (!$priority) {
+            return $tags;
+        }
+
+        if (null !== $tagName) {
+            foreach ($tags as &$tag) {
+                $tag['priority'] ??= $priority;
+            }
+        } else {
+            foreach ($tags as &$tagConfigs) {
+                foreach ($tagConfigs as &$tag) {
+                    $tag['priority'] ??= $priority;
+                }
+            }
+        }
+
+        return $tags;
+    }
+
     protected function sortByPriority(array $tag): array
     {
-        usort($tag, function ($a, $b) {
-            return ($b['priority'] ?? 0) <=> ($a['priority'] ?? 0);
-        });
+        usort($tag, static fn ($a, $b) => ($b['priority'] ?? 0) <=> ($a['priority'] ?? 0));
 
         return $tag;
     }
 
-    public static function getClassDescription(string $class, string &$resolvedClass = null): string
+    /**
+     * @return array<string, string[]>
+     */
+    protected function getReverseAliases(RouteCollection $routes): array
+    {
+        $reverseAliases = [];
+        foreach ($routes->getAliases() as $name => $alias) {
+            $reverseAliases[$alias->getId()][] = $name;
+        }
+
+        return $reverseAliases;
+    }
+
+    public static function getClassDescription(string $class, ?string &$resolvedClass = null): string
     {
         $resolvedClass = $class;
         try {
@@ -296,7 +332,7 @@ abstract class Descriptor implements DescriptorInterface
             return [];
         }
 
-        if (!is_file($container->getParameter('debug.container.dump'))) {
+        if (!$container->getParameter('debug.container.dump') || !is_file($container->getParameter('debug.container.dump'))) {
             return [];
         }
 
@@ -305,9 +341,7 @@ abstract class Descriptor implements DescriptorInterface
         $envVars = array_unique($envVars[1]);
 
         $bag = $container->getParameterBag();
-        $getDefaultParameter = function (string $name) {
-            return parent::get($name);
-        };
+        $getDefaultParameter = fn (string $name) => parent::get($name);
         $getDefaultParameter = $getDefaultParameter->bindTo($bag, $bag::class);
 
         $getEnvReflection = new \ReflectionMethod($container, 'getEnv');
@@ -340,14 +374,31 @@ abstract class Descriptor implements DescriptorInterface
         return array_values($envs);
     }
 
-    protected function getServiceEdges(ContainerBuilder $builder, string $serviceId): array
+    protected function getServiceEdges(ContainerBuilder $container, string $serviceId): array
     {
         try {
-            return array_map(function (ServiceReferenceGraphEdge $edge) {
-                return $edge->getSourceNode()->getId();
-            }, $builder->getCompiler()->getServiceReferenceGraph()->getNode($serviceId)->getInEdges());
+            return array_values(array_unique(array_map(
+                static fn (ServiceReferenceGraphEdge $edge) => $edge->getSourceNode()->getId(),
+                $container->getCompiler()->getServiceReferenceGraph()->getNode($serviceId)->getInEdges()
+            )));
         } catch (InvalidArgumentException $exception) {
             return [];
         }
+    }
+
+    private function filterRoutesByHttpMethod(RouteCollection $routes, string $method): RouteCollection
+    {
+        if (!$method) {
+            return $routes;
+        }
+        $filteredRoutes = clone $routes;
+
+        foreach ($filteredRoutes as $routeName => $route) {
+            if ($route->getMethods() && !\in_array($method, $route->getMethods(), true)) {
+                $filteredRoutes->remove($routeName);
+            }
+        }
+
+        return $filteredRoutes;
     }
 }

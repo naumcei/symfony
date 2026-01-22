@@ -16,46 +16,42 @@
         }
     ],
     "require": {
-        "php": ">=8.1",
+        "php": ">=8.4",
         "composer-runtime-api": ">=2.1",
         "ext-xml": "*",
-        "symfony/config": "^6.1",
-        "symfony/dependency-injection": "^6.2",
-        "symfony/event-dispatcher": "^5.4|^6.0",
-        "symfony/http-kernel": "^6.2",
-        "symfony/http-foundation": "^6.2",
-        "symfony/password-hasher": "^5.4|^6.0",
-        "symfony/security-core": "^6.2",
-        "symfony/security-csrf": "^5.4|^6.0",
-        "symfony/security-http": "^6.2"
+        "symfony/clock": "^7.4|^8.0",
+        "symfony/config": "^7.4|^8.0",
+        "symfony/dependency-injection": "^7.4|^8.0",
+        "symfony/event-dispatcher": "^7.4|^8.0",
+        "symfony/http-kernel": "^7.4|^8.0",
+        "symfony/http-foundation": "^7.4|^8.0",
+        "symfony/password-hasher": "^7.4|^8.0",
+        "symfony/security-core": "^7.4|^8.0",
+        "symfony/security-csrf": "^7.4|^8.0",
+        "symfony/security-http": "^7.4|^8.0",
+        "symfony/service-contracts": "^2.5|^3"
     },
     "require-dev": {
-        "doctrine/annotations": "^1.10.4",
-        "symfony/asset": "^5.4|^6.0",
-        "symfony/browser-kit": "^5.4|^6.0",
-        "symfony/console": "^5.4|^6.0",
-        "symfony/css-selector": "^5.4|^6.0",
-        "symfony/dom-crawler": "^5.4|^6.0",
-        "symfony/expression-language": "^5.4|^6.0",
-        "symfony/form": "^5.4|^6.0",
-        "symfony/framework-bundle": "^5.4|^6.0",
-        "symfony/ldap": "^5.4|^6.0",
-        "symfony/process": "^5.4|^6.0",
-        "symfony/rate-limiter": "^5.4|^6.0",
-        "symfony/serializer": "^5.4|^6.0",
-        "symfony/translation": "^5.4|^6.0",
-        "symfony/twig-bundle": "^5.4|^6.0",
-        "symfony/twig-bridge": "^5.4|^6.0",
-        "symfony/validator": "^5.4|^6.0",
-        "symfony/yaml": "^5.4|^6.0",
-        "twig/twig": "^2.13|^3.0.4"
-    },
-    "conflict": {
-        "symfony/browser-kit": "<5.4",
-        "symfony/console": "<5.4",
-        "symfony/framework-bundle": "<5.4",
-        "symfony/ldap": "<5.4",
-        "symfony/twig-bundle": "<5.4"
+        "symfony/asset": "^7.4|^8.0",
+        "symfony/browser-kit": "^7.4|^8.0",
+        "symfony/console": "^7.4|^8.0",
+        "symfony/css-selector": "^7.4|^8.0",
+        "symfony/dom-crawler": "^7.4|^8.0",
+        "symfony/expression-language": "^7.4|^8.0",
+        "symfony/form": "^7.4|^8.0",
+        "symfony/framework-bundle": "^7.4|^8.0",
+        "symfony/http-client": "^7.4|^8.0",
+        "symfony/ldap": "^7.4|^8.0",
+        "symfony/process": "^7.4|^8.0",
+        "symfony/rate-limiter": "^7.4|^8.0",
+        "symfony/runtime": "^7.4|^8.0",
+        "symfony/serializer": "^7.4|^8.0",
+        "symfony/translation": "^7.4|^8.0",
+        "symfony/twig-bundle": "^7.4|^8.0",
+        "symfony/twig-bridge": "^7.4|^8.0",
+        "symfony/validator": "^7.4|^8.0",
+        "symfony/yaml": "^7.4|^8.0",
+        "web-token/jwt-library": "^3.3.2|^4.0"
     },
     "autoload": {
         "psr-4": { "Symfony\\Bundle\\SecurityBundle\\": "" },
@@ -63,5 +59,10 @@
             "/Tests/"
         ]
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "config": {
+        "allow-plugins": {
+            "symfony/runtime": false
+        }
+    }
 }

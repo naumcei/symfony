@@ -1,5 +1,5 @@
 <p align="center"><a href="https://symfony.com" target="_blank">
-    <img src="https://symfony.com/logos/symfony_black_02.svg">
+    <img src="https://symfony.com/logos/symfony_dynamic_01.svg" alt="Symfony Logo">
 </a></p>
 
 [Symfony][1] is a **PHP framework** for web and console applications and a set
@@ -17,19 +17,22 @@ Installation
 Sponsor
 -------
 
-Symfony 6.2 is [backed][27] by [Les-Tilleuls.coop][28] and [Sulu][29].
+Symfony 8.0 is backed by:
 
-**Les-Tilleuls.coop** is a team of 50+ Symfony experts who can help you design,
-develop and fix your projects. We provide a wide range of professional services
-including development, consulting, coaching, training and audits. We also are
-highly skilled in JS, Go and DevOps. We are a worker cooperative!
+- [Sulu][27]
+- [PhpStorm][28]
 
 **Sulu** is the CMS for Symfony developers. It provides pre-built content-management
-features while giving developers the freedom to build, deploy, and maintain
-custom solutions using full-stack Symfony. Sulu is ideal for creating complex
-websites, integrating external tools, and building custom-built solutions.
+features while giving developers the freedom to build, deploy, and maintain custom
+solutions using full-stack Symfony. Sulu is ideal for creating complex websites,
+integrating external tools, and building custom-built solutions.
 
-Help Symfony by [sponsoring][30] its development!
+**PhpStorm** is a JetBrains IDE designed specifically for PHP development. Out of the
+box, PhpStorm provides you with intelligent, feature-rich code editing tailored to every
+aspect of PHP programming – smart coding assistance, reliable refactorings, instant code
+navigation, built-in developer tools, PHP framework support, and more.
+
+Help Symfony by [sponsoring][31] its development!
 
 Documentation
 -------------
@@ -44,7 +47,7 @@ Community
 ---------
 
 * [Join the Symfony Community][11] and meet other members at the [Symfony events][12].
-* [Get Symfony support][13] on Stack Overflow, Slack, IRC, etc.
+* [Get Symfony support][13] on GitHub Discussions, Slack, etc.
 * Follow us on [GitHub][14], [Twitter][15] and [Facebook][16].
 * Read our [Code of Conduct][24] and meet the [CARE Team][25].
 
@@ -91,7 +94,6 @@ and supported by [Symfony contributors][19].
 [24]: https://symfony.com/coc
 [25]: https://symfony.com/doc/current/contributing/code_of_conduct/care_team.html
 [26]: https://symfony.com/book
-[27]: https://symfony.com/backers
-[28]: https://les-tilleuls.coop/
-[29]: https://sulu.io/
-[30]: https://symfony.com/sponsor
+[27]: https://sulu.io/
+[28]: https://jb.gg/fbsk8y
+[31]: https://symfony.com/sponsor

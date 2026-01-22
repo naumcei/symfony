@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Asset\Tests\VersionStrategy;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Asset\Exception\AssetNotFoundException;
 use Symfony\Component\Asset\Exception\RuntimeException;
@@ -20,33 +21,25 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 
 class JsonManifestVersionStrategyTest extends TestCase
 {
-    /**
-     * @dataProvider provideValidStrategies
-     */
+    #[DataProvider('provideValidStrategies')]
     public function testGetVersion(JsonManifestVersionStrategy $strategy)
     {
         $this->assertSame('main.123abc.js', $strategy->getVersion('main.js'));
     }
 
-    /**
-     * @dataProvider provideValidStrategies
-     */
+    #[DataProvider('provideValidStrategies')]
     public function testApplyVersion(JsonManifestVersionStrategy $strategy)
     {
         $this->assertSame('css/styles.555def.css', $strategy->applyVersion('css/styles.css'));
     }
 
-    /**
-     * @dataProvider provideValidStrategies
-     */
+    #[DataProvider('provideValidStrategies')]
     public function testApplyVersionWhenKeyDoesNotExistInManifest(JsonManifestVersionStrategy $strategy)
     {
         $this->assertSame('css/other.css', $strategy->applyVersion('css/other.css'));
     }
 
-    /**
-     * @dataProvider provideStrictStrategies
-     */
+    #[DataProvider('provideStrictStrategies')]
     public function testStrictExceptionWhenKeyDoesNotExistInManifest(JsonManifestVersionStrategy $strategy, $path, $message)
     {
         $this->expectException(AssetNotFoundException::class);
@@ -55,18 +48,14 @@ class JsonManifestVersionStrategyTest extends TestCase
         $strategy->getVersion($path);
     }
 
-    /**
-     * @dataProvider provideMissingStrategies
-     */
+    #[DataProvider('provideMissingStrategies')]
     public function testMissingManifestFileThrowsException(JsonManifestVersionStrategy $strategy)
     {
         $this->expectException(RuntimeException::class);
         $strategy->getVersion('main.js');
     }
 
-    /**
-     * @dataProvider provideInvalidStrategies
-     */
+    #[DataProvider('provideInvalidStrategies')]
     public function testManifestFileWithBadJSONThrowsException(JsonManifestVersionStrategy $strategy)
     {
         $this->expectException(RuntimeException::class);
@@ -77,30 +66,30 @@ class JsonManifestVersionStrategyTest extends TestCase
     public function testRemoteManifestFileWithoutHttpClient()
     {
         $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage(sprintf('The "%s" class needs an HTTP client to use a remote manifest. Try running "composer require symfony/http-client".', JsonManifestVersionStrategy::class));
+        $this->expectExceptionMessage(\sprintf('The "%s" class needs an HTTP client to use a remote manifest. Try running "composer require symfony/http-client".', JsonManifestVersionStrategy::class));
 
         new JsonManifestVersionStrategy('https://cdn.example.com/manifest.json');
     }
 
-    public function provideValidStrategies()
+    public static function provideValidStrategies(): \Generator
     {
-        yield from $this->provideStrategies('manifest-valid.json');
+        yield from static::provideStrategies('manifest-valid.json');
     }
 
-    public function provideInvalidStrategies()
+    public static function provideInvalidStrategies(): \Generator
     {
-        yield from $this->provideStrategies('manifest-invalid.json');
+        yield from static::provideStrategies('manifest-invalid.json');
     }
 
-    public function provideMissingStrategies()
+    public static function provideMissingStrategies(): \Generator
     {
-        yield from $this->provideStrategies('non-existent-file.json');
+        yield from static::provideStrategies('non-existent-file.json');
     }
 
-    public function provideStrategies(string $manifestPath)
+    public static function provideStrategies(string $manifestPath): \Generator
     {
-        $httpClient = new MockHttpClient(function ($method, $url, $options) {
-            $filename = __DIR__.'/../fixtures/'.basename($url);
+        $httpClient = new MockHttpClient(static function ($method, $url, $options) {
+            $filename = __DIR__.'/../Fixtures/'.basename($url);
 
             if (file_exists($filename)) {
                 return new MockResponse(file_get_contents($filename), ['http_headers' => ['content-type' => 'application/json']]);
@@ -111,12 +100,12 @@ class JsonManifestVersionStrategyTest extends TestCase
 
         yield [new JsonManifestVersionStrategy('https://cdn.example.com/'.$manifestPath, $httpClient)];
 
-        yield [new JsonManifestVersionStrategy(__DIR__.'/../fixtures/'.$manifestPath)];
+        yield [new JsonManifestVersionStrategy(__DIR__.'/../Fixtures/'.$manifestPath)];
     }
 
-    public function provideStrictStrategies()
+    public static function provideStrictStrategies(): \Generator
     {
-        $strategy = new JsonManifestVersionStrategy(__DIR__.'/../fixtures/manifest-valid.json', null, true);
+        $strategy = new JsonManifestVersionStrategy(__DIR__.'/../Fixtures/manifest-valid.json', null, true);
 
         yield [
             $strategy,

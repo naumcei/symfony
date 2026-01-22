@@ -11,8 +11,8 @@
 
 namespace Symfony\Component\Semaphore\Tests\Store;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\Semaphore\Store\RedisStore;
 use Symfony\Component\Semaphore\Store\StoreFactory;
 
@@ -21,9 +21,7 @@ use Symfony\Component\Semaphore\Store\StoreFactory;
  */
 class StoreFactoryTest extends TestCase
 {
-    /**
-     * @dataProvider validConnections
-     */
+    #[DataProvider('validConnections')]
     public function testCreateStore($connection, string $expectedStoreClass)
     {
         $store = StoreFactory::createStore($connection);
@@ -31,14 +29,19 @@ class StoreFactoryTest extends TestCase
         $this->assertInstanceOf($expectedStoreClass, $store);
     }
 
-    public function validConnections()
+    public static function validConnections(): \Generator
     {
-        if (class_exists(\Redis::class)) {
-            yield [$this->createMock(\Redis::class), RedisStore::class];
-        }
         yield [new \Predis\Client(), RedisStore::class];
+
+        if (class_exists(\Redis::class)) {
+            yield [new \Redis(), RedisStore::class];
+        }
         if (class_exists(\Redis::class) && class_exists(AbstractAdapter::class)) {
             yield ['redis://localhost', RedisStore::class];
+            yield ['redis://localhost?lazy=1', RedisStore::class];
+            yield ['redis://localhost?redis_cluster=1', RedisStore::class];
+            yield ['redis://localhost?redis_cluster=1&lazy=1', RedisStore::class];
+            yield ['redis:?host[localhost]&host[localhost:6379]&redis_cluster=1', RedisStore::class];
         }
     }
 }

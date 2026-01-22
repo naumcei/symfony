@@ -12,16 +12,19 @@
 namespace Symfony\Component\Notifier\Bridge\MessageMedia\Tests;
 
 use Symfony\Component\Notifier\Bridge\MessageMedia\MessageMediaTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
 
-final class MessageMediaTransportFactoryTest extends TransportFactoryTestCase
+final class MessageMediaTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+
     public function createFactory(): MessageMediaTransportFactory
     {
         return new MessageMediaTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'messagemedia://host.test',
@@ -34,14 +37,20 @@ final class MessageMediaTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'messagemedia://apiKey:apiSecret@default'];
         yield [false, 'somethingElse://apiKey:apiSecret@default'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://apiKey:apiSecret@default'];
+    }
+
+    public static function incompleteDsnProvider(): iterable
+    {
+        yield ['messagemedia://apiKey@default'];
+        yield ['messagemedia://:apiSecret@default'];
     }
 }

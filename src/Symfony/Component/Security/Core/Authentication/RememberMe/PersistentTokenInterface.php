@@ -20,11 +20,6 @@ namespace Symfony\Component\Security\Core\Authentication\RememberMe;
 interface PersistentTokenInterface
 {
     /**
-     * Returns the class of the user.
-     */
-    public function getClass(): string;
-
-    /**
      * Returns the series.
      */
     public function getSeries(): string;
@@ -36,6 +31,8 @@ interface PersistentTokenInterface
 
     /**
      * Returns the time the token was last used.
+     *
+     * Each call SHOULD return a new distinct DateTime instance.
      */
     public function getLastUsed(): \DateTime;
 

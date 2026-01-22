@@ -11,20 +11,19 @@
 
 namespace Symfony\Component\DomCrawler\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DomCrawler\UriResolver;
 
 class UriResolverTest extends TestCase
 {
-    /**
-     * @dataProvider provideResolverTests
-     */
+    #[DataProvider('provideResolverTests')]
     public function testResolver(string $uri, string $baseUri, string $expected)
     {
         $this->assertEquals($expected, UriResolver::resolve($uri, $baseUri));
     }
 
-    public function provideResolverTests()
+    public static function provideResolverTests()
     {
         return [
             ['/foo', 'http://localhost/bar/foo/', 'http://localhost/foo'],
@@ -81,6 +80,14 @@ class UriResolverTest extends TestCase
             ['/foo', 'file:///bar/baz', 'file:///foo'],
             ['foo', 'file:///', 'file:///foo'],
             ['foo', 'file:///bar/baz', 'file:///bar/foo'],
+
+            ['foo', 'http://localhost?bar=1', 'http://localhost/foo'],
+            ['foo', 'http://localhost#bar', 'http://localhost/foo'],
+
+            ['http://', 'http://localhost', 'http://'],
+            ['/foo:123', 'http://localhost', 'http://localhost/foo:123'],
+            ['foo:123', 'http://localhost/', 'foo:123'],
+            ['foo/bar:1/baz', 'http://localhost/', 'http://localhost/foo/bar:1/baz'],
         ];
     }
 }

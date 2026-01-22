@@ -16,17 +16,15 @@ use Symfony\Component\Notifier\Notification\Notification;
 /**
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class ChatMessage implements MessageInterface
+class ChatMessage implements MessageInterface, FromNotificationInterface
 {
     private ?string $transport = null;
-    private string $subject;
-    private ?MessageOptionsInterface $options;
     private ?Notification $notification = null;
 
-    public function __construct(string $subject, MessageOptionsInterface $options = null)
-    {
-        $this->subject = $subject;
-        $this->options = $options;
+    public function __construct(
+        private string $subject,
+        private ?MessageOptionsInterface $options = null,
+    ) {
     }
 
     public static function fromNotification(Notification $notification): self

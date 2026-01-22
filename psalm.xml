@@ -7,6 +7,10 @@
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
     cacheDirectory="./.github/psalm/cache/"
     errorBaseline=".github/psalm/psalm.baseline.xml"
+    findUnusedBaselineEntry="false"
+    findUnusedCode="false"
+    findUnusedIssueHandlerSuppression="false"
+    ensureOverrideAttribute="false"
 >
     <projectFiles>
         <directory name="src" />
@@ -14,7 +18,8 @@
             <directory name="src/Symfony/*/*/Tests" />
             <directory name="src/Symfony/*/*/*/Tests" />
             <directory name="src/Symfony/*/*/*/*/Tests" />
-            <directory name="src/Symfony/Component/Intl/Resources/emoji/" />
+            <directory name="src/Symfony/Component/Intl/Resources/data/" />
+            <directory name="src/Symfony/Component/Emoji/Resources/data/" />
             <directory name="vendor" />
         </ignoreFiles>
     </projectFiles>
@@ -22,26 +27,36 @@
     <issueHandlers>
         <UndefinedClass>
             <errorLevel type="suppress">
-                <!-- These classes have been added in PHP 8.1 -->
-                <referencedClass name="BackedEnum"/>
-                <referencedClass name="ReflectionIntersectionType"/>
-                <referencedClass name="UnitEnum"/>
+                <!-- These classes have been added in PHP 8.4 -->
+                <referencedClass name="BcMath\Number"/>
+                <!-- These classes have been added in PHP 8.5 -->
+                <referencedClass name="CurlSharePersistentHandle"/>
             </errorLevel>
         </UndefinedClass>
-        <UndefinedDocblockClass>
+        <UnusedClass>
             <errorLevel type="suppress">
-                <!-- These classes have been added in PHP 8.1 -->
-                <referencedClass name="BackedEnum"/>
-                <referencedClass name="ReflectionIntersectionType"/>
-                <referencedClass name="UnitEnum"/>
+                <!--
+                    Because we don't analyze our tests or fixtures, we will
+                    get a lot of false positives regarding unused classes.
+                -->
+                <directory name="src/Symfony" />
             </errorLevel>
-        </UndefinedDocblockClass>
-        <UndefinedAttributeClass>
+        </UnusedClass>
+        <UnusedConstructor>
             <errorLevel type="suppress">
-                <!-- These classes have been added in PHP 8.2 -->
-                <referencedClass name="SensitiveParameter"/>
+                <!--
+                    We use private constructors to avoid instantiation.
+                    This kind of error is bogus in most cases.
+                -->
+                <directory name="src/Symfony" />
             </errorLevel>
-        </UndefinedAttributeClass>
+        </UnusedConstructor>
+        <UndefinedFunction>
+            <errorLevel type="suppress">
+                <!-- These functions have been added in PHP 8.5 -->
+                <referencedFunction name="curl_share_init_persistent"/>
+            </errorLevel>
+        </UndefinedFunction>
     </issueHandlers>
 
     <forbiddenFunctions>

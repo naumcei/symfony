@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Routing\Tests\Matcher\Dumper;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
@@ -24,22 +25,15 @@ use Symfony\Component\Routing\RouteCollection;
 
 class CompiledUrlMatcherDumperTest extends TestCase
 {
-    /**
-     * @var string
-     */
-    private $dumpPath;
+    private string $dumpPath;
 
     protected function setUp(): void
     {
-        parent::setUp();
-
-        $this->dumpPath = sys_get_temp_dir().\DIRECTORY_SEPARATOR.'php_matcher.'.uniqid('CompiledUrlMatcher').'.php';
+        $this->dumpPath = tempnam(sys_get_temp_dir(), 'sf_matcher_');
     }
 
     protected function tearDown(): void
     {
-        parent::tearDown();
-
         @unlink($this->dumpPath);
     }
 
@@ -54,9 +48,7 @@ class CompiledUrlMatcherDumperTest extends TestCase
         $matcher->match('/foo%3Abar');
     }
 
-    /**
-     * @dataProvider getRouteCollections
-     */
+    #[DataProvider('getRouteCollections')]
     public function testDump(RouteCollection $collection, $fixture)
     {
         $basePath = __DIR__.'/../../Fixtures/dumper/';
@@ -65,7 +57,7 @@ class CompiledUrlMatcherDumperTest extends TestCase
         $this->assertStringEqualsFile($basePath.$fixture, $dumper->dump());
     }
 
-    public function getRouteCollections()
+    public static function getRouteCollections()
     {
         /* test case 1 */
 
@@ -446,8 +438,8 @@ class CompiledUrlMatcherDumperTest extends TestCase
 
         /* test case 13 */
         $hostCollection = new RouteCollection();
-        $hostCollection->add('r1', (new Route('abc{foo}'))->setHost('{foo}.exampple.com'));
-        $hostCollection->add('r2', (new Route('abc{foo}'))->setHost('{foo}.exampple.com'));
+        $hostCollection->add('r1', (new Route('abc{foo}'))->setHost('{foo}.example.com'));
+        $hostCollection->add('r2', (new Route('abc{foo}'))->setHost('{foo}.example.com'));
 
         /* test case 14 */
         $fixedLocaleCollection = new RouteCollection();
@@ -490,24 +482,26 @@ class CompiledUrlMatcherDumperTest extends TestCase
 
         return $this->getMockBuilder(TestCompiledUrlMatcher::class)
             ->setConstructorArgs([$compiledRoutes, new RequestContext()])
-            ->setMethods(['redirect'])
+            ->onlyMethods(['redirect'])
             ->getMock();
     }
 
     public function testGenerateDumperMatcherWithObject()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Symfony\Component\Routing\Route cannot contain objects');
         $routeCollection = new RouteCollection();
         $routeCollection->add('_', new Route('/', [new \stdClass()]));
         $dumper = new CompiledUrlMatcherDumper($routeCollection);
+
+        $this->expectExceptionMessage('Symfony\Component\Routing\Route cannot contain objects, but "stdClass" given.');
+        $this->expectException(\InvalidArgumentException::class);
+
         $dumper->dump();
     }
 }
 
 class TestCompiledUrlMatcher extends CompiledUrlMatcher implements RedirectableUrlMatcherInterface
 {
-    public function redirect(string $path, string $route, string $scheme = null): array
+    public function redirect(string $path, string $route, ?string $scheme = null): array
     {
         return [];
     }

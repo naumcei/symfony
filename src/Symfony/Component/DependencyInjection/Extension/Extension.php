@@ -28,16 +28,6 @@ abstract class Extension implements ExtensionInterface, ConfigurationExtensionIn
 {
     private array $processedConfigs = [];
 
-    public function getXsdValidationBasePath()
-    {
-        return false;
-    }
-
-    public function getNamespace()
-    {
-        return 'http://example.org/schema/dic/'.$this->getAlias();
-    }
-
     /**
      * Returns the recommended alias to use in XML.
      *
@@ -67,7 +57,7 @@ abstract class Extension implements ExtensionInterface, ConfigurationExtensionIn
         return Container::underscore($classBaseName);
     }
 
-    public function getConfiguration(array $config, ContainerBuilder $container)
+    public function getConfiguration(array $config, ContainerBuilder $container): ?ConfigurationInterface
     {
         $class = static::class;
 
@@ -83,7 +73,7 @@ abstract class Extension implements ExtensionInterface, ConfigurationExtensionIn
         }
 
         if (!$class->implementsInterface(ConfigurationInterface::class)) {
-            throw new LogicException(sprintf('The extension configuration class "%s" must implement "%s".', $class->getName(), ConfigurationInterface::class));
+            throw new LogicException(\sprintf('The extension configuration class "%s" must implement "%s".', $class->getName(), ConfigurationInterface::class));
         }
 
         if (!($constructor = $class->getConstructor()) || !$constructor->getNumberOfRequiredParameters()) {

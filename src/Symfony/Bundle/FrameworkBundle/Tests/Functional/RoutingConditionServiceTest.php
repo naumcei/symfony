@@ -11,11 +11,11 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Tests\Functional;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 class RoutingConditionServiceTest extends AbstractWebTestCase
 {
-    /**
-     * @dataProvider provideRoutes
-     */
+    #[DataProvider('provideRoutes')]
     public function testCondition(int $code, string $path)
     {
         $client = static::createClient(['test_case' => 'RoutingConditionService']);
@@ -24,7 +24,7 @@ class RoutingConditionServiceTest extends AbstractWebTestCase
         $this->assertSame($code, $client->getResponse()->getStatusCode());
     }
 
-    public function provideRoutes(): iterable
+    public static function provideRoutes(): iterable
     {
         yield 'allowed by an autoconfigured service' => [
             200,

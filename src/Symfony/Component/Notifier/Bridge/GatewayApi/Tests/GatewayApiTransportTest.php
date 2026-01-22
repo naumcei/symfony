@@ -12,14 +12,15 @@
 namespace Symfony\Component\Notifier\Bridge\GatewayApi\Tests;
 
 use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
+use Symfony\Component\Notifier\Bridge\GatewayApi\GatewayApiOptions;
 use Symfony\Component\Notifier\Bridge\GatewayApi\GatewayApiTransport;
 use Symfony\Component\Notifier\Message\ChatMessage;
-use Symfony\Component\Notifier\Message\MessageInterface;
 use Symfony\Component\Notifier\Message\SentMessage;
 use Symfony\Component\Notifier\Message\SmsMessage;
 use Symfony\Component\Notifier\Test\TransportTestCase;
+use Symfony\Component\Notifier\Tests\Transport\DummyMessage;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
  * @author Piergiuseppe Longo <piergiuseppe.longo@gmail.com>
@@ -27,44 +28,35 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
  */
 final class GatewayApiTransportTest extends TransportTestCase
 {
-    public function createTransport(HttpClientInterface $client = null): GatewayApiTransport
+    public static function createTransport(?HttpClientInterface $client = null): GatewayApiTransport
     {
-        return new GatewayApiTransport('authtoken', 'Symfony', $client ?? $this->createMock(HttpClientInterface::class));
+        return new GatewayApiTransport('authtoken', 'Symfony', $client ?? new MockHttpClient());
     }
 
-    public function toStringProvider(): iterable
+    public static function toStringProvider(): iterable
     {
-        yield ['gatewayapi://gatewayapi.com?from=Symfony', $this->createTransport()];
+        yield ['gatewayapi://gatewayapi.com?from=Symfony', self::createTransport()];
     }
 
-    public function supportedMessagesProvider(): iterable
+    public static function supportedMessagesProvider(): iterable
     {
         yield [new SmsMessage('0611223344', 'Hello!')];
+        yield [new SmsMessage('0611223344', 'Hello!', 'from', new GatewayApiOptions(['from' => 'foo']))];
     }
 
-    public function unsupportedMessagesProvider(): iterable
+    public static function unsupportedMessagesProvider(): iterable
     {
         yield [new ChatMessage('Hello!')];
-        yield [$this->createMock(MessageInterface::class)];
+        yield [new DummyMessage()];
     }
 
     public function testSend()
     {
-        $response = $this->createMock(ResponseInterface::class);
-        $response->expects($this->exactly(2))
-            ->method('getStatusCode')
-            ->willReturn(200);
-        $response->expects($this->once())
-            ->method('getContent')
-            ->willReturn(json_encode(['ids' => [42]]));
-
-        $client = new MockHttpClient(static function () use ($response): ResponseInterface {
-            return $response;
-        });
+        $client = new MockHttpClient(new MockResponse(json_encode(['ids' => [42]])));
 
         $message = new SmsMessage('3333333333', 'Hello!');
 
-        $transport = $this->createTransport($client);
+        $transport = self::createTransport($client);
         $sentMessage = $transport->send($message);
 
         $this->assertInstanceOf(SentMessage::class, $sentMessage);

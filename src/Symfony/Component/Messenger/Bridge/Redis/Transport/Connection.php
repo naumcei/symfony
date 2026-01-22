@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\Messenger\Bridge\Redis\Transport;
 
+use Relay\Relay;
+use Relay\Sentinel;
 use Symfony\Component\Messenger\Exception\InvalidArgumentException;
 use Symfony\Component\Messenger\Exception\LogicException;
 use Symfony\Component\Messenger\Exception\TransportException;
@@ -23,6 +25,7 @@ use Symfony\Component\Messenger\Exception\TransportException;
  * @author Robin Chalas <robin.chalas@gmail.com>
  *
  * @internal
+ *
  * @final
  */
 class Connection
@@ -42,8 +45,8 @@ class Connection
         'claim_interval' => 60000, // Interval by which pending/abandoned messages should be checked
         'lazy' => false,
         'auth' => null,
-        'serializer' => \Redis::SERIALIZER_PHP,
-        'sentinel_master' => null, // String, master to look for (optional, default is NULL meaning Sentinel support is disabled)
+        'serializer' => 1, // see \Redis::SERIALIZER_PHP,
+        'sentinel' => null, // String, master to look for (optional, default is NULL meaning Sentinel support is disabled)
         'timeout' => 0.0, // Float, value in seconds (optional, default is 0 meaning unlimited)
         'read_timeout' => 0.0, //  Float, value in seconds (optional, default is 0 meaning unlimited)
         'retry_interval' => 0, //  Int, value in milliseconds (optional, default is 0)
@@ -51,7 +54,8 @@ class Connection
         'ssl' => null, // see https://php.net/context.ssl
     ];
 
-    private \Redis|\RedisCluster|\Closure $redis;
+    private \Redis|Relay|\RedisCluster|null $redis = null;
+    private \Closure $redisInitializer;
     private string $stream;
     private string $queue;
     private string $group;
@@ -65,44 +69,77 @@ class Connection
     private bool $deleteAfterReject;
     private bool $couldHavePendingMessages = true;
 
-    public function __construct(array $options, \Redis|\RedisCluster $redis = null)
+    public function __construct(array $options, \Redis|Relay|\RedisCluster|null $redis = null)
     {
-        if (version_compare(phpversion('redis'), '4.3.0', '<')) {
-            throw new LogicException('The redis transport requires php-redis 4.3.0 or higher.');
-        }
-
         $options += self::DEFAULT_OPTIONS;
         $host = $options['host'];
         $port = $options['port'];
         $auth = $options['auth'];
-        $sentinelMaster = $options['sentinel_master'];
 
-        if (null !== $sentinelMaster && !class_exists(\RedisSentinel::class)) {
-            throw new InvalidArgumentException('Redis Sentinel support requires the "redis" extension v5.2 or higher.');
+        $sentinelMaster = $options['sentinel'] ?? $options['redis_sentinel'] ?? $options['sentinel_master'] ?? null;
+
+        if (null !== $sentinelMaster && !class_exists(\RedisSentinel::class) && !class_exists(Sentinel::class)) {
+            throw new InvalidArgumentException('Redis Sentinel support requires ext-redis>=6.1, or ext-relay.');
         }
 
-        if (null !== $sentinelMaster && ($redis instanceof \RedisCluster || \is_array($host))) {
+        if (null !== $sentinelMaster && $redis instanceof \RedisCluster) {
             throw new InvalidArgumentException('Cannot configure Redis Sentinel and Redis Cluster instance at the same time.');
         }
 
-        if (\is_array($host) || $redis instanceof \RedisCluster) {
-            $hosts = \is_string($host) ? [$host.':'.$port] : $host; // Always ensure we have an array
-            $this->redis = static function () use ($redis, $hosts, $auth, $options) {
-                return self::initializeRedisCluster($redis, $hosts, $auth, $options);
-            };
-        } else {
-            if (null !== $sentinelMaster) {
-                $sentinelClient = new \RedisSentinel($host, $port, $options['timeout'], $options['persistent_id'], $options['retry_interval'], $options['read_timeout']);
+        foreach ($options['ssl'] ?? [] as $streamOption => $value) {
+            if (\in_array($streamOption, ['allow_self_signed', 'capture_peer_cert', 'capture_peer_cert_chain', 'disable_compression', 'SNI_enabled', 'verify_peer', 'verify_peer_name'], true) && \is_string($value)) {
+                $options['ssl'][$streamOption] = filter_var($value, \FILTER_VALIDATE_BOOL);
+            }
+        }
 
-                if (!$address = $sentinelClient->getMasterAddrByName($sentinelMaster)) {
-                    throw new InvalidArgumentException(sprintf('Failed to retrieve master information from master name "%s" and address "%s:%d".', $sentinelMaster, $host, $port));
+        if ((\is_array($host) && null === $sentinelMaster) || $redis instanceof \RedisCluster) {
+            $hosts = \is_string($host) ? [$host.':'.$port] : $host; // Always ensure we have an array
+            $this->redisInitializer = static fn () => self::initializeRedisCluster($redis, $hosts, $auth, $options);
+        } else {
+            $this->redisInitializer = static function () use ($redis, $sentinelMaster, $host, $port, $options, $auth) {
+                if (null !== $sentinelMaster) {
+                    $sentinelClass = \extension_loaded('redis') ? \RedisSentinel::class : Sentinel::class;
+                    $hostIndex = 0;
+                    $hosts = \is_array($host) ? $host : [['scheme' => 'tcp', 'host' => $host, 'port' => $port]];
+                    do {
+                        $host = $hosts[$hostIndex]['host'];
+                        $port = $hosts[$hostIndex]['port'] ?? 0;
+                        $tls = 'tls' === $hosts[$hostIndex]['scheme'];
+                        $address = false;
+
+                        if (isset($hosts[$hostIndex]['host']) && $tls) {
+                            $host = 'tls://'.$host;
+                        }
+
+                        try {
+                            if (\extension_loaded('redis')) {
+                                $params = [
+                                    'host' => $host,
+                                    'port' => $port,
+                                    'connectTimeout' => $options['timeout'],
+                                    'persistent' => $options['persistent_id'],
+                                    'retryInterval' => $options['retry_interval'],
+                                    'readTimeout' => $options['read_timeout'],
+                                ];
+
+                                $sentinel = @new \RedisSentinel($params);
+                            } else {
+                                $sentinel = @new $sentinelClass($host, $port, $options['timeout'], $options['persistent_id'], $options['retry_interval'], $options['read_timeout']);
+                            }
+
+                            if ($address = @$sentinel->getMasterAddrByName($sentinelMaster)) {
+                                [$host, $port] = $address;
+                            }
+                        } catch (\RedisException|\Relay\Exception $redisException) {
+                        }
+                    } while (++$hostIndex < \count($hosts) && !$address);
+
+                    if (!$address) {
+                        throw new InvalidArgumentException(\sprintf('Failed to retrieve master information from sentinel "%s".', $sentinelMaster), previous: $redisException ?? null);
+                    }
                 }
 
-                [$host, $port] = $address;
-            }
-
-            $this->redis = static function () use ($redis, $host, $port, $auth, $options) {
-                return self::initializeRedis($redis ?? new \Redis(), $host, $port, $auth, $options);
+                return self::initializeRedis($redis ?? (\extension_loaded('redis') ? new \Redis() : new Relay()), $host, $port, $auth, $options);
             };
         }
 
@@ -112,7 +149,7 @@ class Connection
 
         foreach (['stream', 'group', 'consumer'] as $key) {
             if ('' === $options[$key]) {
-                throw new InvalidArgumentException(sprintf('"%s" should be configured, got an empty string.', $key));
+                throw new InvalidArgumentException(\sprintf('"%s" should be configured, got an empty string.', $key));
             }
         }
 
@@ -131,12 +168,30 @@ class Connection
     /**
      * @param string|string[]|null $auth
      */
-    private static function initializeRedis(\Redis $redis, string $host, int $port, string|array|null $auth, array $params): \Redis
+    private static function initializeRedis(\Redis|Relay $redis, string $host, int $port, string|array|null $auth, array $params): \Redis|Relay
     {
-        $connect = isset($params['persistent_id']) ? 'pconnect' : 'connect';
-        $redis->{$connect}($host, $port, $params['timeout'], $params['persistent_id'], $params['retry_interval'], $params['read_timeout'], ...\defined('Redis::SCAN_PREFIX') ? [['stream' => $params['ssl'] ?? null]] : []);
+        if ($redis->isConnected()) {
+            return $redis;
+        }
 
-        $redis->setOption(\Redis::OPT_SERIALIZER, $params['serializer']);
+        $connect = isset($params['persistent_id']) ? 'pconnect' : 'connect';
+
+        @$redis->{$connect}($host, $port, $params['timeout'], $params['persistent_id'], $params['retry_interval'], $params['read_timeout'], ...(\defined('Redis::SCAN_PREFIX') || \extension_loaded('relay')) ? [['stream' => $params['ssl'] ?? null]] : []);
+
+        $error = null;
+        set_error_handler(static function ($type, $msg) use (&$error) { $error = $msg; });
+
+        try {
+            $isConnected = $redis->isConnected();
+        } finally {
+            restore_error_handler();
+        }
+
+        if (!$isConnected) {
+            throw new InvalidArgumentException('Redis connection failed: '.(preg_match('/^Redis::p?connect\(\): (.*)/', $error ?? $redis->getLastError() ?? '', $matches) ? \sprintf(' (%s)', $matches[1]) : ''));
+        }
+
+        $redis->setOption($redis instanceof \Redis ? \Redis::OPT_SERIALIZER : Relay::OPT_SERIALIZER, $params['serializer']);
 
         if (null !== $auth && !$redis->auth($auth)) {
             throw new InvalidArgumentException('Redis connection failed: '.$redis->getLastError());
@@ -154,45 +209,60 @@ class Connection
      */
     private static function initializeRedisCluster(?\RedisCluster $redis, array $hosts, string|array|null $auth, array $params): \RedisCluster
     {
-        $redis ??= new \RedisCluster(null, $hosts, $params['timeout'], $params['read_timeout'], (bool) $params['persistent'], $auth, ...\defined('Redis::SCAN_PREFIX') ? [$params['ssl'] ?? null] : []);
+        $redis ??= new \RedisCluster(null, $hosts, $params['timeout'], $params['read_timeout'], (bool) ($params['persistent'] ?? false), $auth, ...\defined('Redis::SCAN_PREFIX') ? [$params['ssl'] ?? null] : []);
         $redis->setOption(\Redis::OPT_SERIALIZER, $params['serializer']);
 
         return $redis;
     }
 
-    public static function fromDsn(string $dsn, array $options = [], \Redis|\RedisCluster $redis = null): self
+    public static function fromDsn(#[\SensitiveParameter] string $dsn, array $options = [], \Redis|Relay|\RedisCluster|null $redis = null): self
     {
         if (!str_contains($dsn, ',')) {
-            $parsedUrl = self::parseDsn($dsn, $options);
+            $params = self::parseDsn($dsn, $options);
 
-            if (isset($parsedUrl['host']) && 'rediss' === $parsedUrl['scheme']) {
-                $parsedUrl['host'] = 'tls://'.$parsedUrl['host'];
+            if (isset($params['host']) && ('rediss' === $params['scheme'] || 'valkeys' === $params['scheme'])) {
+                $params['host'] = 'tls://'.$params['host'];
             }
         } else {
             $dsns = explode(',', $dsn);
-            $parsedUrls = array_map(function ($dsn) use (&$options) {
+            $paramss = array_map(static function ($dsn) use (&$options) {
                 return self::parseDsn($dsn, $options);
             }, $dsns);
 
             // Merge all the URLs, the last one overrides the previous ones
-            $parsedUrl = array_merge(...$parsedUrls);
-            $tls = 'rediss' === $parsedUrl['scheme'];
+            $params = array_merge(...$paramss);
+            $tls = 'rediss' === $params['scheme'] || 'valkeys' === $params['scheme'];
 
             // Regroup all the hosts in an array interpretable by RedisCluster
-            $parsedUrl['host'] = array_map(function ($parsedUrl, $dsn) use ($tls) {
-                if (!isset($parsedUrl['host'])) {
-                    throw new InvalidArgumentException(sprintf('Missing host in DSN part "%s", it must be defined when using Redis Cluster.', $dsn));
+            $params['host'] = array_map(static function ($params) use ($tls) {
+                if (!isset($params['host'])) {
+                    throw new InvalidArgumentException('Missing host in DSN, it must be defined when using Redis Cluster.');
                 }
                 if ($tls) {
-                    $parsedUrl['host'] = 'tls://'.$parsedUrl['host'];
+                    $params['host'] = 'tls://'.$params['host'];
                 }
 
-                return $parsedUrl['host'].':'.($parsedUrl['port'] ?? 6379);
-            }, $parsedUrls, $dsns);
+                return $params['host'].':'.($params['port'] ?? 6379);
+            }, $paramss, $dsns);
         }
 
+        if (isset($options['sentinel']) && isset($options['redis_sentinel']) && $options['sentinel'] !== $options['redis_sentinel']) {
+            throw new InvalidArgumentException('Cannot use both "sentinel" and "redis_sentinel" at the same time.');
+        }
+
+        if (isset($options['sentinel']) && isset($options['sentinel_master']) && $options['sentinel'] !== $options['sentinel_master']) {
+            throw new InvalidArgumentException('Cannot use both "sentinel" and "sentinel_master" at the same time.');
+        }
+
+        if (isset($options['redis_sentinel']) && isset($options['sentinel_master']) && $options['redis_sentinel'] !== $options['sentinel_master']) {
+            throw new InvalidArgumentException('Cannot use both "redis_sentinel" and "sentinel_master" at the same time.');
+        }
+
+        $options['sentinel'] ??= $options['redis_sentinel'] ?? $options['sentinel_master'] ?? null;
+        unset($options['redis_sentinel'], $options['sentinel_master']);
+
         if ($invalidOptions = array_diff(array_keys($options), array_keys(self::DEFAULT_OPTIONS), ['host', 'port'])) {
-            throw new LogicException(sprintf('Invalid option(s) "%s" passed to the Redis Messenger transport.', implode('", "', $invalidOptions)));
+            throw new LogicException(\sprintf('Invalid option(s) "%s" passed to the Redis Messenger transport.', implode('", "', $invalidOptions)));
         }
         foreach (self::DEFAULT_OPTIONS as $k => $v) {
             $options[$k] = match (\gettype($v)) {
@@ -203,20 +273,46 @@ class Connection
             };
         }
 
-        if (isset($parsedUrl['host'])) {
-            $pass = '' !== ($parsedUrl['pass'] ?? '') ? urldecode($parsedUrl['pass']) : null;
-            $user = '' !== ($parsedUrl['user'] ?? '') ? urldecode($parsedUrl['user']) : null;
-            $options['host'] = $parsedUrl['host'] ?? $options['host'];
-            $options['port'] = $parsedUrl['port'] ?? $options['port'];
-            // See: https://github.com/phpredis/phpredis/#auth
-            $options['auth'] ??= null !== $pass && null !== $user ? [$user, $pass] : ($pass ?? $user);
+        $pass = '' !== ($params['pass'] ?? '') ? rawurldecode($params['pass']) : null;
+        $user = '' !== ($params['user'] ?? '') ? rawurldecode($params['user']) : null;
+        $options['auth'] ??= null !== $pass && null !== $user ? [$user, $pass] : ($pass ?? $user);
 
-            $pathParts = explode('/', rtrim($parsedUrl['path'] ?? '', '/'));
+        if (isset($params['query'])) {
+            parse_str($params['query'], $query);
+
+            if (isset($query['host'])) {
+                $tls = 'rediss' === $params['scheme'] || 'valkeys' === $params['scheme'];
+                $tcpScheme = $tls ? 'tls' : 'tcp';
+
+                if (!\is_array($hosts = $query['host'])) {
+                    throw new InvalidArgumentException(\sprintf('Invalid Redis DSN: "%s".', $dsn));
+                }
+                foreach ($hosts as $host => $parameters) {
+                    if (\is_string($parameters)) {
+                        parse_str($parameters, $parameters);
+                    }
+                    if (false === $i = strrpos($host, ':')) {
+                        $hosts[$host] = ['scheme' => $tcpScheme, 'host' => $host, 'port' => 6379] + $parameters;
+                    } elseif ($port = (int) substr($host, 1 + $i)) {
+                        $hosts[$host] = ['scheme' => $tcpScheme, 'host' => substr($host, 0, $i), 'port' => $port] + $parameters;
+                    } else {
+                        $hosts[$host] = ['scheme' => 'unix', 'host' => substr($host, 0, $i)] + $parameters;
+                    }
+                }
+                $params['host'] = array_values($hosts);
+            }
+        }
+
+        if (isset($params['host'])) {
+            $options['host'] = $params['host'];
+            $options['port'] = $params['port'] ?? $options['port'];
+
+            $pathParts = explode('/', rtrim($params['path'] ?? '', '/'));
             $options['stream'] = $pathParts[1] ?? $options['stream'];
             $options['group'] = $pathParts[2] ?? $options['group'];
             $options['consumer'] = $pathParts[3] ?? $options['consumer'];
         } else {
-            $options['host'] = $parsedUrl['path'];
+            $options['host'] = $params['path'];
             $options['port'] = 0;
         }
 
@@ -226,31 +322,55 @@ class Connection
     private static function parseDsn(string $dsn, array &$options): array
     {
         $url = $dsn;
-        $scheme = str_starts_with($dsn, 'rediss:') ? 'rediss' : 'redis';
+        $scheme = match (true) {
+            str_starts_with($dsn, 'redis:') => 'redis',
+            str_starts_with($dsn, 'rediss:') => 'rediss',
+            str_starts_with($dsn, 'valkey:') => 'valkey',
+            str_starts_with($dsn, 'valkeys:') => 'valkeys',
+            default => throw new InvalidArgumentException('Invalid Redis DSN: it does not start with "redis[s]:" nor "valkey[s]:".'),
+        };
 
         if (preg_match('#^'.$scheme.':///([^:@])+$#', $dsn)) {
             $url = str_replace($scheme.':', 'file:', $dsn);
         }
 
-        if (false === $parsedUrl = parse_url($url)) {
-            throw new InvalidArgumentException(sprintf('The given Redis DSN "%s" is invalid.', $dsn));
+        $url = preg_replace_callback('#^'.$scheme.':(//)?(?:(?:(?<user>[^:@]*+):)?(?<password>[^@]*+)@)?#', static function ($m) use (&$auth) {
+            if (isset($m['password'])) {
+                if (!\in_array($m['user'], ['', 'default'], true)) {
+                    $auth['user'] = rawurldecode($m['user']);
+                }
+
+                $auth['pass'] = rawurldecode($m['password']);
+            }
+
+            return 'file:'.($m[1] ?? '');
+        }, $url);
+
+        if (false === $params = parse_url($url)) {
+            throw new InvalidArgumentException('The given Redis DSN is invalid.');
         }
-        if (isset($parsedUrl['query'])) {
-            parse_str($parsedUrl['query'], $dsnOptions);
+
+        if (null !== $auth) {
+            unset($params['user']); // parse_url thinks //0@localhost/ is a username of "0"! doh!
+            $params += ($auth ?? []); // But don't worry as $auth array will have user, user/pass or pass as needed
+        }
+
+        if (isset($params['query'])) {
+            parse_str($params['query'], $dsnOptions);
             $options = array_merge($options, $dsnOptions);
         }
-        $parsedUrl['scheme'] = $scheme;
+        $params['scheme'] = $scheme;
 
-        return $parsedUrl;
+        return $params;
     }
 
-    private function claimOldPendingMessages()
+    private function claimOldPendingMessages(): void
     {
         try {
             // This could soon be optimized with https://github.com/antirez/redis/issues/5212 or
             // https://github.com/antirez/redis/issues/6256
-            $pendingMessages = $this->getRedis()->xpending($this->stream, $this->group, '-', '+', 1);
-        } catch (\RedisException $e) {
+            $pendingMessages = $this->getRedis()->xpending($this->stream, $this->group, '-', '+', 1) ?: [];
+        } catch (\RedisException|\Relay\Exception $e) {
             throw new TransportException($e->getMessage(), 0, $e);
         }
 
@@ -279,7 +399,7 @@ class Connection
                 );
 
                 $this->couldHavePendingMessages = true;
-            } catch (\RedisException $e) {
+            } catch (\RedisException|\Relay\Exception $e) {
                 throw new TransportException($e->getMessage(), 0, $e);
             }
         }
@@ -295,7 +415,7 @@ class Connection
         $now = microtime();
         $now = substr($now, 11).substr($now, 2, 3);
 
-        $queuedMessageCount = $this->rawCommand('ZCOUNT', 0, $now);
+        $queuedMessageCount = $this->rawCommand('ZCOUNT', 0, $now) ?? 0;
 
         while ($queuedMessageCount--) {
             if (!$message = $this->rawCommand('ZPOPMIN', 1)) {
@@ -335,9 +455,10 @@ class Connection
                 $this->group,
                 $this->consumer,
                 [$this->stream => $messageId],
+                1,
                 1
             );
-        } catch (\RedisException $e) {
+        } catch (\RedisException|\Relay\Exception $e) {
             throw new TransportException($e->getMessage(), 0, $e);
         }
 
@@ -375,7 +496,7 @@ class Connection
             if ($this->deleteAfterAck) {
                 $acknowledged = $redis->xdel($this->stream, [$id]);
             }
-        } catch (\RedisException $e) {
+        } catch (\RedisException|\Relay\Exception $e) {
             throw new TransportException($e->getMessage(), 0, $e);
         }
 
@@ -383,7 +504,7 @@ class Connection
             if ($error = $redis->getLastError() ?: null) {
                 $redis->clearLastError();
             }
-            throw new TransportException($error ?? sprintf('Could not acknowledge redis message "%s".', $id));
+            throw new TransportException($error ?? \sprintf('Could not acknowledge redis message "%s".', $id));
         }
     }
 
@@ -396,7 +517,7 @@ class Connection
             if ($this->deleteAfterReject) {
                 $deleted = $redis->xdel($this->stream, [$id]) && $deleted;
             }
-        } catch (\RedisException $e) {
+        } catch (\RedisException|\Relay\Exception $e) {
             throw new TransportException($e->getMessage(), 0, $e);
         }
 
@@ -404,7 +525,7 @@ class Connection
             if ($error = $redis->getLastError() ?: null) {
                 $redis->clearLastError();
             }
-            throw new TransportException($error ?? sprintf('Could not delete message "%s" from the redis stream.', $id));
+            throw new TransportException($error ?? \sprintf('Could not delete message "%s" from the redis stream.', $id));
         }
     }
 
@@ -417,7 +538,7 @@ class Connection
 
         try {
             if ($delayInMs > 0) { // the delay is <= 0 for queued messages
-                $id = uniqid('', true);
+                $id = base64_encode(random_bytes(9));
                 $message = json_encode([
                     'body' => $body,
                     'headers' => $headers,
@@ -459,7 +580,7 @@ class Connection
 
                 $id = $added;
             }
-        } catch (\RedisException $e) {
+        } catch (\RedisException|\Relay\Exception $e) {
             if ($error = $redis->getLastError() ?: null) {
                 $redis->clearLastError();
             }
@@ -482,7 +603,7 @@ class Connection
 
         try {
             $redis->xgroup('CREATE', $this->stream, $this->group, 0, true);
-        } catch (\RedisException $e) {
+        } catch (\RedisException|\Relay\Exception $e) {
             throw new TransportException($e->getMessage(), 0, $e);
         }
 
@@ -499,16 +620,34 @@ class Connection
                 // support for Redis extension version 4.x
                 || (\is_string($groups) && substr_count($groups, '"name"'))
             ) {
-                throw new LogicException(sprintf('More than one group exists for stream "%s", delete_after_ack and delete_after_reject cannot be enabled as it risks deleting messages before all groups could consume them.', $this->stream));
+                throw new LogicException(\sprintf('More than one group exists for stream "%s", delete_after_ack and delete_after_reject cannot be enabled as it risks deleting messages before all groups could consume them.', $this->stream));
             }
         }
 
         $this->autoSetup = false;
     }
 
-    private function getCurrentTimeInMilliseconds(): int
+    /**
+     * @param int|null $seconds the minimum duration the message should be kept alive
+     */
+    public function keepalive(string $id, ?int $seconds = null): void
     {
-        return (int) (microtime(true) * 1000);
+        if (null !== $seconds && $this->redeliverTimeout < $seconds) {
+            throw new TransportException(\sprintf('Redis redeliver_timeout (%ds) cannot be smaller than the keepalive interval (%ds).', $this->redeliverTimeout, $seconds));
+        }
+
+        try {
+            $this->getRedis()->xclaim(
+                $this->stream,
+                $this->group,
+                $this->consumer,
+                0,
+                [$id],
+                ['JUSTID']
+            );
+        } catch (\RedisException|\Relay\Exception $e) {
+            throw new TransportException($e->getMessage(), 0, $e);
+        }
     }
 
     public function cleanup(): void
@@ -585,7 +724,7 @@ class Connection
             } else {
                 $result = $redis->rawCommand($command, $this->queue, ...$arguments);
             }
-        } catch (\RedisException $e) {
+        } catch (\RedisException|\Relay\Exception $e) {
             throw new TransportException($e->getMessage(), 0, $e);
         }
 
@@ -593,18 +732,23 @@ class Connection
             if ($error = $redis->getLastError() ?: null) {
                 $redis->clearLastError();
             }
-            throw new TransportException($error ?? sprintf('Could not run "%s" on Redis queue.', $command));
+            throw new TransportException($error ?? \sprintf('Could not run "%s" on Redis queue.', $command));
         }
 
         return $result;
     }
 
-    private function getRedis(): \Redis|\RedisCluster
+    private function getRedis(): \Redis|Relay|\RedisCluster
     {
-        if ($this->redis instanceof \Closure) {
-            $this->redis = ($this->redis)();
+        if (!$this->redis) {
+            $this->redis = ($this->redisInitializer)();
         }
 
         return $this->redis;
+    }
+
+    public function close(): void
+    {
+        $this->redis = null;
     }
 }

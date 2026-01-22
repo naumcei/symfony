@@ -13,37 +13,38 @@ namespace Symfony\Component\Notifier\Bridge\Mercure\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Notifier\Bridge\Mercure\MercureOptions;
-use TypeError;
 
 final class MercureOptionsTest extends TestCase
 {
     public function testConstructWithDefaults()
     {
-        $this->assertSame((new MercureOptions())->toArray(), [
+        $this->assertSame([
             'topics' => null,
             'private' => false,
             'id' => null,
             'type' => null,
             'retry' => null,
-        ]);
+            'content' => null,
+        ], (new MercureOptions())->toArray());
     }
 
     public function testConstructWithParameters()
     {
-        $options = (new MercureOptions('/topic/1', true, 'id', 'type', 1));
+        $options = (new MercureOptions('/topic/1', true, 'id', 'type', 1, ['tag' => '1234', 'body' => 'TEST']));
 
-        $this->assertSame($options->toArray(), [
+        $this->assertSame([
             'topics' => ['/topic/1'],
             'private' => true,
             'id' => 'id',
             'type' => 'type',
             'retry' => 1,
-        ]);
+            'content' => ['tag' => '1234', 'body' => 'TEST'],
+        ], $options->toArray());
     }
 
     public function testConstructWithWrongTopicsThrows()
     {
-        $this->expectException(TypeError::class);
+        $this->expectException(\TypeError::class);
         new MercureOptions(new \stdClass());
     }
 }

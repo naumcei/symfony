@@ -12,16 +12,21 @@
 namespace Symfony\Component\Notifier\Bridge\Sinch\Tests;
 
 use Symfony\Component\Notifier\Bridge\Sinch\SinchTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
+use Symfony\Component\Notifier\Test\MissingRequiredOptionTestTrait;
 
-final class SinchTransportFactoryTest extends TransportFactoryTestCase
+final class SinchTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+    use MissingRequiredOptionTestTrait;
+
     public function createFactory(): SinchTransportFactory
     {
         return new SinchTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'sinch://host.test?from=0611223344',
@@ -29,20 +34,26 @@ final class SinchTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'sinch://accountSid:authToken@default?from=0611223344'];
         yield [false, 'somethingElse://accountSid:authToken@default?from=0611223344'];
     }
 
-    public function missingRequiredOptionProvider(): iterable
+    public static function missingRequiredOptionProvider(): iterable
     {
         yield 'missing option: from' => ['sinch://accountSid:authToken@default'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://accountSid:authToken@default?from=0611223344'];
         yield ['somethingElse://accountSid:authToken@default']; // missing "from" option
+    }
+
+    public static function incompleteDsnProvider(): iterable
+    {
+        yield ['sinch://accountSid@default?from=0611223344'];
+        yield ['sinch://:authToken@default?from=0611223344'];
     }
 }

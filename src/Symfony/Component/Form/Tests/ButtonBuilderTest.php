@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Form\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\ButtonBuilder;
 use Symfony\Component\Form\Exception\InvalidArgumentException;
@@ -20,7 +21,7 @@ use Symfony\Component\Form\Exception\InvalidArgumentException;
  */
 class ButtonBuilderTest extends TestCase
 {
-    public function getValidNames()
+    public static function getValidNames()
     {
         return [
             ['reset'],
@@ -31,9 +32,7 @@ class ButtonBuilderTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider getValidNames
-     */
+    #[DataProvider('getValidNames')]
     public function testValidNames($name)
     {
         $this->assertInstanceOf(ButtonBuilder::class, new ButtonBuilder($name));
@@ -47,18 +46,15 @@ class ButtonBuilderTest extends TestCase
         $this->assertInstanceOf(ButtonBuilder::class, new ButtonBuilder('button[]'));
     }
 
-    public function getInvalidNames()
+    public static function getInvalidNames()
     {
         return [
             [''],
-            [false],
             [null],
         ];
     }
 
-    /**
-     * @dataProvider getInvalidNames
-     */
+    #[DataProvider('getInvalidNames')]
     public function testInvalidNames($name)
     {
         $this->expectException(InvalidArgumentException::class);

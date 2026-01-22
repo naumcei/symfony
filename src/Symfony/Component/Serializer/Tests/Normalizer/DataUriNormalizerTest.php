@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\Serializer\Tests\Normalizer;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
@@ -27,10 +29,7 @@ class DataUriNormalizerTest extends TestCase
     private const TEST_TXT_DATA = 'data:text/plain,K%C3%A9vin%20Dunglas%0A';
     private const TEST_TXT_CONTENT = "Kévin Dunglas\n";
 
-    /**
-     * @var DataUriNormalizer
-     */
-    private $normalizer;
+    private DataUriNormalizer $normalizer;
 
     protected function setUp(): void
     {
@@ -49,9 +48,7 @@ class DataUriNormalizerTest extends TestCase
         $this->assertTrue($this->normalizer->supportsNormalization(new \SplFileObject('data:,Hello%2C%20World!')));
     }
 
-    /**
-     * @requires extension fileinfo
-     */
+    #[RequiresPhpExtension('fileinfo')]
     public function testNormalizeHttpFoundationFile()
     {
         $file = new File(__DIR__.'/../Fixtures/test.gif');
@@ -59,9 +56,7 @@ class DataUriNormalizerTest extends TestCase
         $this->assertSame(self::TEST_GIF_DATA, $this->normalizer->normalize($file));
     }
 
-    /**
-     * @requires extension fileinfo
-     */
+    #[RequiresPhpExtension('fileinfo')]
     public function testNormalizeSplFileInfo()
     {
         $file = new \SplFileInfo(__DIR__.'/../Fixtures/test.gif');
@@ -69,9 +64,7 @@ class DataUriNormalizerTest extends TestCase
         $this->assertSame(self::TEST_GIF_DATA, $this->normalizer->normalize($file));
     }
 
-    /**
-     * @requires extension fileinfo
-     */
+    #[RequiresPhpExtension('fileinfo')]
     public function testNormalizeText()
     {
         $file = new \SplFileObject(__DIR__.'/../Fixtures/test.txt');
@@ -121,16 +114,14 @@ class DataUriNormalizerTest extends TestCase
         $this->normalizer->denormalize('/etc/shadow', 'SplFileObject');
     }
 
-    /**
-     * @dataProvider invalidUriProvider
-     */
-    public function testInvalidData($uri)
+    #[DataProvider('invalidUriProvider')]
+    public function testInvalidData(?string $uri)
     {
         $this->expectException(UnexpectedValueException::class);
         $this->normalizer->denormalize($uri, 'SplFileObject');
     }
 
-    public function invalidUriProvider()
+    public static function invalidUriProvider()
     {
         return [
             ['dataxbase64'],
@@ -148,15 +139,13 @@ class DataUriNormalizerTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider validUriProvider
-     */
-    public function testValidData($uri)
+    #[DataProvider('validUriProvider')]
+    public function testValidData(string $uri)
     {
         $this->assertInstanceOf(\SplFileObject::class, $this->normalizer->denormalize($uri, 'SplFileObject'));
     }
 
-    public function validUriProvider()
+    public static function validUriProvider()
     {
         return [
             ['data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD///+l2Z/dAAAAM0lEQVR4nGP4/5/h/1+G/58ZDrAz3D/McH8yw83NDDeNGe4Ug9C9zwz3gVLMDA/A6P9/AFGGFyjOXZtQAAAAAElFTkSuQmCC'],

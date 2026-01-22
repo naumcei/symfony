@@ -20,9 +20,9 @@ class EnvelopeNormalizer implements NormalizerInterface
 {
     private $serializer;
 
-    public function normalize($envelope, string $format = null, array $context = []): array
+    public function normalize(mixed $data, ?string $format = null, array $context = []): array
     {
-        $xmlContent = $this->serializer->serialize($envelope->message, 'xml');
+        $xmlContent = $this->serializer->serialize($data->message, 'xml');
 
         $encodedContent = base64_encode($xmlContent);
 
@@ -31,7 +31,14 @@ class EnvelopeNormalizer implements NormalizerInterface
         ];
     }
 
-    public function supportsNormalization($data, string $format = null, array $context = []): bool
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            EnvelopeObject::class => true,
+        ];
+    }
+
+    public function supportsNormalization($data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof EnvelopeObject;
     }

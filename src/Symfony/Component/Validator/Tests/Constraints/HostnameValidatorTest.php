@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Validator\Tests\Constraints;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Validator\Constraints\Hostname;
 use Symfony\Component\Validator\Constraints\HostnameValidator;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
@@ -42,9 +43,7 @@ class HostnameValidatorTest extends ConstraintValidatorTestCase
         $this->validator->validate(new \stdClass(), new Hostname());
     }
 
-    /**
-     * @dataProvider getValidMultilevelDomains
-     */
+    #[DataProvider('getValidMultilevelDomains')]
     public function testValidTldDomainsPassValidationIfTldRequired($domain)
     {
         $this->validator->validate($domain, new Hostname());
@@ -52,17 +51,15 @@ class HostnameValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    /**
-     * @dataProvider getValidMultilevelDomains
-     */
+    #[DataProvider('getValidMultilevelDomains')]
     public function testValidTldDomainsPassValidationIfTldNotRequired($domain)
     {
-        $this->validator->validate($domain, new Hostname(['requireTld' => false]));
+        $this->validator->validate($domain, new Hostname(requireTld: false));
 
         $this->assertNoViolation();
     }
 
-    public function getValidMultilevelDomains()
+    public static function getValidMultilevelDomains()
     {
         return [
             ['symfony.com'],
@@ -72,18 +69,14 @@ class HostnameValidatorTest extends ConstraintValidatorTestCase
             ['xn--diseolatinoamericano-66b.com'],
             ['xn--ggle-0nda.com'],
             ['www.xn--simulateur-prt-2kb.fr'],
-            [sprintf('%s.com', str_repeat('a', 20))],
+            [\sprintf('%s.com', str_repeat('a', 20))],
         ];
     }
 
-    /**
-     * @dataProvider getInvalidDomains
-     */
+    #[DataProvider('getInvalidDomains')]
     public function testInvalidDomainsRaiseViolationIfTldRequired($domain)
     {
-        $this->validator->validate($domain, new Hostname([
-            'message' => 'myMessage',
-        ]));
+        $this->validator->validate($domain, new Hostname(message: 'myMessage'));
 
         $this->buildViolation('myMessage')
             ->setParameter('{{ value }}', '"'.$domain.'"')
@@ -91,15 +84,13 @@ class HostnameValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    /**
-     * @dataProvider getInvalidDomains
-     */
+    #[DataProvider('getInvalidDomains')]
     public function testInvalidDomainsRaiseViolationIfTldNotRequired($domain)
     {
-        $this->validator->validate($domain, new Hostname([
-            'message' => 'myMessage',
-            'requireTld' => false,
-        ]));
+        $this->validator->validate($domain, new Hostname(
+            message: 'myMessage',
+            requireTld: false,
+        ));
 
         $this->buildViolation('myMessage')
             ->setParameter('{{ value }}', '"'.$domain.'"')
@@ -107,36 +98,32 @@ class HostnameValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    public function getInvalidDomains()
+    public static function getInvalidDomains()
     {
         return [
             ['acme..com'],
             ['qq--.com'],
             ['-example.com'],
             ['example-.com'],
-            [sprintf('%s.com', str_repeat('a', 300))],
+            [\sprintf('%s.com', str_repeat('a', 300))],
         ];
     }
 
-    /**
-     * @dataProvider getReservedDomains
-     */
+    #[DataProvider('getReservedDomains')]
     public function testReservedDomainsPassValidationIfTldNotRequired($domain)
     {
-        $this->validator->validate($domain, new Hostname(['requireTld' => false]));
+        $this->validator->validate($domain, new Hostname(requireTld: false));
 
         $this->assertNoViolation();
     }
 
-    /**
-     * @dataProvider getReservedDomains
-     */
+    #[DataProvider('getReservedDomains')]
     public function testReservedDomainsRaiseViolationIfTldRequired($domain)
     {
-        $this->validator->validate($domain, new Hostname([
-            'message' => 'myMessage',
-            'requireTld' => true,
-        ]));
+        $this->validator->validate($domain, new Hostname(
+            message: 'myMessage',
+            requireTld: true,
+        ));
 
         $this->buildViolation('myMessage')
             ->setParameter('{{ value }}', '"'.$domain.'"')
@@ -144,7 +131,7 @@ class HostnameValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    public function getReservedDomains()
+    public static function getReservedDomains()
     {
         return [
             ['example'],
@@ -171,25 +158,21 @@ class HostnameValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    /**
-     * @dataProvider getTopLevelDomains
-     */
+    #[DataProvider('getTopLevelDomains')]
     public function testTopLevelDomainsPassValidationIfTldNotRequired($domain)
     {
-        $this->validator->validate($domain, new Hostname(['requireTld' => false]));
+        $this->validator->validate($domain, new Hostname(requireTld: false));
 
         $this->assertNoViolation();
     }
 
-    /**
-     * @dataProvider getTopLevelDomains
-     */
+    #[DataProvider('getTopLevelDomains')]
     public function testTopLevelDomainsRaiseViolationIfTldRequired($domain)
     {
-        $this->validator->validate($domain, new Hostname([
-            'message' => 'myMessage',
-            'requireTld' => true,
-        ]));
+        $this->validator->validate($domain, new Hostname(
+            message: 'myMessage',
+            requireTld: true,
+        ));
 
         $this->buildViolation('myMessage')
             ->setParameter('{{ value }}', '"'.$domain.'"')
@@ -197,7 +180,7 @@ class HostnameValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    public function getTopLevelDomains()
+    public static function getTopLevelDomains()
     {
         return [
             ['com'],

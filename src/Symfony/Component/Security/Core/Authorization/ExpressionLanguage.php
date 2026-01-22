@@ -15,7 +15,7 @@ use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage as BaseExpressionLanguage;
 
 if (!class_exists(BaseExpressionLanguage::class)) {
-    throw new \LogicException(sprintf('The "%s" class requires the "ExpressionLanguage" component. Try running "composer require symfony/expression-language".', ExpressionLanguage::class));
+    throw new \LogicException(\sprintf('The "%s" class requires the "ExpressionLanguage" component. Try running "composer require symfony/expression-language".', ExpressionLanguage::class));
 } else {
     // Help opcache.preload discover always-needed symbols
     class_exists(ExpressionLanguageProvider::class);
@@ -29,8 +29,12 @@ if (!class_exists(BaseExpressionLanguage::class)) {
      */
     class ExpressionLanguage extends BaseExpressionLanguage
     {
-        public function __construct(CacheItemPoolInterface $cache = null, array $providers = [])
+        public function __construct(?CacheItemPoolInterface $cache = null, iterable $providers = [])
         {
+            if (!\is_array($providers)) {
+                $providers = iterator_to_array($providers, false);
+            }
+
             // prepend the default provider to let users override it easily
             array_unshift($providers, new ExpressionLanguageProvider());
 
@@ -38,3 +42,5 @@ if (!class_exists(BaseExpressionLanguage::class)) {
         }
     }
 }
+
+// @php-cs-fixer-ignore no_useless_else Keep class-declaration inside if-else condition to help OPCache, especially to prevent class declaration if conditional early-exit on runtime is executed

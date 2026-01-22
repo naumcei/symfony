@@ -1,6 +1,41 @@
 CHANGELOG
 =========
 
+7.4
+---
+
+ * Add `LockKeyNormalizer`
+
+7.3
+---
+
+ * Add support for `valkey:` / `valkeys:` schemes
+
+7.2
+---
+
+ * RedisStore uses `EVALSHA` over `EVAL` when evaluating LUA scripts
+ * Add `NullStore`
+
+7.0
+---
+
+ * Add parameter `$isSameDatabase` to `DoctrineDbalStore::configureSchema()`
+ * Remove the `gcProbablity` (notice the typo) option, use `gcProbability` instead
+
+6.4
+---
+
+ * Make `MongoDbStore` instantiable with the mongodb extension directly
+
+6.3
+---
+
+ * Create migration for lock table when DoctrineDbalStore is used
+ * Add optional parameter `$isSameDatabase` to `DoctrineDbalStore::configureSchema()`
+ * Add support for Relay PHP extension for Redis
+ * Renamed the `gcProbablity` option to `gcProbability` to fix a typo in its name
+
 6.0
 ---
 

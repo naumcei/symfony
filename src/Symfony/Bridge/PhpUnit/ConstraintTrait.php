@@ -12,15 +12,9 @@
 namespace Symfony\Bridge\PhpUnit;
 
 use PHPUnit\Framework\Constraint\Constraint;
-use ReflectionClass;
 
-$r = new ReflectionClass(Constraint::class);
-if ($r->getProperty('exporter')->isProtected()) {
-    trait ConstraintTrait
-    {
-        use Legacy\ConstraintTraitForV7;
-    }
-} elseif (!$r->getMethod('evaluate')->hasReturnType()) {
+$r = new \ReflectionClass(Constraint::class);
+if (!$r->getMethod('evaluate')->hasReturnType()) {
     trait ConstraintTrait
     {
         use Legacy\ConstraintTraitForV8;

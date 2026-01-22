@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Validator\Tests\Constraints;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\RegexValidator;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
@@ -25,14 +26,14 @@ class RegexValidatorTest extends ConstraintValidatorTestCase
 
     public function testNullIsValid()
     {
-        $this->validator->validate(null, new Regex(['pattern' => '/^[0-9]+$/']));
+        $this->validator->validate(null, new Regex(pattern: '/^[0-9]+$/'));
 
         $this->assertNoViolation();
     }
 
     public function testEmptyStringIsValid()
     {
-        $this->validator->validate('', new Regex(['pattern' => '/^[0-9]+$/']));
+        $this->validator->validate('', new Regex(pattern: '/^[0-9]+$/'));
 
         $this->assertNoViolation();
     }
@@ -40,34 +41,19 @@ class RegexValidatorTest extends ConstraintValidatorTestCase
     public function testExpectsStringCompatibleType()
     {
         $this->expectException(UnexpectedValueException::class);
-        $this->validator->validate(new \stdClass(), new Regex(['pattern' => '/^[0-9]+$/']));
+        $this->validator->validate(new \stdClass(), new Regex(pattern: '/^[0-9]+$/'));
     }
 
-    /**
-     * @dataProvider getValidValues
-     */
+    #[DataProvider('getValidValues')]
     public function testValidValues($value)
     {
-        $constraint = new Regex(['pattern' => '/^[0-9]+$/']);
+        $constraint = new Regex(pattern: '/^[0-9]+$/');
         $this->validator->validate($value, $constraint);
 
         $this->assertNoViolation();
     }
 
-    /**
-     * @dataProvider getValidValuesWithWhitespaces
-     */
-    public function testValidValuesWithWhitespaces($value)
-    {
-        $constraint = new Regex(['pattern' => '/^[0-9]+$/', 'normalizer' => 'trim']);
-        $this->validator->validate($value, $constraint);
-
-        $this->assertNoViolation();
-    }
-
-    /**
-     * @dataProvider getValidValuesWithWhitespaces
-     */
+    #[DataProvider('getValidValuesWithWhitespaces')]
     public function testValidValuesWithWhitespacesNamed($value)
     {
         $constraint = new Regex(pattern: '/^[0-9]+$/', normalizer: 'trim');
@@ -76,14 +62,14 @@ class RegexValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    public function getValidValues()
+    public static function getValidValues()
     {
         return [
             [0],
             ['0'],
             ['090909'],
             [90909],
-            [new class() {
+            [new class {
                 public function __toString(): string
                 {
                     return '090909';
@@ -92,7 +78,7 @@ class RegexValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    public function getValidValuesWithWhitespaces()
+    public static function getValidValuesWithWhitespaces()
     {
         return [
             ["\x207"],
@@ -104,27 +90,7 @@ class RegexValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    /**
-     * @dataProvider getInvalidValues
-     */
-    public function testInvalidValues($value)
-    {
-        $constraint = new Regex([
-            'pattern' => '/^[0-9]+$/',
-            'message' => 'myMessage',
-        ]);
-
-        $this->validator->validate($value, $constraint);
-
-        $this->buildViolation('myMessage')
-            ->setParameter('{{ value }}', '"'.$value.'"')
-            ->setCode(Regex::REGEX_FAILED_ERROR)
-            ->assertRaised();
-    }
-
-    /**
-     * @dataProvider getInvalidValues
-     */
+    #[DataProvider('getInvalidValues')]
     public function testInvalidValuesNamed($value)
     {
         $constraint = new Regex(pattern: '/^[0-9]+$/', message: 'myMessage');
@@ -133,16 +99,17 @@ class RegexValidatorTest extends ConstraintValidatorTestCase
 
         $this->buildViolation('myMessage')
             ->setParameter('{{ value }}', '"'.$value.'"')
+            ->setParameter('{{ pattern }}', '/^[0-9]+$/')
             ->setCode(Regex::REGEX_FAILED_ERROR)
             ->assertRaised();
     }
 
-    public function getInvalidValues()
+    public static function getInvalidValues()
     {
         return [
             ['abcd'],
             ['090foo'],
-            [new class() {
+            [new class {
                 public function __toString(): string
                 {
                     return 'abcd';

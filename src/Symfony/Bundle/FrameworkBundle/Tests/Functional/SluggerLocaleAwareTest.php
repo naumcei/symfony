@@ -11,20 +11,20 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Tests\Functional;
 
-/**
- * @group functional
- */
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
+use Symfony\Bundle\FrameworkBundle\Tests\Functional\Bundle\TestBundle\Slugger\SlugConstructArgService;
+
+#[Group('functional')]
 class SluggerLocaleAwareTest extends AbstractWebTestCase
 {
-    /**
-     * @requires extension intl
-     */
+    #[RequiresPhpExtension('intl')]
     public function testLocalizedSlugger()
     {
         $kernel = static::createKernel(['test_case' => 'Slugger', 'root_config' => 'config.yml']);
         $kernel->boot();
 
-        $service = $kernel->getContainer()->get('Symfony\Bundle\FrameworkBundle\Tests\Functional\Bundle\TestBundle\Slugger\SlugConstructArgService');
+        $service = $kernel->getContainer()->get(SlugConstructArgService::class);
 
         $this->assertSame('Stoinostta-tryabva-da-bude-luzha', $service->hello());
     }

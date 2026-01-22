@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Serializer\Tests\Context\Encoder;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Context\Encoder\XmlEncoderContextBuilder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
@@ -27,11 +28,7 @@ class XmlEncoderContextBuilderTest extends TestCase
         $this->contextBuilder = new XmlEncoderContextBuilder();
     }
 
-    /**
-     * @dataProvider withersDataProvider
-     *
-     * @param array<string, mixed> $values
-     */
+    #[DataProvider('withersDataProvider')]
     public function testWithers(array $values)
     {
         $context = $this->contextBuilder
@@ -41,20 +38,21 @@ class XmlEncoderContextBuilderTest extends TestCase
             ->withEncoding($values[XmlEncoder::ENCODING])
             ->withFormatOutput($values[XmlEncoder::FORMAT_OUTPUT])
             ->withLoadOptions($values[XmlEncoder::LOAD_OPTIONS])
+            ->withSaveOptions($values[XmlEncoder::SAVE_OPTIONS])
             ->withRemoveEmptyTags($values[XmlEncoder::REMOVE_EMPTY_TAGS])
             ->withRootNodeName($values[XmlEncoder::ROOT_NODE_NAME])
             ->withStandalone($values[XmlEncoder::STANDALONE])
             ->withTypeCastAttributes($values[XmlEncoder::TYPE_CAST_ATTRIBUTES])
             ->withVersion($values[XmlEncoder::VERSION])
+            ->withCdataWrapping($values[XmlEncoder::CDATA_WRAPPING])
+            ->withCdataWrappingPattern($values[XmlEncoder::CDATA_WRAPPING_PATTERN])
+            ->withIgnoreEmptyAttributes($values[XmlEncoder::IGNORE_EMPTY_ATTRIBUTES])
             ->toArray();
 
         $this->assertSame($values, $context);
     }
 
-    /**
-     * @return iterable<array{0: array<string, mixed>|}>
-     */
-    public function withersDataProvider(): iterable
+    public static function withersDataProvider(): iterable
     {
         yield 'With values' => [[
             XmlEncoder::AS_COLLECTION => true,
@@ -63,11 +61,15 @@ class XmlEncoderContextBuilderTest extends TestCase
             XmlEncoder::ENCODING => 'UTF-8',
             XmlEncoder::FORMAT_OUTPUT => false,
             XmlEncoder::LOAD_OPTIONS => \LIBXML_COMPACT,
+            XmlEncoder::SAVE_OPTIONS => \LIBXML_NOERROR,
             XmlEncoder::REMOVE_EMPTY_TAGS => true,
             XmlEncoder::ROOT_NODE_NAME => 'root',
             XmlEncoder::STANDALONE => false,
             XmlEncoder::TYPE_CAST_ATTRIBUTES => true,
             XmlEncoder::VERSION => '1.0',
+            XmlEncoder::CDATA_WRAPPING => false,
+            XmlEncoder::CDATA_WRAPPING_PATTERN => '/[<>&"\']/',
+            XmlEncoder::IGNORE_EMPTY_ATTRIBUTES => true,
         ]];
 
         yield 'With null values' => [[
@@ -77,11 +79,15 @@ class XmlEncoderContextBuilderTest extends TestCase
             XmlEncoder::ENCODING => null,
             XmlEncoder::FORMAT_OUTPUT => null,
             XmlEncoder::LOAD_OPTIONS => null,
+            XmlEncoder::SAVE_OPTIONS => null,
             XmlEncoder::REMOVE_EMPTY_TAGS => null,
             XmlEncoder::ROOT_NODE_NAME => null,
             XmlEncoder::STANDALONE => null,
             XmlEncoder::TYPE_CAST_ATTRIBUTES => null,
             XmlEncoder::VERSION => null,
+            XmlEncoder::CDATA_WRAPPING => null,
+            XmlEncoder::CDATA_WRAPPING_PATTERN => null,
+            XmlEncoder::IGNORE_EMPTY_ATTRIBUTES => null,
         ]];
     }
 }

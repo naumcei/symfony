@@ -28,6 +28,7 @@ use Symfony\Component\Cache\Marshaller\DefaultMarshaller;
 use Symfony\Component\Cache\Messenger\EarlyExpirationHandler;
 use Symfony\Component\HttpKernel\CacheClearer\Psr6CacheClearer;
 use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\NamespacedPoolInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 return static function (ContainerConfigurator $container) {
@@ -56,17 +57,22 @@ return static function (ContainerConfigurator $container) {
             ->private()
             ->tag('cache.pool')
 
-        ->set('cache.annotations')
-            ->parent('cache.system')
-            ->private()
-            ->tag('cache.pool')
-
         ->set('cache.property_info')
             ->parent('cache.system')
             ->private()
             ->tag('cache.pool')
 
+        ->set('cache.asset_mapper')
+            ->parent('cache.system')
+            ->private()
+            ->tag('cache.pool')
+
         ->set('cache.messenger.restart_workers_signal')
+            ->parent('cache.app')
+            ->private()
+            ->tag('cache.pool')
+
+        ->set('cache.scheduler')
             ->parent('cache.app')
             ->private()
             ->tag('cache.pool')
@@ -78,7 +84,7 @@ return static function (ContainerConfigurator $container) {
                 '', // namespace
                 0, // default lifetime
                 abstract_arg('version'),
-                sprintf('%s/pools/system', param('kernel.cache_dir')),
+                \sprintf('%s/pools/system', param('kernel.cache_dir')),
                 service('logger')->ignoreOnInvalid(),
             ])
             ->tag('cache.pool', ['clearer' => 'cache.system_clearer', 'reset' => 'reset'])
@@ -100,7 +106,7 @@ return static function (ContainerConfigurator $container) {
             ->args([
                 '', // namespace
                 0, // default lifetime
-                sprintf('%s/pools/app', param('kernel.cache_dir')),
+                \sprintf('%s/pools/app', param('kernel.cache_dir')),
                 service('cache.default_marshaller')->ignoreOnInvalid(),
             ])
             ->call('setLogger', [service('logger')->ignoreOnInvalid()])
@@ -135,6 +141,7 @@ return static function (ContainerConfigurator $container) {
                 'reset' => 'reset',
             ])
             ->tag('monolog.logger', ['channel' => 'cache'])
+        ->alias('cache.adapter.valkey', 'cache.adapter.redis')
 
         ->set('cache.adapter.redis_tag_aware', RedisTagAwareAdapter::class)
             ->abstract()
@@ -151,6 +158,7 @@ return static function (ContainerConfigurator $container) {
                 'reset' => 'reset',
             ])
             ->tag('monolog.logger', ['channel' => 'cache'])
+        ->alias('cache.adapter.valkey_tag_aware', 'cache.adapter.redis_tag_aware')
 
         ->set('cache.adapter.memcached', MemcachedAdapter::class)
             ->abstract()
@@ -242,6 +250,8 @@ return static function (ContainerConfigurator $container) {
         ->alias(CacheItemPoolInterface::class, 'cache.app')
 
         ->alias(CacheInterface::class, 'cache.app')
+
+        ->alias(NamespacedPoolInterface::class, 'cache.app')
 
         ->alias(TagAwareCacheInterface::class, 'cache.app.taggable')
     ;

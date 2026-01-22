@@ -14,6 +14,7 @@ namespace Symfony\Bridge\Doctrine\Tests\Messenger;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bridge\Doctrine\Messenger\DoctrineCloseConnectionMiddleware;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
@@ -22,20 +23,20 @@ use Symfony\Component\Messenger\Test\Middleware\MiddlewareTestCase;
 
 class DoctrineCloseConnectionMiddlewareTest extends MiddlewareTestCase
 {
-    private $connection;
-    private $entityManager;
-    private $managerRegistry;
-    private $middleware;
-    private $entityManagerName = 'default';
+    private MockObject&Connection $connection;
+    private EntityManagerInterface $entityManager;
+    private ManagerRegistry $managerRegistry;
+    private DoctrineCloseConnectionMiddleware $middleware;
+    private string $entityManagerName = 'default';
 
     protected function setUp(): void
     {
         $this->connection = $this->createMock(Connection::class);
 
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->entityManager = $this->createStub(EntityManagerInterface::class);
         $this->entityManager->method('getConnection')->willReturn($this->connection);
 
-        $this->managerRegistry = $this->createMock(ManagerRegistry::class);
+        $this->managerRegistry = $this->createStub(ManagerRegistry::class);
         $this->managerRegistry->method('getManager')->willReturn($this->entityManager);
 
         $this->middleware = new DoctrineCloseConnectionMiddleware(
@@ -58,11 +59,12 @@ class DoctrineCloseConnectionMiddlewareTest extends MiddlewareTestCase
 
     public function testInvalidEntityManagerThrowsException()
     {
-        $managerRegistry = $this->createMock(ManagerRegistry::class);
+        $this->connection->expects($this->never())->method('getDatabasePlatform');
+        $managerRegistry = $this->createStub(ManagerRegistry::class);
         $managerRegistry
             ->method('getManager')
             ->with('unknown_manager')
-            ->will($this->throwException(new \InvalidArgumentException()));
+            ->willThrowException(new \InvalidArgumentException());
 
         $middleware = new DoctrineCloseConnectionMiddleware($managerRegistry, 'unknown_manager');
 

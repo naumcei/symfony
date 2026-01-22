@@ -21,7 +21,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class JsonDescriptor extends Descriptor
 {
-    protected function describeDefaults(array $options)
+    protected function describeDefaults(array $options): void
     {
         $data['builtin_form_types'] = $options['core_types'];
         $data['service_form_types'] = $options['service_types'];
@@ -33,7 +33,7 @@ class JsonDescriptor extends Descriptor
         $this->writeData($data, $options);
     }
 
-    protected function describeResolvedFormType(ResolvedFormTypeInterface $resolvedFormType, array $options = [])
+    protected function describeResolvedFormType(ResolvedFormTypeInterface $resolvedFormType, array $options = []): void
     {
         $this->collectOptions($resolvedFormType);
 
@@ -51,7 +51,7 @@ class JsonDescriptor extends Descriptor
         $this->sortOptions($formOptions);
 
         $data = [
-            'class' => \get_class($resolvedFormType->getInnerType()),
+            'class' => $resolvedFormType->getInnerType()::class,
             'block_prefix' => $resolvedFormType->getInnerType()->getBlockPrefix(),
             'options' => $formOptions,
             'parent_types' => $this->parents,
@@ -61,7 +61,13 @@ class JsonDescriptor extends Descriptor
         $this->writeData($data, $options);
     }
 
-    protected function describeOption(OptionsResolver $optionsResolver, array $options)
+    protected function describeOption(OptionsResolver $optionsResolver, array $options): void
+    {
+        $data = $this->getOptionDescription($optionsResolver, $options);
+        $this->writeData($data, $options);
+    }
+
+    private function getOptionDescription(OptionsResolver $optionsResolver, array $options): array
     {
         $definition = $this->getOptionDefinition($optionsResolver, $options['option']);
 
@@ -90,17 +96,27 @@ class JsonDescriptor extends Descriptor
         }
         $data['has_normalizer'] = isset($definition['normalizers']);
 
-        $this->writeData($data, $options);
+        if ($data['has_nested_options'] = isset($definition['nestedOptions'])) {
+            $nestedResolver = new OptionsResolver();
+            foreach ($definition['nestedOptions'] as $nestedOption) {
+                $nestedOption($nestedResolver, $optionsResolver);
+            }
+            foreach ($nestedResolver->getDefinedOptions() as $option) {
+                $data['nested_options'][$option] = $this->getOptionDescription($nestedResolver, ['option' => $option]);
+            }
+        }
+
+        return $data;
     }
 
-    private function writeData(array $data, array $options)
+    private function writeData(array $data, array $options): void
     {
         $flags = $options['json_encoding'] ?? 0;
 
         $this->output->write(json_encode($data, $flags | \JSON_PRETTY_PRINT)."\n");
     }
 
-    private function sortOptions(array &$options)
+    private function sortOptions(array &$options): void
     {
         foreach ($options as &$opts) {
             $sorted = false;

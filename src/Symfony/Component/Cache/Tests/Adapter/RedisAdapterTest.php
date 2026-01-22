@@ -11,16 +11,16 @@
 
 namespace Symfony\Component\Cache\Tests\Adapter;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
 use Symfony\Component\Cache\Traits\RedisProxy;
 
-/**
- * @group integration
- */
-class RedisAdapterTest extends AbstractRedisAdapterTest
+#[Group('integration')]
+class RedisAdapterTest extends AbstractRedisAdapterTestCase
 {
     public static function setUpBeforeClass(): void
     {
@@ -28,7 +28,7 @@ class RedisAdapterTest extends AbstractRedisAdapterTest
         self::$redis = AbstractAdapter::createConnection('redis://'.getenv('REDIS_HOST'), ['lazy' => true]);
     }
 
-    public function createCachePool(int $defaultLifetime = 0, string $testMethod = null): CacheItemPoolInterface
+    public function createCachePool(int $defaultLifetime = 0, ?string $testMethod = null): CacheItemPoolInterface
     {
         if ('testClearWithPrefix' === $testMethod && \defined('Redis::SCAN_PREFIX')) {
             self::$redis->setOption(\Redis::OPT_SCAN, \Redis::SCAN_PREFIX);
@@ -66,6 +66,9 @@ class RedisAdapterTest extends AbstractRedisAdapterTest
         $this->assertTrue($redis->isConnected());
         $this->assertSame(0, $redis->getDbNum());
 
+        $redis = RedisAdapter::createConnection('redis://'.$uri.'/');
+        $this->assertSame(0, $redis->getDbNum());
+
         $redis = RedisAdapter::createConnection('redis://'.$uri.'/2');
         $this->assertSame(2, $redis->getDbNum());
 
@@ -92,9 +95,7 @@ class RedisAdapterTest extends AbstractRedisAdapterTest
         $this->assertInstanceOf(RedisProxy::class, $redis);
     }
 
-    /**
-     * @dataProvider provideFailedCreateConnection
-     */
+    #[DataProvider('provideFailedCreateConnection')]
     public function testFailedCreateConnection(string $dsn)
     {
         $this->expectException(InvalidArgumentException::class);
@@ -102,7 +103,7 @@ class RedisAdapterTest extends AbstractRedisAdapterTest
         RedisAdapter::createConnection($dsn);
     }
 
-    public function provideFailedCreateConnection(): array
+    public static function provideFailedCreateConnection(): array
     {
         return [
             ['redis://localhost:1234'],
@@ -112,9 +113,7 @@ class RedisAdapterTest extends AbstractRedisAdapterTest
         ];
     }
 
-    /**
-     * @dataProvider provideInvalidCreateConnection
-     */
+    #[DataProvider('provideInvalidCreateConnection')]
     public function testInvalidCreateConnection(string $dsn)
     {
         $this->expectException(InvalidArgumentException::class);
@@ -122,7 +121,7 @@ class RedisAdapterTest extends AbstractRedisAdapterTest
         RedisAdapter::createConnection($dsn);
     }
 
-    public function provideInvalidCreateConnection(): array
+    public static function provideInvalidCreateConnection(): array
     {
         return [
             ['redis://localhost/foo'],

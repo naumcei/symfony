@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Serializer\Tests\Context\Normalizer;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Context\Normalizer\UnwrappingDenormalizerContextBuilder;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
@@ -29,10 +30,9 @@ class UnwrappingDenormalizerContextBuilderTest extends TestCase
     }
 
     /**
-     * @dataProvider withersDataProvider
-     *
      * @param array<string, mixed> $values
      */
+    #[DataProvider('withersDataProvider')]
     public function testWithers(array $values)
     {
         $context = $this->contextBuilder
@@ -45,7 +45,7 @@ class UnwrappingDenormalizerContextBuilderTest extends TestCase
     /**
      * @return iterable<array{0: array<string, mixed>}>
      */
-    public function withersDataProvider(): iterable
+    public static function withersDataProvider(): iterable
     {
         yield 'With values' => [[
             UnwrappingDenormalizer::UNWRAP_PATH => 'foo',

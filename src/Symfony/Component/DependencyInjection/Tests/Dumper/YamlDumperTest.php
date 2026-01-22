@@ -11,18 +11,25 @@
 
 namespace Symfony\Component\DependencyInjection\Tests\Dumper;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Argument\AbstractArgument;
 use Symfony\Component\DependencyInjection\Argument\ServiceClosureArgument;
 use Symfony\Component\DependencyInjection\Argument\ServiceLocatorArgument;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
+use Symfony\Component\DependencyInjection\Compiler\AutowirePass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Dumper\YamlDumper;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\DependencyInjection\Tests\Fixtures\FooClassWithDefaultArrayAttribute;
+use Symfony\Component\DependencyInjection\Tests\Fixtures\FooClassWithDefaultEnumAttribute;
+use Symfony\Component\DependencyInjection\Tests\Fixtures\FooClassWithDefaultObjectAttribute;
 use Symfony\Component\DependencyInjection\Tests\Fixtures\FooClassWithEnumAttribute;
 use Symfony\Component\DependencyInjection\Tests\Fixtures\FooUnitEnum;
 use Symfony\Component\DependencyInjection\Tests\Fixtures\FooWithAbstractArgument;
@@ -31,18 +38,18 @@ use Symfony\Component\Yaml\Yaml;
 
 class YamlDumperTest extends TestCase
 {
-    protected static $fixturesPath;
+    protected static string $fixturesPath;
 
     public static function setUpBeforeClass(): void
     {
-        self::$fixturesPath = realpath(__DIR__.'/../Fixtures/');
+        self::$fixturesPath = realpath(__DIR__.'/../Fixtures');
     }
 
     public function testDump()
     {
-        $dumper = new YamlDumper($container = new ContainerBuilder());
+        $dumper = new YamlDumper(new ContainerBuilder());
 
-        $this->assertEqualYamlStructure(file_get_contents(self::$fixturesPath.'/yaml/services1.yml'), $dumper->dump(), '->dump() dumps an empty container as an empty YAML file');
+        $this->assertStringEqualsGeneratedFile('services1.yml', $dumper->dump(), '->dump() dumps an empty container as an empty YAML file');
     }
 
     public function testAddParameters()
@@ -65,7 +72,7 @@ class YamlDumperTest extends TestCase
             $this->fail('->dump() throws a RuntimeException if the container to be dumped has reference to objects or resources');
         } catch (\Exception $e) {
             $this->assertInstanceOf(\RuntimeException::class, $e, '->dump() throws a RuntimeException if the container to be dumped has reference to objects or resources');
-            $this->assertEquals('Unable to dump a service container if a parameter is an object or a resource.', $e->getMessage(), '->dump() throws a RuntimeException if the container to be dumped has reference to objects or resources');
+            $this->assertEquals('Unable to dump a service container if a parameter is an object or a resource, got "stdClass".', $e->getMessage(), '->dump() throws a RuntimeException if the container to be dumped has reference to objects or resources');
         }
     }
 
@@ -73,14 +80,14 @@ class YamlDumperTest extends TestCase
     {
         $container = include self::$fixturesPath.'/containers/container24.php';
         $dumper = new YamlDumper($container);
-        $this->assertStringEqualsFile(self::$fixturesPath.'/yaml/services24.yml', $dumper->dump());
+        $this->assertStringEqualsGeneratedFile('services24.yml', $dumper->dump());
     }
 
     public function testDumpDecoratedServices()
     {
         $container = include self::$fixturesPath.'/containers/container34.php';
         $dumper = new YamlDumper($container);
-        $this->assertStringEqualsFile(self::$fixturesPath.'/yaml/services34.yml', $dumper->dump());
+        $this->assertStringEqualsGeneratedFile('services34.yml', $dumper->dump());
     }
 
     public function testDumpLoad()
@@ -92,7 +99,7 @@ class YamlDumperTest extends TestCase
         $this->assertEquals([new Reference('bar', ContainerInterface::IGNORE_ON_UNINITIALIZED_REFERENCE)], $container->getDefinition('foo')->getArguments());
 
         $dumper = new YamlDumper($container);
-        $this->assertStringEqualsFile(self::$fixturesPath.'/yaml/services_dump_load.yml', $dumper->dump());
+        $this->assertStringEqualsGeneratedFile('services_dump_load.yml', $dumper->dump());
     }
 
     public function testInlineServices()
@@ -106,14 +113,16 @@ class YamlDumperTest extends TestCase
         ;
 
         $dumper = new YamlDumper($container);
-        $this->assertStringEqualsFile(self::$fixturesPath.'/yaml/services_inline.yml', $dumper->dump());
+        $this->assertStringEqualsGeneratedFile('services_inline.yml', $dumper->dump());
     }
 
+    #[IgnoreDeprecations]
+    #[Group('legacy')]
     public function testTaggedArguments()
     {
         $taggedIterator = new TaggedIteratorArgument('foo', 'barfoo', 'foobar', false, 'getPriority');
         $taggedIterator2 = new TaggedIteratorArgument('foo', null, null, false, null, ['baz']);
-        $taggedIterator3 = new TaggedIteratorArgument('foo', null, null, false, null, ['baz', 'qux']);
+        $taggedIterator3 = new TaggedIteratorArgument('foo', null, null, false, null, ['baz', 'qux'], false);
 
         $container = new ContainerBuilder();
 
@@ -131,7 +140,7 @@ class YamlDumperTest extends TestCase
         $container->register('bar_service_tagged_locator', 'Bar')->addArgument(new ServiceLocatorArgument(new TaggedIteratorArgument('foo')));
 
         $dumper = new YamlDumper($container);
-        $this->assertStringEqualsFile(self::$fixturesPath.'/yaml/services_with_tagged_argument.yml', $dumper->dump());
+        $this->assertStringEqualsGeneratedFile('services_with_tagged_argument.yml', $dumper->dump());
     }
 
     public function testServiceClosure()
@@ -142,7 +151,7 @@ class YamlDumperTest extends TestCase
         ;
 
         $dumper = new YamlDumper($container);
-        $this->assertStringEqualsFile(self::$fixturesPath.'/yaml/services_with_service_closure.yml', $dumper->dump());
+        $this->assertStringEqualsGeneratedFile('services_with_service_closure.yml', $dumper->dump());
     }
 
     public function testDumpHandlesEnumeration()
@@ -159,7 +168,35 @@ class YamlDumperTest extends TestCase
         $container->compile();
         $dumper = new YamlDumper($container);
 
-        $this->assertEquals(file_get_contents(self::$fixturesPath.'/yaml/services_with_enumeration.yml'), $dumper->dump());
+        if (str_starts_with(Yaml::dump(FooUnitEnum::BAR), '!php/enum')) {
+            $this->assertStringEqualsGeneratedFile('services_with_enumeration_enum_tag.yml', $dumper->dump());
+        } else {
+            $this->assertStringEqualsGeneratedFile('services_with_enumeration.yml', $dumper->dump());
+        }
+    }
+
+    #[DataProvider('provideDefaultClasses')]
+    public function testDumpHandlesDefaultAttribute($class, $expectedFile)
+    {
+        $container = new ContainerBuilder();
+        $container
+            ->register('foo', $class)
+            ->setPublic(true)
+            ->setAutowired(true)
+            ->setArguments([2 => true]);
+
+        (new AutowirePass())->process($container);
+
+        $dumper = new YamlDumper($container);
+
+        $this->assertStringEqualsGeneratedFile($expectedFile, $dumper->dump());
+    }
+
+    public static function provideDefaultClasses()
+    {
+        yield [FooClassWithDefaultArrayAttribute::class, 'services_with_default_array.yml'];
+        yield [FooClassWithDefaultObjectAttribute::class, 'services_with_default_object.yml'];
+        yield [FooClassWithDefaultEnumAttribute::class, 'services_with_default_enumeration.yml'];
     }
 
     public function testDumpServiceWithAbstractArgument()
@@ -170,7 +207,7 @@ class YamlDumperTest extends TestCase
             ->setArgument('$bar', 'test');
 
         $dumper = new YamlDumper($container);
-        $this->assertStringEqualsFile(self::$fixturesPath.'/yaml/services_with_abstract_argument.yml', $dumper->dump());
+        $this->assertStringEqualsGeneratedFile('services_with_abstract_argument.yml', $dumper->dump());
     }
 
     public function testDumpNonScalarTags()
@@ -178,7 +215,27 @@ class YamlDumperTest extends TestCase
         $container = include self::$fixturesPath.'/containers/container_non_scalar_tags.php';
         $dumper = new YamlDumper($container);
 
-        $this->assertEquals(file_get_contents(self::$fixturesPath.'/yaml/services_with_array_tags.yml'), $dumper->dump());
+        $this->assertStringEqualsGeneratedFile('services_with_array_tags.yml', $dumper->dump());
+    }
+
+    public function testDumpResolvedEnvPlaceholders()
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('%env(PARAMETER_NAME)%', '%env(PARAMETER_VALUE)%');
+        $container
+            ->register('service', '%env(SERVICE_CLASS)%')
+            ->setFile('%env(SERVICE_FILE)%')
+            ->addArgument('%env(SERVICE_ARGUMENT)%')
+            ->setProperty('%env(SERVICE_PROPERTY_NAME)%', '%env(SERVICE_PROPERTY_VALUE)%')
+            ->addMethodCall('%env(SERVICE_METHOD_NAME)%', ['%env(SERVICE_METHOD_ARGUMENT)%'])
+            ->setFactory('%env(SERVICE_FACTORY)%')
+            ->setConfigurator('%env(SERVICE_CONFIGURATOR)%')
+            ->setPublic(true)
+        ;
+        $container->compile();
+        $dumper = new YamlDumper($container);
+
+        $this->assertStringEqualsGeneratedFile('container_with_env_placeholders.yml', $dumper->dump());
     }
 
     private function assertEqualYamlStructure(string $expected, string $yaml, string $message = '')
@@ -186,5 +243,17 @@ class YamlDumperTest extends TestCase
         $parser = new Parser();
 
         $this->assertEquals($parser->parse($expected, Yaml::PARSE_CUSTOM_TAGS), $parser->parse($yaml, Yaml::PARSE_CUSTOM_TAGS), $message);
+    }
+
+    private static function assertStringEqualsGeneratedFile(string $expectedFile, string $dumpedCode): void
+    {
+        $expectedFile = self::$fixturesPath.'/yaml/'.$expectedFile;
+
+        if ($_ENV['TEST_GENERATE_FIXTURES'] ?? false) {
+            file_put_contents($expectedFile, $dumpedCode);
+            self::markTestIncomplete('TEST_GENERATE_FIXTURES is set');
+        }
+
+        self::assertStringEqualsFile($expectedFile, $dumpedCode);
     }
 }

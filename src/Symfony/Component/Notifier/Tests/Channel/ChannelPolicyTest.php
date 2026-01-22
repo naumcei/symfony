@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Notifier\Tests\Channel;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Notifier\Channel\ChannelPolicy;
 use Symfony\Component\Notifier\Exception\InvalidArgumentException;
@@ -28,9 +29,7 @@ class ChannelPolicyTest extends TestCase
         $channelPolicy->getChannels('low');
     }
 
-    /**
-     * @dataProvider provideValidPolicies
-     */
+    #[DataProvider('provideValidPolicies')]
     public function testCanRetrieveChannels(array $policy, string $importance, array $expectedChannels)
     {
         $channelPolicy = new ChannelPolicy($policy);
@@ -39,7 +38,7 @@ class ChannelPolicyTest extends TestCase
         $this->assertSame($expectedChannels, $channels);
     }
 
-    public function provideValidPolicies(): \Generator
+    public static function provideValidPolicies(): \Generator
     {
         yield [['urgent' => ['chat']], 'urgent', ['chat']];
         yield [['urgent' => ['chat', 'sms']], 'urgent', ['chat', 'sms']];

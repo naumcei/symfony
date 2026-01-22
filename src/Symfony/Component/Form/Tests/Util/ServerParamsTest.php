@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Form\Tests\Util;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Util\ServerParams;
 use Symfony\Component\HttpFoundation\Request;
@@ -40,7 +41,7 @@ class ServerParamsTest extends TestCase
         $this->assertEquals(1024, $serverParams->getContentLength());
     }
 
-    /** @dataProvider getGetPostMaxSizeTestData */
+    #[DataProvider('getGetPostMaxSizeTestData')]
     public function testGetPostMaxSize($size, $bytes)
     {
         $serverParams = new DummyServerParams($size);
@@ -48,7 +49,7 @@ class ServerParamsTest extends TestCase
         $this->assertEquals($bytes, $serverParams->getPostMaxSize());
     }
 
-    public function getGetPostMaxSizeTestData()
+    public static function getGetPostMaxSizeTestData()
     {
         return [
             ['2k', 2048],
@@ -70,7 +71,7 @@ class ServerParamsTest extends TestCase
 
 class DummyServerParams extends ServerParams
 {
-    private $size;
+    private string $size;
 
     public function __construct($size)
     {

@@ -11,13 +11,17 @@
 
 namespace Symfony\Component\Routing\Tests\Loader;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Config\FileLocatorInterface;
 use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\Config\Resource\FileResource;
-use Symfony\Component\Routing\Loader\AnnotationClassLoader;
+use Symfony\Component\Config\Resource\ResourceInterface;
+use Symfony\Component\Routing\Loader\AttributeClassLoader;
 use Symfony\Component\Routing\Loader\PhpFileLoader;
 use Symfony\Component\Routing\Loader\Psr4DirectoryLoader;
+use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Tests\Fixtures\Psr4Controllers\MyController;
@@ -26,7 +30,7 @@ class PhpFileLoaderTest extends TestCase
 {
     public function testSupports()
     {
-        $loader = new PhpFileLoader($this->createMock(FileLocator::class));
+        $loader = new PhpFileLoader($this->createStub(FileLocatorInterface::class));
 
         $this->assertTrue($loader->supports('foo.php'), '->supports() returns true if the resource is loadable');
         $this->assertFalse($loader->supports('foo.foo'), '->supports() returns true if the resource is loadable');
@@ -42,7 +46,7 @@ class PhpFileLoaderTest extends TestCase
         $routes = $routeCollection->all();
 
         $this->assertCount(1, $routes, 'One route is loaded');
-        $this->assertContainsOnly('Symfony\Component\Routing\Route', $routes);
+        $this->assertContainsOnlyInstancesOf(Route::class, $routes);
 
         foreach ($routes as $route) {
             $this->assertSame('/blog/{slug}', $route->getPath());
@@ -62,7 +66,7 @@ class PhpFileLoaderTest extends TestCase
         $routes = $routeCollection->all();
 
         $this->assertCount(1, $routes, 'One route is loaded');
-        $this->assertContainsOnly('Symfony\Component\Routing\Route', $routes);
+        $this->assertContainsOnlyInstancesOf(Route::class, $routes);
 
         foreach ($routes as $route) {
             $this->assertSame('/prefix/blog/{slug}', $route->getPath());
@@ -81,7 +85,7 @@ class PhpFileLoaderTest extends TestCase
         $routeCollection = $loader->load('with_define_path_variable.php');
         $resources = $routeCollection->getResources();
         $this->assertCount(1, $resources);
-        $this->assertContainsOnly('Symfony\Component\Config\Resource\ResourceInterface', $resources);
+        $this->assertContainsOnlyInstancesOf(ResourceInterface::class, $resources);
         $fileResource = reset($resources);
         $this->assertSame(
             realpath($locator->locate('with_define_path_variable.php')),
@@ -99,6 +103,31 @@ class PhpFileLoaderTest extends TestCase
         $defaultsRoute = $routes->get('defaults');
 
         $this->assertSame('/defaults', $defaultsRoute->getPath());
+        $this->assertSame('en', $defaultsRoute->getDefault('_locale'));
+        $this->assertSame('html', $defaultsRoute->getDefault('_format'));
+    }
+
+    public function testLoadingRouteWithCollectionDefaults()
+    {
+        $loader = new PhpFileLoader(new FileLocator([__DIR__.'/../Fixtures']));
+        $routes = $loader->load('collection-defaults.php');
+
+        $this->assertCount(2, $routes);
+
+        $defaultsRoute = $routes->get('defaultsA');
+        $this->assertSame(['GET'], $defaultsRoute->getMethods());
+        $this->assertArrayHasKey('attribute', $defaultsRoute->getDefaults());
+        $this->assertTrue($defaultsRoute->getDefault('_stateless'));
+        $this->assertSame('/defaultsA', $defaultsRoute->getPath());
+        $this->assertSame('en', $defaultsRoute->getDefault('_locale'));
+        $this->assertSame('html', $defaultsRoute->getDefault('_format'));
+
+        // The second route has a specific method and is not stateless, overwriting the collection settings
+        $defaultsRoute = $routes->get('defaultsB');
+        $this->assertSame(['POST'], $defaultsRoute->getMethods());
+        $this->assertArrayHasKey('attribute', $defaultsRoute->getDefaults());
+        $this->assertFalse($defaultsRoute->getDefault('_stateless'));
+        $this->assertSame('/defaultsB', $defaultsRoute->getPath());
         $this->assertSame('en', $defaultsRoute->getDefault('_locale'));
         $this->assertSame('html', $defaultsRoute->getDefault('_format'));
     }
@@ -292,6 +321,16 @@ class PhpFileLoaderTest extends TestCase
         $this->assertEquals($expectedRoutes('php'), $routes);
     }
 
+    public function testAddingRouteWithHosts()
+    {
+        $loader = new PhpFileLoader(new FileLocator([__DIR__.'/../Fixtures/locale_and_host']));
+        $routes = $loader->load('route-with-hosts.php');
+
+        $expectedRoutes = require __DIR__.'/../Fixtures/locale_and_host/route-with-hosts-expected-collection.php';
+
+        $this->assertEquals($expectedRoutes('php'), $routes);
+    }
+
     public function testImportingAliases()
     {
         $loader = new PhpFileLoader(new FileLocator([__DIR__.'/../Fixtures/alias']));
@@ -302,17 +341,58 @@ class PhpFileLoaderTest extends TestCase
         $this->assertEquals($expectedRoutes('php'), $routes);
     }
 
-    /**
-     * @dataProvider providePsr4ConfigFiles
-     */
+    public function testWhenEnv()
+    {
+        $locator = new FileLocator([__DIR__.'/../Fixtures']);
+        $loader = new PhpFileLoader($locator, 'some-env');
+        $routes = $loader->load('when-env.php');
+
+        $this->assertSame(['b', 'a'], array_keys($routes->all()));
+        $this->assertSame('/b', $routes->get('b')->getPath());
+    }
+
+    public function testLoadsArrayRoutes()
+    {
+        $loader = new PhpFileLoader(new FileLocator([__DIR__.'/../Fixtures']));
+        $routes = $loader->load('array_routes.php');
+        $this->assertSame('/a', $routes->get('a')->getPath());
+        $this->assertSame('/b', $routes->get('b')->getPath());
+        $this->assertSame(['GET'], $routes->get('b')->getMethods());
+    }
+
+    public function testWhenEnvWithArray()
+    {
+        $locator = new FileLocator([__DIR__.'/../Fixtures']);
+        $loader = new PhpFileLoader($locator, 'some-env');
+        $routes = $loader->load('array_when_env.php');
+        $this->assertSame('/a', $routes->get('a')->getPath());
+        $this->assertSame('/x', $routes->get('x')->getPath());
+    }
+
+    public function testYamlImportsAreResolvedWhenProcessingPhpReturnedArrays()
+    {
+        $locator = new FileLocator([__DIR__.'/../Fixtures']);
+        $loader = new PhpFileLoader($locator);
+        $yamlFileLoader = new YamlFileLoader($locator);
+        $loaderResolver = new LoaderResolver([$loader, $yamlFileLoader]);
+        $loader->setResolver($loaderResolver);
+        $yamlFileLoader->setResolver($loaderResolver);
+
+        $routes = $loader->load('importer-php-returns-array.php');
+
+        $this->assertSame('/blog/{slug}', $routes->get('blog_show')->getPath());
+        $this->assertSame('/direct', $routes->get('direct')->getPath());
+    }
+
+    #[DataProvider('providePsr4ConfigFiles')]
     public function testImportAttributesWithPsr4Prefix(string $configFile)
     {
         $locator = new FileLocator(\dirname(__DIR__).'/Fixtures');
         new LoaderResolver([
             $loader = new PhpFileLoader($locator),
             new Psr4DirectoryLoader($locator),
-            new class() extends AnnotationClassLoader {
-                protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, object $annot)
+            new class extends AttributeClassLoader {
+                protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, object $attr): void
                 {
                     $route->setDefault('_controller', $class->getName().'::'.$method->getName());
                 }
@@ -324,7 +404,7 @@ class PhpFileLoaderTest extends TestCase
         $this->assertSame(MyController::class.'::__invoke', $route->getDefault('_controller'));
     }
 
-    public function providePsr4ConfigFiles(): array
+    public static function providePsr4ConfigFiles(): array
     {
         return [
             ['psr4-attributes.php'],
@@ -336,8 +416,8 @@ class PhpFileLoaderTest extends TestCase
     {
         new LoaderResolver([
             $loader = new PhpFileLoader(new FileLocator(\dirname(__DIR__).'/Fixtures')),
-            new class() extends AnnotationClassLoader {
-                protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, object $annot)
+            new class extends AttributeClassLoader {
+                protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, object $attr): void
                 {
                     $route->setDefault('_controller', $class->getName().'::'.$method->getName());
                 }

@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Notifier\Tests\Transport;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Notifier\Exception\InvalidArgumentException;
 use Symfony\Component\Notifier\Exception\MissingRequiredOptionException;
@@ -18,10 +19,8 @@ use Symfony\Component\Notifier\Transport\Dsn;
 
 final class DsnTest extends TestCase
 {
-    /**
-     * @dataProvider constructProvider
-     */
-    public function testConstruct(string $dsnString, string $scheme, string $host, string $user = null, string $password = null, int $port = null, array $options = [], string $path = null)
+    #[DataProvider('constructProvider')]
+    public function testConstruct(string $dsnString, string $scheme, string $host, ?string $user = null, ?string $password = null, ?int $port = null, array $options = [], ?string $path = null)
     {
         $dsn = new Dsn($dsnString);
         $this->assertSame($dsnString, $dsn->getOriginalDsn());
@@ -35,7 +34,7 @@ final class DsnTest extends TestCase
         $this->assertSame($options, $dsn->getOptions());
     }
 
-    public function constructProvider(): iterable
+    public static function constructProvider(): iterable
     {
         yield 'simple dsn' => [
             'scheme://localhost',
@@ -140,9 +139,7 @@ final class DsnTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider invalidDsnProvider
-     */
+    #[DataProvider('invalidDsnProvider')]
     public function testInvalidDsn(string $dsnString, string $exceptionMessage)
     {
         $this->expectException(InvalidArgumentException::class);
@@ -151,35 +148,33 @@ final class DsnTest extends TestCase
         new Dsn($dsnString);
     }
 
-    public function invalidDsnProvider(): iterable
+    public static function invalidDsnProvider(): iterable
     {
         yield [
             'some://',
-            'The "some://" notifier DSN is invalid.',
+            'The notifier DSN is invalid.',
         ];
 
         yield [
             '//slack',
-            'The "//slack" notifier DSN must contain a scheme.',
+            'The notifier DSN must contain a scheme.',
         ];
 
         yield [
             'file:///some/path',
-            'The "file:///some/path" notifier DSN must contain a host (use "default" by default).',
+            'The notifier DSN must contain a host (use "default" by default).',
         ];
     }
 
-    /**
-     * @dataProvider getOptionProvider
-     */
-    public function testGetOption($expected, string $dsnString, string $option, string $default = null)
+    #[DataProvider('getOptionProvider')]
+    public function testGetOption($expected, string $dsnString, string $option, ?string $default = null)
     {
         $dsn = new Dsn($dsnString);
 
         $this->assertSame($expected, $dsn->getOption($option, $default));
     }
 
-    public function getOptionProvider(): iterable
+    public static function getOptionProvider(): iterable
     {
         yield [
             'foo',
@@ -207,17 +202,15 @@ final class DsnTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider getRequiredOptionProvider
-     */
+    #[DataProvider('getRequiredOptionProvider')]
     public function testGetRequiredOption(string $expectedValue, string $options, string $option)
     {
-        $dsn = new Dsn(sprintf('scheme://localhost?%s', $options));
+        $dsn = new Dsn(\sprintf('scheme://localhost?%s', $options));
 
         $this->assertSame($expectedValue, $dsn->getRequiredOption($option));
     }
 
-    public function getRequiredOptionProvider(): iterable
+    public static function getRequiredOptionProvider(): iterable
     {
         yield [
             'value',
@@ -232,12 +225,10 @@ final class DsnTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider getRequiredOptionThrowsMissingRequiredOptionExceptionProvider
-     */
+    #[DataProvider('getRequiredOptionThrowsMissingRequiredOptionExceptionProvider')]
     public function testGetRequiredOptionThrowsMissingRequiredOptionException(string $expectedExceptionMessage, string $options, string $option)
     {
-        $dsn = new Dsn(sprintf('scheme://localhost?%s', $options));
+        $dsn = new Dsn(\sprintf('scheme://localhost?%s', $options));
 
         $this->expectException(MissingRequiredOptionException::class);
         $this->expectExceptionMessage($expectedExceptionMessage);
@@ -245,7 +236,7 @@ final class DsnTest extends TestCase
         $dsn->getRequiredOption($option);
     }
 
-    public function getRequiredOptionThrowsMissingRequiredOptionExceptionProvider(): iterable
+    public static function getRequiredOptionThrowsMissingRequiredOptionExceptionProvider(): iterable
     {
         yield [
             'The option "foo_bar" is required but missing.',
@@ -258,5 +249,28 @@ final class DsnTest extends TestCase
             'with_empty_string=',
             'with_empty_string',
         ];
+    }
+
+    #[DataProvider('getBooleanOptionProvider')]
+    public function testGetBooleanOption(bool $expected, string $dsnString, string $option, bool $default)
+    {
+        $dsn = new Dsn($dsnString);
+
+        $this->assertSame($expected, $dsn->getBooleanOption($option, $default));
+    }
+
+    public static function getBooleanOptionProvider(): iterable
+    {
+        yield [true, 'scheme://localhost?enabled=1', 'enabled', false];
+        yield [true, 'scheme://localhost?enabled=true', 'enabled', false];
+        yield [true, 'scheme://localhost?enabled=on', 'enabled', false];
+        yield [true, 'scheme://localhost?enabled=yes', 'enabled', false];
+        yield [false, 'scheme://localhost?enabled=0', 'enabled', false];
+        yield [false, 'scheme://localhost?enabled=false', 'enabled', false];
+        yield [false, 'scheme://localhost?enabled=off', 'enabled', false];
+        yield [false, 'scheme://localhost?enabled=no', 'enabled', false];
+
+        yield [false, 'scheme://localhost', 'not_existant', false];
+        yield [true, 'scheme://localhost', 'not_existant', true];
     }
 }

@@ -26,6 +26,7 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationFailureHandlerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\PasswordUpgradeBadge;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
@@ -44,20 +45,18 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class JsonLoginAuthenticator implements InteractiveAuthenticatorInterface
 {
     private array $options;
-    private HttpUtils $httpUtils;
-    private UserProviderInterface $userProvider;
     private PropertyAccessorInterface $propertyAccessor;
-    private ?AuthenticationSuccessHandlerInterface $successHandler;
-    private ?AuthenticationFailureHandlerInterface $failureHandler;
     private ?TranslatorInterface $translator = null;
 
-    public function __construct(HttpUtils $httpUtils, UserProviderInterface $userProvider, AuthenticationSuccessHandlerInterface $successHandler = null, AuthenticationFailureHandlerInterface $failureHandler = null, array $options = [], PropertyAccessorInterface $propertyAccessor = null)
-    {
+    public function __construct(
+        private HttpUtils $httpUtils,
+        private UserProviderInterface $userProvider,
+        private ?AuthenticationSuccessHandlerInterface $successHandler = null,
+        private ?AuthenticationFailureHandlerInterface $failureHandler = null,
+        array $options = [],
+        ?PropertyAccessorInterface $propertyAccessor = null,
+    ) {
         $this->options = array_merge(['username_path' => 'username', 'password_path' => 'password'], $options);
-        $this->httpUtils = $httpUtils;
-        $this->successHandler = $successHandler;
-        $this->failureHandler = $failureHandler;
-        $this->userProvider = $userProvider;
         $this->propertyAccessor = $propertyAccessor ?: PropertyAccess::createPropertyAccessor();
     }
 
@@ -65,7 +64,7 @@ class JsonLoginAuthenticator implements InteractiveAuthenticatorInterface
     {
         if (
             !str_contains($request->getRequestFormat() ?? '', 'json')
-            && !str_contains((method_exists(Request::class, 'getContentTypeFormat') ? $request->getContentTypeFormat() : $request->getContentType()) ?? '', 'json')
+            && !str_contains($request->getContentTypeFormat() ?? '', 'json')
         ) {
             return false;
         }
@@ -80,7 +79,12 @@ class JsonLoginAuthenticator implements InteractiveAuthenticatorInterface
     public function authenticate(Request $request): Passport
     {
         try {
-            $credentials = $this->getCredentials($request);
+            $data = json_decode($request->getContent());
+            if (!$data instanceof \stdClass) {
+                throw new BadRequestHttpException('Invalid JSON.');
+            }
+
+            $credentials = $this->getCredentials($data);
         } catch (BadRequestHttpException $e) {
             $request->setRequestFormat('json');
 
@@ -88,7 +92,7 @@ class JsonLoginAuthenticator implements InteractiveAuthenticatorInterface
         }
 
         $userBadge = new UserBadge($credentials['username'], $this->userProvider->loadUserByIdentifier(...));
-        $passport = new Passport($userBadge, new PasswordCredentials($credentials['password']));
+        $passport = new Passport($userBadge, new PasswordCredentials($credentials['password']), [new RememberMeBadge((array) $data)]);
 
         if ($this->userProvider instanceof PasswordUpgraderInterface) {
             $passport->addBadge(new PasswordUpgradeBadge($credentials['password'], $this->userProvider));
@@ -131,41 +135,33 @@ class JsonLoginAuthenticator implements InteractiveAuthenticatorInterface
         return true;
     }
 
-    public function setTranslator(TranslatorInterface $translator)
+    public function setTranslator(TranslatorInterface $translator): void
     {
         $this->translator = $translator;
     }
 
-    private function getCredentials(Request $request)
+    private function getCredentials(\stdClass $data): array
     {
-        $data = json_decode($request->getContent());
-        if (!$data instanceof \stdClass) {
-            throw new BadRequestHttpException('Invalid JSON.');
-        }
-
         $credentials = [];
         try {
             $credentials['username'] = $this->propertyAccessor->getValue($data, $this->options['username_path']);
 
-            if (!\is_string($credentials['username'])) {
-                throw new BadRequestHttpException(sprintf('The key "%s" must be a string.', $this->options['username_path']));
+            if (!\is_string($credentials['username']) || '' === $credentials['username']) {
+                throw new BadRequestHttpException(\sprintf('The key "%s" must be a non-empty string.', $this->options['username_path']));
             }
         } catch (AccessException $e) {
-            throw new BadRequestHttpException(sprintf('The key "%s" must be provided.', $this->options['username_path']), $e);
+            throw new BadRequestHttpException(\sprintf('The key "%s" must be provided.', $this->options['username_path']), $e);
         }
 
         try {
             $credentials['password'] = $this->propertyAccessor->getValue($data, $this->options['password_path']);
+            $this->propertyAccessor->setValue($data, $this->options['password_path'], null);
 
-            if (!\is_string($credentials['password'])) {
-                throw new BadRequestHttpException(sprintf('The key "%s" must be a string.', $this->options['password_path']));
+            if (!\is_string($credentials['password']) || '' === $credentials['password']) {
+                throw new BadRequestHttpException(\sprintf('The key "%s" must be a non-empty string.', $this->options['password_path']));
             }
         } catch (AccessException $e) {
-            throw new BadRequestHttpException(sprintf('The key "%s" must be provided.', $this->options['password_path']), $e);
-        }
-
-        if ('' === $credentials['username'] || '' === $credentials['password']) {
-            trigger_deprecation('symfony/security', '6.2', 'Passing an empty string as username or password parameter is deprecated.');
+            throw new BadRequestHttpException(\sprintf('The key "%s" must be provided.', $this->options['password_path']), $e);
         }
 
         return $credentials;

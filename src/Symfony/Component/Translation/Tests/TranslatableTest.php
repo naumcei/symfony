@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Translation\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\TranslatableMessage;
@@ -18,9 +19,7 @@ use Symfony\Component\Translation\Translator;
 
 class TranslatableTest extends TestCase
 {
-    /**
-     * @dataProvider getTransTests
-     */
+    #[DataProvider('getTransTests')]
     public function testTrans(string $expected, TranslatableMessage $translatable, array $translation, string $locale)
     {
         $translator = new Translator('en');
@@ -30,9 +29,7 @@ class TranslatableTest extends TestCase
         $this->assertSame($expected, $translatable->trans($translator, $locale));
     }
 
-    /**
-     * @dataProvider getFlattenedTransTests
-     */
+    #[DataProvider('getFlattenedTransTests')]
     public function testFlattenedTrans($expected, $messages, $translatable)
     {
         $translator = new Translator('en');
@@ -42,12 +39,7 @@ class TranslatableTest extends TestCase
         $this->assertSame($expected, $translatable->trans($translator, 'fr'));
     }
 
-    public function testToString()
-    {
-        $this->assertSame('Symfony is great!', (string) new TranslatableMessage('Symfony is great!'));
-    }
-
-    public function getTransTests()
+    public static function getTransTests()
     {
         return [
             ['Symfony est super !', new TranslatableMessage('Symfony is great!', [], ''), [
@@ -63,7 +55,7 @@ class TranslatableTest extends TestCase
         ];
     }
 
-    public function getFlattenedTransTests()
+    public static function getFlattenedTransTests()
     {
         $messages = [
             'symfony' => [

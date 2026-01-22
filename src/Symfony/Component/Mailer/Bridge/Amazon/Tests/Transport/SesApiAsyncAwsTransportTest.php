@@ -14,6 +14,7 @@ namespace Symfony\Component\Mailer\Bridge\Amazon\Tests\Transport;
 use AsyncAws\Core\Configuration;
 use AsyncAws\Core\Credentials\NullProvider;
 use AsyncAws\Ses\SesClient;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -26,47 +27,45 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class SesApiAsyncAwsTransportTest extends TestCase
 {
-    /**
-     * @dataProvider getTransportData
-     */
+    #[DataProvider('getTransportData')]
     public function testToString(SesApiAsyncAwsTransport $transport, string $expected)
     {
         $this->assertSame($expected, (string) $transport);
     }
 
-    public function getTransportData()
+    public static function getTransportData()
     {
         return [
             [
-                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY']))),
+                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['sharedConfigFile' => false, 'accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY']))),
                 'ses+api://ACCESS_KEY@us-east-1',
             ],
             [
-                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY', 'region' => 'us-west-1']))),
+                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['sharedConfigFile' => false, 'accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY', 'region' => 'us-west-1']))),
                 'ses+api://ACCESS_KEY@us-west-1',
             ],
             [
-                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY', 'endpoint' => 'https://example.com']))),
+                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['sharedConfigFile' => false, 'accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY', 'endpoint' => 'https://example.com']))),
                 'ses+api://ACCESS_KEY@example.com',
             ],
             [
-                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY', 'endpoint' => 'https://example.com:99']))),
+                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['sharedConfigFile' => false, 'accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY', 'endpoint' => 'https://example.com:99']))),
                 'ses+api://ACCESS_KEY@example.com:99',
             ],
             [
-                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY', 'sessionToken' => 'SESSION_TOKEN']))),
+                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['sharedConfigFile' => false, 'accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY', 'sessionToken' => 'SESSION_TOKEN']))),
                 'ses+api://ACCESS_KEY@us-east-1',
             ],
             [
-                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY', 'region' => 'us-west-1', 'sessionToken' => 'SESSION_TOKEN']))),
+                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['sharedConfigFile' => false, 'accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY', 'region' => 'us-west-1', 'sessionToken' => 'SESSION_TOKEN']))),
                 'ses+api://ACCESS_KEY@us-west-1',
             ],
             [
-                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY', 'endpoint' => 'https://example.com', 'sessionToken' => 'SESSION_TOKEN']))),
+                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['sharedConfigFile' => false, 'accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY', 'endpoint' => 'https://example.com', 'sessionToken' => 'SESSION_TOKEN']))),
                 'ses+api://ACCESS_KEY@example.com',
             ],
             [
-                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY', 'endpoint' => 'https://example.com:99', 'sessionToken' => 'SESSION_TOKEN']))),
+                new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['sharedConfigFile' => false, 'accessKeyId' => 'ACCESS_KEY', 'accessKeySecret' => 'SECRET_KEY', 'endpoint' => 'https://example.com:99', 'sessionToken' => 'SESSION_TOKEN']))),
                 'ses+api://ACCESS_KEY@example.com:99',
             ],
         ];
@@ -91,6 +90,8 @@ class SesApiAsyncAwsTransportTest extends TestCase
             $this->assertSame('aws-source-arn', $content['FromEmailAddressIdentityArn']);
             $this->assertSame('bounces@example.com', $content['FeedbackForwardingEmailAddress']);
             $this->assertSame([['Name' => 'tagName1', 'Value' => 'tag Value1'], ['Name' => 'tagName2', 'Value' => 'tag Value2']], $content['EmailTags']);
+            $this->assertSame(['ContactListName' => 'TestContactList', 'TopicName' => 'TestNewsletter'], $content['ListManagementOptions']);
+            $this->assertSame([['Name' => 'X-Custom-Header', 'Value' => 'foobar']], $content['Content']['Simple']['Headers']);
 
             $json = '{"MessageId": "foobar"}';
 
@@ -99,7 +100,7 @@ class SesApiAsyncAwsTransportTest extends TestCase
             ]);
         });
 
-        $transport = new SesApiAsyncAwsTransport(new SesClient(Configuration::create([]), new NullProvider(), $client));
+        $transport = new SesApiAsyncAwsTransport(new SesClient(Configuration::create(['sharedConfigFile' => false]), new NullProvider(), $client));
 
         $mail = new Email();
         $mail->subject('Hello!')
@@ -113,6 +114,8 @@ class SesApiAsyncAwsTransportTest extends TestCase
 
         $mail->getHeaders()->addTextHeader('X-SES-CONFIGURATION-SET', 'aws-configuration-set-name');
         $mail->getHeaders()->addTextHeader('X-SES-SOURCE-ARN', 'aws-source-arn');
+        $mail->getHeaders()->addTextHeader('X-SES-LIST-MANAGEMENT-OPTIONS', 'contactListName=TestContactList;topicName=TestNewsletter');
+        $mail->getHeaders()->addTextHeader('X-Custom-Header', 'foobar');
         $mail->getHeaders()->add(new MetadataHeader('tagName1', 'tag Value1'));
         $mail->getHeaders()->add(new MetadataHeader('tagName2', 'tag Value2'));
 
@@ -123,7 +126,7 @@ class SesApiAsyncAwsTransportTest extends TestCase
 
     public function testSendThrowsForErrorResponse()
     {
-        $client = new MockHttpClient(function (string $method, string $url, array $options): ResponseInterface {
+        $client = new MockHttpClient(static function (string $method, string $url, array $options): ResponseInterface {
             $json = json_encode([
                 'message' => 'i\'m a teapot',
                 'type' => 'sender',

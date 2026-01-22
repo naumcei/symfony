@@ -14,8 +14,10 @@ namespace Symfony\Component\Messenger\Bridge\Redis\Transport;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\LogicException;
 use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
+use Symfony\Component\Messenger\Exception\TransportException;
+use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
+use Symfony\Component\Messenger\Transport\Receiver\KeepaliveReceiverInterface;
 use Symfony\Component\Messenger\Transport\Receiver\MessageCountAwareInterface;
-use Symfony\Component\Messenger\Transport\Receiver\ReceiverInterface;
 use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 
@@ -23,14 +25,14 @@ use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
  * @author Alexander Schranz <alexander@sulu.io>
  * @author Antoine Bluchet <soyuka@gmail.com>
  */
-class RedisReceiver implements ReceiverInterface, MessageCountAwareInterface
+class RedisReceiver implements KeepaliveReceiverInterface, MessageCountAwareInterface
 {
-    private Connection $connection;
     private SerializerInterface $serializer;
 
-    public function __construct(Connection $connection, SerializerInterface $serializer = null)
-    {
-        $this->connection = $connection;
+    public function __construct(
+        private Connection $connection,
+        ?SerializerInterface $serializer = null,
+    ) {
         $this->serializer = $serializer ?? new PhpSerializer();
     }
 
@@ -40,6 +42,18 @@ class RedisReceiver implements ReceiverInterface, MessageCountAwareInterface
 
         if (null === $message) {
             return [];
+        }
+
+        if (null === $message['data']) {
+            try {
+                $this->connection->reject($message['id']);
+            } catch (TransportException $e) {
+                if ($e->getPrevious()) {
+                    throw $e;
+                }
+            }
+
+            return $this->get();
         }
 
         $redisEnvelope = json_decode($message['data']['message'] ?? '', true);
@@ -63,7 +77,12 @@ class RedisReceiver implements ReceiverInterface, MessageCountAwareInterface
             throw $exception;
         }
 
-        return [$envelope->with(new RedisReceivedStamp($message['id']))];
+        return [$envelope
+            ->withoutAll(TransportMessageIdStamp::class)
+            ->with(
+                new RedisReceivedStamp($message['id']),
+                new TransportMessageIdStamp($message['id'])
+            )];
     }
 
     public function ack(Envelope $envelope): void
@@ -74,6 +93,11 @@ class RedisReceiver implements ReceiverInterface, MessageCountAwareInterface
     public function reject(Envelope $envelope): void
     {
         $this->connection->reject($this->findRedisReceivedStamp($envelope)->getId());
+    }
+
+    public function keepalive(Envelope $envelope, ?int $seconds = null): void
+    {
+        $this->connection->keepalive($this->findRedisReceivedStamp($envelope)->getId(), $seconds);
     }
 
     public function getMessageCount(): int

@@ -11,31 +11,31 @@
 
 namespace Symfony\Component\Lock\Tests\Store;
 
+use AsyncAws\DynamoDb\DynamoDbClient;
 use Doctrine\DBAL\Connection;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\Cache\Adapter\MemcachedAdapter;
+use Symfony\Component\Lock\Bridge\DynamoDb\Store\DynamoDbStore;
 use Symfony\Component\Lock\Store\DoctrineDbalPostgreSqlStore;
 use Symfony\Component\Lock\Store\DoctrineDbalStore;
 use Symfony\Component\Lock\Store\FlockStore;
 use Symfony\Component\Lock\Store\InMemoryStore;
 use Symfony\Component\Lock\Store\MemcachedStore;
-use Symfony\Component\Lock\Store\MongoDbStore;
+use Symfony\Component\Lock\Store\NullStore;
 use Symfony\Component\Lock\Store\PdoStore;
 use Symfony\Component\Lock\Store\PostgreSqlStore;
 use Symfony\Component\Lock\Store\RedisStore;
 use Symfony\Component\Lock\Store\SemaphoreStore;
 use Symfony\Component\Lock\Store\StoreFactory;
-use Symfony\Component\Lock\Store\ZookeeperStore;
 
 /**
  * @author Jérémy Derussé <jeremy@derusse.com>
  */
 class StoreFactoryTest extends TestCase
 {
-    /**
-     * @dataProvider validConnections
-     */
+    #[DataProvider('validConnections')]
     public function testCreateStore($connection, string $expectedStoreClass)
     {
         $store = StoreFactory::createStore($connection);
@@ -43,7 +43,7 @@ class StoreFactoryTest extends TestCase
         $this->assertInstanceOf($expectedStoreClass, $store);
     }
 
-    public function validConnections()
+    public static function validConnections(): \Generator
     {
         if (class_exists(\Redis::class)) {
             yield [new \Redis(), RedisStore::class];
@@ -51,15 +51,6 @@ class StoreFactoryTest extends TestCase
         yield [new \Predis\Client(), RedisStore::class];
         if (class_exists(\Memcached::class)) {
             yield [new \Memcached(), MemcachedStore::class];
-        }
-        if (class_exists(\MongoDB\Collection::class)) {
-            yield [$this->createMock(\MongoDB\Collection::class), MongoDbStore::class];
-            yield ['mongodb://localhost/test?collection=lock', MongoDbStore::class];
-        }
-        if (class_exists(\Zookeeper::class)) {
-            yield [$this->createMock(\Zookeeper::class), ZookeeperStore::class];
-            yield ['zookeeper://localhost:2181', ZookeeperStore::class];
-            yield ['zookeeper://localhost01,localhost02:2181', ZookeeperStore::class];
         }
         if (\extension_loaded('sysvsem')) {
             yield ['semaphore', SemaphoreStore::class];
@@ -98,10 +89,15 @@ class StoreFactoryTest extends TestCase
             yield ['postgres+advisory://server.com/test', DoctrineDbalPostgreSqlStore::class];
             yield ['postgresql+advisory://server.com/test', DoctrineDbalPostgreSqlStore::class];
         }
+        if (class_exists(DynamoDbClient::class)) {
+            yield ['dynamodb://default', DynamoDbStore::class];
+        }
 
         yield ['in-memory', InMemoryStore::class];
 
         yield ['flock', FlockStore::class];
         yield ['flock://'.sys_get_temp_dir(), FlockStore::class];
+
+        yield ['null', NullStore::class];
     }
 }

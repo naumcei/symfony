@@ -27,9 +27,9 @@ class TranslatorBagTest extends TestCase
         $this->assertEquals(['en' => $messages], $this->getAllMessagesFromTranslatorBag($bag));
 
         $messages = ['domain1+intl-icu' => ['foo' => 'bar']] + $messages + [
-                'domain2+intl-icu' => ['bar' => 'foo'],
-                'domain3+intl-icu' => ['biz' => 'biz'],
-            ];
+            'domain2+intl-icu' => ['bar' => 'foo'],
+            'domain3+intl-icu' => ['biz' => 'biz'],
+        ];
         $catalogue = new MessageCatalogue('en', $messages);
 
         $bag = new TranslatorBag();
@@ -52,6 +52,34 @@ class TranslatorBagTest extends TestCase
         $bagA->addCatalogue($catalogueA);
 
         $catalogueB = new MessageCatalogue('en', ['domain1' => ['foo' => 'foo'], 'domain2' => ['baz' => 'baz', 'corge' => 'corge']]);
+
+        $bagB = new TranslatorBag();
+        $bagB->addCatalogue($catalogueB);
+
+        $bagResult = $bagA->diff($bagB);
+
+        $this->assertEquals([
+            'en' => [
+                'domain1' => ['bar' => 'bar'],
+                'domain2' => ['qux' => 'qux'],
+            ],
+        ], $this->getAllMessagesFromTranslatorBag($bagResult));
+    }
+
+    public function testDiffWithIntlDomain()
+    {
+        $catalogueA = new MessageCatalogue('en', [
+            'domain1+intl-icu' => ['foo' => 'foo', 'bar' => 'bar'],
+            'domain2' => ['baz' => 'baz', 'qux' => 'qux'],
+        ]);
+
+        $bagA = new TranslatorBag();
+        $bagA->addCatalogue($catalogueA);
+
+        $catalogueB = new MessageCatalogue('en', [
+            'domain1' => ['foo' => 'foo'],
+            'domain2' => ['baz' => 'baz', 'corge' => 'corge'],
+        ]);
 
         $bagB = new TranslatorBag();
         $bagB->addCatalogue($catalogueB);

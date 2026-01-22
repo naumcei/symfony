@@ -14,19 +14,21 @@ namespace Symfony\Component\Cache\Adapter;
 use Psr\Cache\CacheItemInterface;
 use Symfony\Component\Cache\CacheItem;
 use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\NamespacedPoolInterface;
 
 /**
  * @author Titouan Galopin <galopintitouan@gmail.com>
  */
-class NullAdapter implements AdapterInterface, CacheInterface
+class NullAdapter implements AdapterInterface, CacheInterface, NamespacedPoolInterface, TagAwareAdapterInterface
 {
-    private static $createCacheItem;
+    private static \Closure $createCacheItem;
 
     public function __construct()
     {
         self::$createCacheItem ??= \Closure::bind(
             static function ($key) {
                 $item = new CacheItem();
+                $item->isTaggable = true;
                 $item->key = $key;
                 $item->isHit = false;
 
@@ -37,7 +39,7 @@ class NullAdapter implements AdapterInterface, CacheInterface
         );
     }
 
-    public function get(string $key, callable $callback, float $beta = null, array &$metadata = null): mixed
+    public function get(string $key, callable $callback, ?float $beta = null, ?array &$metadata = null): mixed
     {
         $save = true;
 
@@ -94,6 +96,11 @@ class NullAdapter implements AdapterInterface, CacheInterface
         return $this->deleteItem($key);
     }
 
+    public function withSubNamespace(string $namespace): static
+    {
+        return clone $this;
+    }
+
     private function generateItems(array $keys): \Generator
     {
         $f = self::$createCacheItem;
@@ -101,5 +108,10 @@ class NullAdapter implements AdapterInterface, CacheInterface
         foreach ($keys as $key) {
             yield $key => $f($key);
         }
+    }
+
+    public function invalidateTags(array $tags): bool
+    {
+        return true;
     }
 }

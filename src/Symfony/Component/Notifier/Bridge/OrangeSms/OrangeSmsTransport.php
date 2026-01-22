@@ -24,28 +24,24 @@ final class OrangeSmsTransport extends AbstractTransport
 {
     protected const HOST = 'api.orange.com';
 
-    private string $clientID;
-    private string $clientSecret;
-    private string $from;
-    private ?string $senderName;
-
-    public function __construct(string $clientID, #[\SensitiveParameter] string $clientSecret, string $from, string $senderName = null, HttpClientInterface $client = null, EventDispatcherInterface $dispatcher = null)
-    {
-        $this->clientID = $clientID;
-        $this->clientSecret = $clientSecret;
-        $this->from = $from;
-        $this->senderName = $senderName;
-
+    public function __construct(
+        private string $clientID,
+        #[\SensitiveParameter] private string $clientSecret,
+        private string $from,
+        private ?string $senderName = null,
+        ?HttpClientInterface $client = null,
+        ?EventDispatcherInterface $dispatcher = null,
+    ) {
         parent::__construct($client, $dispatcher);
     }
 
     public function __toString(): string
     {
         if (null !== $this->senderName) {
-            return sprintf('orange-sms://%s?from=%s&sender_name=%s', $this->getEndpoint(), $this->from, $this->senderName);
+            return \sprintf('orange-sms://%s?from=%s&sender_name=%s', $this->getEndpoint(), $this->from, $this->senderName);
         }
 
-        return sprintf('orange-sms://%s?from=%s', $this->getEndpoint(), $this->from);
+        return \sprintf('orange-sms://%s?from=%s', $this->getEndpoint(), $this->from);
     }
 
     public function supports(MessageInterface $message): bool
@@ -60,13 +56,7 @@ final class OrangeSmsTransport extends AbstractTransport
         }
 
         $from = $message->getFrom() ?: $this->from;
-
         $url = 'https://'.$this->getEndpoint().'/smsmessaging/v1/outbound/'.urlencode('tel:'.$from).'/requests';
-        $headers = [
-            'Authorization' => 'Bearer '.$this->getAccessToken(),
-            'Content-Type' => 'application/json',
-        ];
-
         $payload = [
             'outboundSMSMessageRequest' => [
                 'address' => 'tel:'.$message->getPhone(),
@@ -82,7 +72,7 @@ final class OrangeSmsTransport extends AbstractTransport
         }
 
         $response = $this->client->request('POST', $url, [
-            'headers' => $headers,
+            'auth_bearer' => $this->getAccessToken(),
             'json' => $payload,
         ]);
 
@@ -91,7 +81,7 @@ final class OrangeSmsTransport extends AbstractTransport
             $errorMessage = $content['requestError']['serviceException']['messageId'] ?? '';
             $errorInfo = $content['requestError']['serviceException']['text'] ?? '';
 
-            throw new TransportException(sprintf('Unable to send the SMS: "%s" (%s).', $errorMessage, $errorInfo), $response);
+            throw new TransportException(\sprintf('Unable to send the SMS: "%s" (%s).', $errorMessage, $errorInfo), $response);
         }
 
         return new SentMessage($message, (string) $this);

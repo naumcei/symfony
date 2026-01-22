@@ -11,10 +11,11 @@
 
 namespace Symfony\Component\Validator\Tests\Constraints;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Validator\Constraints\Iban;
 use Symfony\Component\Validator\Constraints\IbanValidator;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
-use Symfony\Component\Validator\Mapping\Loader\AnnotationLoader;
+use Symfony\Component\Validator\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 class IbanValidatorTest extends ConstraintValidatorTestCase
@@ -38,9 +39,7 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    /**
-     * @dataProvider getValidIbans
-     */
+    #[DataProvider('getValidIbans')]
     public function testValidIbans($iban)
     {
         $this->validator->validate($iban, new Iban());
@@ -48,11 +47,23 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    public function getValidIbans()
+    #[DataProvider('getValidIbans')]
+    public function testValidIbansWithNewLine(string $iban)
+    {
+        $this->validator->validate($iban."\n", new Iban());
+
+        $this->buildViolation('This is not a valid International Bank Account Number (IBAN).')
+            ->setParameter('{{ value }}', '"'.$iban."\n\"")
+            ->setCode(Iban::INVALID_CHARACTERS_ERROR)
+            ->assertRaised();
+    }
+
+    public static function getValidIbans()
     {
         return [
             ['CH9300762011623852957'], // Switzerland without spaces
             ['CH93  0076 2011 6238 5295 7'], // Switzerland with multiple spaces
+            ['ch93 0076 2011 6238 5295 7'], // Switzerland lower case
 
             // Country list
             // http://www.rbs.co.uk/corporate/international/g0/guide-to-international-business/regulatory-information/iban/iban-example.ashx
@@ -73,9 +84,12 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
             ['CZ65 0800 0000 1920 0014 5399'], // Czech Republic
             ['DK50 0040 0440 1162 43'], // Denmark
             ['EE38 2200 2210 2014 5685'], // Estonia
+            ['FK12 SC98 7654 3210 98'], // Falkland Islands
             ['FO97 5432 0388 8999 44'], // Faroe Islands
             ['FI21 1234 5600 0007 85'], // Finland
             ['FR14 2004 1010 0505 0001 3M02 606'], // France
+            ["FR14\xc2\xa02004\xc2\xa01010\xc2\xa00505\xc2\xa00001\xc2\xa03M02\xc2\xa0606"], // France with non-breaking spaces
+            ["FR14\xe2\x80\xaf2004\xe2\x80\xaf1010\xe2\x80\xaf0505\xe2\x80\xaf0001\xe2\x80\xaf3M02\xe2\x80\xaf606"], // France with narrow non-breaking spaces
             ['GE29 NB00 0000 0101 9049 17'], // Georgia
             ['DE89 3704 0044 0532 0130 00'], // Germany
             ['GI75 NWBK 0000 0000 7099 453'], // Gibraltar
@@ -96,9 +110,11 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
             ['MU17 BOMM 0101 1010 3030 0200 000M UR'], // Mauritius
             ['MD24 AG00 0225 1000 1310 4168'], // Moldova
             ['MC93 2005 2222 1001 1223 3M44 555'], // Monaco
+            ['MN14 0005 0051 6384 7716'], // Mongolia
             ['ME25 5050 0001 2345 6789 51'], // Montenegro
             ['NL39 RABO 0300 0652 64'], // Netherlands
             ['NO93 8601 1117 947'], // Norway
+            ['OM04 0280 0000 1234 5678 901'], // Oman
             ['PK36 SCBL 0000 0011 2345 6702'], // Pakistan
             ['PL60 1020 1026 0000 0422 7020 1111'], // Poland
             ['PT50 0002 0123 1234 5678 9015 4'], // Portugal
@@ -115,6 +131,18 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
             ['TR33 0006 1005 1978 6457 8413 26'], // Turkey
             ['AE07 0331 2345 6789 0123 456'], // UAE
             ['GB12 CPBK 0892 9965 0449 91'], // United Kingdom
+            ['YE09 CBKU 0000 0000 0000 1234 5601 01'], // Yemen
+
+            ['DJ21 0001 0000 0001 5400 0100 186'], // Djibouti
+            ['EG38 0019 0005 0000 0000 2631 8000 2'], // Egypt
+            ['IQ98 NBIQ 8501 2345 6789 012'], // Iraq
+            ['LC55 HEMM 0001 0001 0012 0012 0002 3015'], // Saint Lucia
+            ['LY83 0020 4800 0020 1001 2036 1'], // Libya
+            ['RU02 0445 2560 0407 0281 0412 3456 7890 1'], // Russia
+            ['SC18 SSCB 1101 0000 0000 0000 1497 USD'], // Seychelles
+            ['SD21 2901 0501 2340 01'], // Sudan
+            ['ST23 0002 0000 0289 3557 1014 8'], // Sao Tome and Principe
+            ['SV62 CENR 0000 0000 0000 0070 0025'], // El Salvador
 
             // Extended country list
             // http://www.nordea.com/Our+services/International+products+and+services/Cash+Management/IBAN+countries/908462.html
@@ -126,8 +154,8 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
             ['BR9700360305000010009795493P1'], // Brazil
             ['BR1800000000141455123924100C2'], // Brazil
             ['VG96VPVG0000012345678901'], // British Virgin Islands
-            ['BF1030134020015400945000643'], // Burkina Faso
-            ['BI43201011067444'], // Burundi
+            ['BF42BF0840101300463574000390'], // Burkina Faso
+            ['BI4210000100010000332045181'], // Burundi
             ['CM2110003001000500000605306'], // Cameroon
             ['CV64000300004547069110176'], // Cape Verde
             ['FR7630007000110009970004942'], // Central African Republic
@@ -152,7 +180,7 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
             ['XK051212012345678906'], // Republic of Kosovo
             ['PT50000200000163099310355'], // Sao Tome and Principe
             ['SA0380000000608010167519'], // Saudi Arabia
-            ['SN12K00100152000025690007542'], // Senegal
+            ['SN08SN0100152000048500003035'], // Senegal
             ['TL380080012345678910157'], // Timor-Leste
             ['TN5914207207100707129648'], // Tunisia
             ['TR330006100519786457841326'], // Turkey
@@ -162,15 +190,13 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    /**
-     * @dataProvider getIbansWithInvalidFormat
-     */
+    #[DataProvider('getIbansWithInvalidFormat')]
     public function testIbansWithInvalidFormat($iban)
     {
         $this->assertViolationRaised($iban, Iban::INVALID_FORMAT_ERROR);
     }
 
-    public function getIbansWithInvalidFormat()
+    public static function getIbansWithInvalidFormat()
     {
         return [
             ['AL47 2121 1009 0000 0002 3569 874'], // Albania
@@ -244,13 +270,13 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
             ['BR9700360305000010009795493P11'], // Brazil
             ['BR1800000000141455123924100C21'], // Brazil
             ['VG96VPVG00000123456789011'], // British Virgin Islands
-            ['BF10301340200154009450006431'], // Burkina Faso
+            ['BF1030134020015400945000643'], // Burkina Faso
             ['BI432010110674441'], // Burundi
             ['CM21100030010005000006053061'], // Cameroon
             ['CV640003000045470691101761'], // Cape Verde
             ['FR76300070001100099700049421'], // Central African Republic
             ['CG52300110002021512345678901'], // Congo
-            ['CR05152020010262840661'], // Costa Rica
+            ['CR05A52020010262840661'], // Costa Rica
             ['CR0515202001026284066'], // Costa Rica
             ['DO28BAGR000000012124536113241'], // Dominican Republic
             ['GT82TRAJ010200000012100296901'], // Guatemala
@@ -281,15 +307,13 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    /**
-     * @dataProvider getIbansWithValidFormatButIncorrectChecksum
-     */
+    #[DataProvider('getIbansWithValidFormatButIncorrectChecksum')]
     public function testIbansWithValidFormatButIncorrectChecksum($iban)
     {
         $this->assertViolationRaised($iban, Iban::CHECKSUM_FAILED_ERROR);
     }
 
-    public function getIbansWithValidFormatButIncorrectChecksum()
+    public static function getIbansWithValidFormatButIncorrectChecksum()
     {
         return [
             ['AL47 2121 1009 0000 0002 3569 8742'], // Albania
@@ -357,8 +381,8 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
             ['BR9700360305000010009795493P2'], // Brazil
             ['BR1800000000141455123924100C3'], // Brazil
             ['VG96VPVG0000012345678902'], // British Virgin Islands
-            ['BF1030134020015400945000644'], // Burkina Faso
-            ['BI43201011067445'], // Burundi
+            ['BF41BF0840101300463574000390'], // Burkina Faso
+            ['BI3210000100010000332045181'], // Burundi
             ['CM2110003001000500000605307'], // Cameroon
             ['CV64000300004547069110177'], // Cape Verde
             ['FR7630007000110009970004943'], // Central African Republic
@@ -383,25 +407,29 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
             ['XK051212012345678907'], // Republic of Kosovo
             ['PT50000200000163099310356'], // Sao Tome and Principe
             ['SA0380000000608010167518'], // Saudi Arabia
-            ['SN12K00100152000025690007543'], // Senegal
+            ['SN07SN0100152000048500003035'], // Senegal
             ['TL380080012345678910158'], // Timor-Leste
             ['TN5914207207100707129649'], // Tunisia
             ['TR330006100519786457841327'], // Turkey
             ['UA213223130000026007233566002'], // Ukraine
             ['AE260211000000230064017'], // United Arab Emirates
             ['VA59001123000012345671'], // Vatican City State
+
+            // Checksum digits not between 02 and 98
+            ['FO00 5432 0388 8999 44'], // Faroe Islands
+            ['NL01INGB0001393698'], // Netherlands
+            ['NL01RABO0331811235'], // Netherlands
+            ['RU99 0445 2560 0407 0281 0412 3456 7890 1'], // Russia
         ];
     }
 
-    /**
-     * @dataProvider getUnsupportedCountryCodes
-     */
+    #[DataProvider('getUnsupportedCountryCodes')]
     public function testIbansWithUnsupportedCountryCode($countryCode)
     {
         $this->assertViolationRaised($countryCode.'260211000000230064016', Iban::NOT_SUPPORTED_COUNTRY_CODE_ERROR);
     }
 
-    public function getUnsupportedCountryCodes()
+    public static function getUnsupportedCountryCodes()
     {
         return [
             ['AG'],
@@ -417,9 +445,7 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
         $this->assertViolationRaised('CH930076201162385295]', Iban::INVALID_CHARACTERS_ERROR);
     }
 
-    /**
-     * @dataProvider getIbansWithInvalidCountryCode
-     */
+    #[DataProvider('getIbansWithInvalidCountryCode')]
     public function testIbansWithInvalidCountryCode($iban)
     {
         $this->assertViolationRaised($iban, Iban::INVALID_COUNTRY_CODE_ERROR);
@@ -428,9 +454,9 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
     public function testLoadFromAttribute()
     {
         $classMetadata = new ClassMetadata(IbanDummy::class);
-        (new AnnotationLoader())->loadClassMetadata($classMetadata);
+        (new AttributeLoader())->loadClassMetadata($classMetadata);
 
-        [$constraint] = $classMetadata->properties['iban']->constraints;
+        [$constraint] = $classMetadata->getPropertyMetadata('iban')[0]->getConstraints();
 
         $this->validator->validate('DE89 3704 0044 0532 0130 01', $constraint);
 
@@ -440,7 +466,7 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    public function getIbansWithInvalidCountryCode()
+    public static function getIbansWithInvalidCountryCode()
     {
         return [
             ['0750447346'],
@@ -451,9 +477,7 @@ class IbanValidatorTest extends ConstraintValidatorTestCase
 
     private function assertViolationRaised($iban, $code)
     {
-        $constraint = new Iban([
-            'message' => 'myMessage',
-        ]);
+        $constraint = new Iban(message: 'myMessage');
 
         $this->validator->validate($iban, $constraint);
 

@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Mailer\Tests\Transport;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mailer\Exception\UnsupportedSchemeException;
 use Symfony\Component\Mailer\Transport\Dsn;
@@ -22,32 +23,30 @@ use Symfony\Component\Mailer\Transport\TransportInterface;
 
 final class NativeTransportFactoryTest extends TestCase
 {
-    public static $fakeConfiguration = [];
+    public static array $fakeConfiguration = [];
 
     public static function setUpBeforeClass(): void
     {
-        parent::setUpBeforeClass();
-
         $namespace = str_replace('\\Tests\\', '\\', __NAMESPACE__);
 
         $current = static::class;
 
         $eval = <<<EOT
-namespace $namespace;
+            namespace $namespace;
 
-function ini_get(\$key)
-{
-    \$vals = \\$current::\$fakeConfiguration;
-    return \$vals[\$key] ?? '';
-}
-EOT;
+            function ini_get(\$key)
+            {
+                \$vals = \\$current::\$fakeConfiguration;
+                return \$vals[\$key] ?? '';
+            }
+            EOT;
         eval($eval);
     }
 
     public function testCreateWithNotSupportedScheme()
     {
         $this->expectException(UnsupportedSchemeException::class);
-        $this->expectErrorMessageMatches('#The ".*" scheme is not supported#');
+        $this->expectExceptionMessage('The "sendmail" scheme is not supported');
 
         $sut = new NativeTransportFactory();
         $sut->create(Dsn::fromString('sendmail://default'));
@@ -66,16 +65,14 @@ EOT;
         $sut->create(Dsn::fromString('native://default'));
     }
 
-    public function provideCreateSendmailWithNoHostOrNoPort(): \Generator
+    public static function provideCreateSendmailWithNoHostOrNoPort(): \Generator
     {
         yield ['native://default', '', '', ''];
         yield ['native://default', '', 'localhost', ''];
         yield ['native://default', '', '', '25'];
     }
 
-    /**
-     * @dataProvider provideCreateSendmailWithNoHostOrNoPort
-     */
+    #[DataProvider('provideCreateSendmailWithNoHostOrNoPort')]
     public function testCreateSendmailWithNoHostOrNoPort(string $dsn, string $sendmaiPath, string $smtp, string $smtpPort)
     {
         if ('\\' !== \DIRECTORY_SEPARATOR) {
@@ -95,7 +92,7 @@ EOT;
         $sut->create(Dsn::fromString($dsn));
     }
 
-    public function provideCreate(): \Generator
+    public static function provideCreate(): \Generator
     {
         yield ['native://default', '/usr/sbin/sendmail -t -i', '', '', new SendmailTransport('/usr/sbin/sendmail -t -i')];
 
@@ -113,9 +110,7 @@ EOT;
         }
     }
 
-    /**
-     * @dataProvider provideCreate
-     */
+    #[DataProvider('provideCreate')]
     public function testCreate(string $dsn, string $sendmailPath, string $smtp, string $smtpPort, TransportInterface $expectedTransport)
     {
         self::$fakeConfiguration = [

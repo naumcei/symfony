@@ -14,20 +14,31 @@ namespace Symfony\Component\Validator\Tests\Constraints;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\IdenticalTo;
 use Symfony\Component\Validator\Constraints\IdenticalToValidator;
+use Symfony\Component\Validator\Tests\Constraints\Fixtures\TypedDummy;
+use Symfony\Component\Validator\Tests\IcuCompatibilityTrait;
 
 /**
  * @author Daniel Holmes <daniel@danielholmes.org>
  */
 class IdenticalToValidatorTest extends AbstractComparisonValidatorTestCase
 {
+    use IcuCompatibilityTrait;
+    use InvalidComparisonToValueTestTrait;
+    use ThrowsOnInvalidStringDatesTestTrait;
+    use ValidComparisonToValueTrait;
+
     protected function createValidator(): IdenticalToValidator
     {
         return new IdenticalToValidator();
     }
 
-    protected function createConstraint(array $options = null): Constraint
+    protected static function createConstraint(?array $options = null): Constraint
     {
-        return new IdenticalTo($options);
+        if (null !== $options) {
+            return new IdenticalTo(...$options);
+        }
+
+        return new IdenticalTo();
     }
 
     protected function getErrorCode(): ?string
@@ -35,20 +46,21 @@ class IdenticalToValidatorTest extends AbstractComparisonValidatorTestCase
         return IdenticalTo::NOT_IDENTICAL_ERROR;
     }
 
-    public function provideAllValidComparisons(): array
+    public static function provideAllValidComparisons(): array
     {
-        $this->setDefaultTimezone('UTC');
+        $timezone = date_default_timezone_get();
+        date_default_timezone_set('UTC');
 
         // Don't call addPhp5Dot5Comparisons() automatically, as it does
         // not take care of identical objects
-        $comparisons = $this->provideValidComparisons();
+        $comparisons = self::provideValidComparisons();
 
-        $this->restoreDefaultTimezone();
+        date_default_timezone_set($timezone);
 
         return $comparisons;
     }
 
-    public function provideValidComparisons(): array
+    public static function provideValidComparisons(): array
     {
         $date = new \DateTime('2000-01-01');
         $object = new ComparisonTest_Class(2);
@@ -67,29 +79,59 @@ class IdenticalToValidatorTest extends AbstractComparisonValidatorTestCase
         return $comparisons;
     }
 
-    public function provideValidComparisonsToPropertyPath(): array
+    public static function provideValidComparisonsToPropertyPath(): array
     {
         return [
             [5],
         ];
     }
 
-    public function provideInvalidComparisons(): array
+    public static function provideInvalidComparisons(): array
     {
         return [
             [1, '1', 2, '2', 'int'],
             [2, '2', '2', '"2"', 'string'],
             ['22', '"22"', '333', '"333"', 'string'],
-            [new \DateTime('2001-01-01'), 'Jan 1, 2001, 12:00 AM', new \DateTime('2001-01-01'), 'Jan 1, 2001, 12:00 AM', 'DateTime'],
-            [new \DateTime('2001-01-01'), 'Jan 1, 2001, 12:00 AM', new \DateTime('1999-01-01'), 'Jan 1, 1999, 12:00 AM', 'DateTime'],
+            [new \DateTime('2001-01-01'), self::normalizeIcuSpaces("Jan 1, 2001, 12:00\u{202F}AM"), new \DateTime('2001-01-01'), self::normalizeIcuSpaces("Jan 1, 2001, 12:00\u{202F}AM"), 'DateTime'],
+            [new \DateTime('2001-01-01'), self::normalizeIcuSpaces("Jan 1, 2001, 12:00\u{202F}AM"), new \DateTime('1999-01-01'), self::normalizeIcuSpaces("Jan 1, 1999, 12:00\u{202F}AM"), 'DateTime'],
             [new ComparisonTest_Class(4), '4', new ComparisonTest_Class(5), '5', __NAMESPACE__.'\ComparisonTest_Class'],
         ];
     }
 
-    public function provideComparisonsToNullValueAtPropertyPath()
+    public function testCompareWithNullValueAtPropertyAt()
     {
-        return [
-            [5, '5', false],
-        ];
+        $constraint = $this->createConstraint(['propertyPath' => 'value']);
+        $constraint->message = 'Constraint Message';
+
+        $object = new ComparisonTest_Class(null);
+        $this->setObject($object);
+
+        $this->validator->validate(5, $constraint);
+
+        $this->buildViolation('Constraint Message')
+            ->setParameter('{{ value }}', '5')
+            ->setParameter('{{ compared_value }}', 'null')
+            ->setParameter('{{ compared_value_type }}', 'null')
+            ->setParameter('{{ compared_value_path }}', 'value')
+            ->setCode($this->getErrorCode())
+            ->assertRaised();
+    }
+
+    public function testCompareWithUninitializedPropertyAtPropertyPath()
+    {
+        $this->setObject(new TypedDummy());
+
+        $this->validator->validate(5, $this->createConstraint([
+            'message' => 'Constraint Message',
+            'propertyPath' => 'value',
+        ]));
+
+        $this->buildViolation('Constraint Message')
+            ->setParameter('{{ value }}', '5')
+            ->setParameter('{{ compared_value }}', 'null')
+            ->setParameter('{{ compared_value_type }}', 'null')
+            ->setParameter('{{ compared_value_path }}', 'value')
+            ->setCode($this->getErrorCode())
+            ->assertRaised();
     }
 }

@@ -19,13 +19,10 @@ use Symfony\Component\Notifier\Message\MessageOptionsInterface;
  */
 final class AmazonSnsOptions implements MessageOptionsInterface
 {
-    private array $options = [];
-    private string $recipient;
-
-    public function __construct(string $recipient, array $options = [])
-    {
-        $this->recipient = $recipient;
-        $this->options = $options;
+    public function __construct(
+        private string $recipient,
+        private array $options = [],
+    ) {
     }
 
     public function toArray(): array
@@ -51,7 +48,7 @@ final class AmazonSnsOptions implements MessageOptionsInterface
     }
 
     /**
-     * @see PublishInput::$Subject
+     * @see PublishInput::$subject
      *
      * @return $this
      */
@@ -63,7 +60,7 @@ final class AmazonSnsOptions implements MessageOptionsInterface
     }
 
     /**
-     * @see PublishInput::$MessageStructure
+     * @see PublishInput::$messageStructure
      *
      * @return $this
      */

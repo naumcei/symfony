@@ -13,11 +13,11 @@ namespace Symfony\Component\HttpKernel\Tests\EventListener;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\UriSigner;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\EventListener\FragmentListener;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\HttpKernel\UriSigner;
 
 class FragmentListenerTest extends TestCase
 {
@@ -83,7 +83,7 @@ class FragmentListenerTest extends TestCase
 
         $listener->onKernelRequest($event);
 
-        $this->assertEquals(['foo' => 'bar', '_controller' => 'foo'], $request->attributes->get('_route_params'));
+        $this->assertEquals(['foo' => 'bar', '_controller' => 'foo', '_check_controller_is_allowed' => -1], $request->attributes->get('_route_params'));
         $this->assertFalse($request->query->has('_path'));
     }
 
@@ -114,6 +114,6 @@ class FragmentListenerTest extends TestCase
 
     private function createRequestEvent(Request $request, int $requestType = HttpKernelInterface::MAIN_REQUEST): RequestEvent
     {
-        return new RequestEvent($this->createMock(HttpKernelInterface::class), $request, $requestType);
+        return new RequestEvent($this->createStub(HttpKernelInterface::class), $request, $requestType);
     }
 }

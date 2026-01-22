@@ -21,16 +21,12 @@ use Symfony\Component\HttpFoundation\Session\Flash\FlashBag;
  */
 class FlashBagTest extends TestCase
 {
-    /**
-     * @var \Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface
-     */
-    private $bag;
+    protected array $array = [];
 
-    protected $array = [];
+    private FlashBag $bag;
 
     protected function setUp(): void
     {
-        parent::setUp();
         $this->bag = new FlashBag();
         $this->array = ['notice' => ['A previous flash message']];
         $this->bag->initialize($this->array);
@@ -38,8 +34,7 @@ class FlashBagTest extends TestCase
 
     protected function tearDown(): void
     {
-        $this->bag = null;
-        parent::tearDown();
+        unset($this->bag);
     }
 
     public function testInitialize()
@@ -144,14 +139,14 @@ class FlashBagTest extends TestCase
         $this->assertEquals([
             'notice' => ['Foo'],
             'error' => ['Bar'],
-            ], $this->bag->peekAll()
+        ], $this->bag->peekAll()
         );
         $this->assertTrue($this->bag->has('notice'));
         $this->assertTrue($this->bag->has('error'));
         $this->assertEquals([
             'notice' => ['Foo'],
             'error' => ['Bar'],
-            ], $this->bag->peekAll()
+        ], $this->bag->peekAll()
         );
     }
 }

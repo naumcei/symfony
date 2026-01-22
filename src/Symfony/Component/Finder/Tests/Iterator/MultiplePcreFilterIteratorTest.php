@@ -11,21 +11,20 @@
 
 namespace Symfony\Component\Finder\Tests\Iterator;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\Iterator\MultiplePcreFilterIterator;
 
 class MultiplePcreFilterIteratorTest extends TestCase
 {
-    /**
-     * @dataProvider getIsRegexFixtures
-     */
+    #[DataProvider('getIsRegexFixtures')]
     public function testIsRegex($string, $isRegex, $message)
     {
         $testIterator = new TestMultiplePcreFilterIterator();
         $this->assertEquals($isRegex, $testIterator->isRegex($string), $message);
     }
 
-    public function getIsRegexFixtures()
+    public static function getIsRegexFixtures()
     {
         yield ['foo', false, 'string'];
         yield [' foo ', false, '" " is not a valid delimiter'];
@@ -43,10 +42,7 @@ class MultiplePcreFilterIteratorTest extends TestCase
         yield ['<foo>', true, '"<,>" is a valid delimiter pair'];
         yield ['*foo.*', false, '"*" is not considered as a valid delimiter'];
         yield ['?foo.?', false, '"?" is not considered as a valid delimiter'];
-
-        if (\PHP_VERSION_ID >= 80200) {
-            yield ['/foo/n', true, 'valid regex with the no-capture modifier'];
-        }
+        yield ['/foo/n', true, 'valid regex with the no-capture modifier'];
     }
 }
 

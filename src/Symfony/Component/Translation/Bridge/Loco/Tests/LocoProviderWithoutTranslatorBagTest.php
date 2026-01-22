@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Translation\Bridge\Loco\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -19,21 +20,21 @@ use Symfony\Component\Translation\Loader\LoaderInterface;
 use Symfony\Component\Translation\Loader\XliffFileLoader;
 use Symfony\Component\Translation\Provider\ProviderInterface;
 use Symfony\Component\Translation\TranslatorBag;
+use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class LocoProviderWithoutTranslatorBagTest extends LocoProviderTest
 {
-    public function createProvider(HttpClientInterface $client, LoaderInterface $loader, LoggerInterface $logger, string $defaultLocale, string $endpoint): ProviderInterface
+    public static function createProvider(HttpClientInterface $client, LoaderInterface $loader, LoggerInterface $logger, string $defaultLocale, string $endpoint, ?TranslatorBagInterface $translatorBag = null, ?string $restrictToStatus = null): ProviderInterface
     {
-        return new LocoProvider($client, $loader, $logger, $defaultLocale, $endpoint, null);
+        return new LocoProvider($client, $loader, $logger, $defaultLocale, $endpoint, null, $restrictToStatus);
     }
 
     /**
      * Ensure the Last-Modified is not sent when $translatorBag is null.
-     *
-     * @dataProvider getResponsesForReadWithLastModified
      */
+    #[DataProvider('getResponsesForReadWithLastModified')]
     public function testReadWithLastModified(array $locales, array $domains, array $responseContents, array $lastModifieds, TranslatorBag $expectedTranslatorBag)
     {
         $responses = [];
@@ -59,11 +60,18 @@ class LocoProviderWithoutTranslatorBagTest extends LocoProviderTest
             }
         }
 
+        $this->loader = $this->createMock(LoaderInterface::class);
         $loader = $this->getLoader();
-        $loader->expects($this->exactly(\count($consecutiveLoadArguments) * 2))
+        $consecutiveLoadArguments = array_merge($consecutiveLoadArguments, $consecutiveLoadArguments);
+        $consecutiveLoadReturns = array_merge($consecutiveLoadReturns, $consecutiveLoadReturns);
+
+        $loader->expects($this->exactly(\count($consecutiveLoadArguments)))
             ->method('load')
-            ->withConsecutive(...$consecutiveLoadArguments, ...$consecutiveLoadArguments)
-            ->willReturnOnConsecutiveCalls(...$consecutiveLoadReturns, ...$consecutiveLoadReturns);
+            ->willReturnCallback(function (...$args) use (&$consecutiveLoadArguments, &$consecutiveLoadReturns) {
+                $this->assertSame(array_shift($consecutiveLoadArguments), $args);
+
+                return array_shift($consecutiveLoadReturns);
+            });
 
         $provider = $this->createProvider(
             new MockHttpClient($responses, 'https://localise.biz/api/'),

@@ -1,8 +1,7 @@
 <?php
 
 $container->loadFromExtension('framework', [
-    'http_method_override' => false,
     'validation' => [
-        'email_validation_mode' => 'html5',
+        'email_validation_mode' => 'html5-allow-no-tld',
     ],
 ]);

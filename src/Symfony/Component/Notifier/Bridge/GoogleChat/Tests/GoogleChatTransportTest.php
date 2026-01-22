@@ -12,41 +12,42 @@
 namespace Symfony\Component\Notifier\Bridge\GoogleChat\Tests;
 
 use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\Notifier\Bridge\GoogleChat\GoogleChatOptions;
 use Symfony\Component\Notifier\Bridge\GoogleChat\GoogleChatTransport;
-use Symfony\Component\Notifier\Exception\LogicException;
 use Symfony\Component\Notifier\Exception\TransportException;
+use Symfony\Component\Notifier\Exception\UnsupportedOptionsException;
 use Symfony\Component\Notifier\Message\ChatMessage;
-use Symfony\Component\Notifier\Message\MessageInterface;
 use Symfony\Component\Notifier\Message\MessageOptionsInterface;
 use Symfony\Component\Notifier\Message\SmsMessage;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Test\TransportTestCase;
+use Symfony\Component\Notifier\Tests\Transport\DummyMessage;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 final class GoogleChatTransportTest extends TransportTestCase
 {
-    public function createTransport(HttpClientInterface $client = null, string $threadKey = null): GoogleChatTransport
+    public static function createTransport(?HttpClientInterface $client = null, ?string $threadKey = null): GoogleChatTransport
     {
-        return new GoogleChatTransport('My-Space', 'theAccessKey', 'theAccessToken=', $threadKey, $client ?? $this->createMock(HttpClientInterface::class));
+        return new GoogleChatTransport('My-Space', 'theAccessKey', 'theAccessToken=', $threadKey, $client ?? new MockHttpClient());
     }
 
-    public function toStringProvider(): iterable
+    public static function toStringProvider(): iterable
     {
-        yield ['googlechat://chat.googleapis.com/My-Space', $this->createTransport()];
-        yield ['googlechat://chat.googleapis.com/My-Space?thread_key=abcdefg', $this->createTransport(null, 'abcdefg')];
+        yield ['googlechat://chat.googleapis.com/My-Space', self::createTransport()];
+        yield ['googlechat://chat.googleapis.com/My-Space?thread_key=abcdefg', self::createTransport(null, 'abcdefg')];
     }
 
-    public function supportedMessagesProvider(): iterable
+    public static function supportedMessagesProvider(): iterable
     {
         yield [new ChatMessage('Hello!')];
     }
 
-    public function unsupportedMessagesProvider(): iterable
+    public static function unsupportedMessagesProvider(): iterable
     {
         yield [new SmsMessage('0611223344', 'Hello!')];
-        yield [$this->createMock(MessageInterface::class)];
+        yield [new DummyMessage()];
     }
 
     public function testSendWithEmptyArrayResponseThrowsTransportException()
@@ -55,19 +56,9 @@ final class GoogleChatTransportTest extends TransportTestCase
         $this->expectExceptionMessage('Unable to post the Google Chat message: "[]"');
         $this->expectExceptionCode(500);
 
-        $response = $this->createMock(ResponseInterface::class);
-        $response->expects($this->exactly(2))
-            ->method('getStatusCode')
-            ->willReturn(500);
-        $response->expects($this->once())
-            ->method('getContent')
-            ->willReturn('[]');
+        $client = new MockHttpClient(new MockResponse('[]', ['http_code' => 500]));
 
-        $client = new MockHttpClient(function () use ($response): ResponseInterface {
-            return $response;
-        });
-
-        $transport = $this->createTransport($client);
+        $transport = self::createTransport($client);
 
         $sentMessage = $transport->send(new ChatMessage('testMessage'));
 
@@ -79,19 +70,9 @@ final class GoogleChatTransportTest extends TransportTestCase
         $this->expectException(TransportException::class);
         $this->expectExceptionMessage('API key not valid. Please pass a valid API key.');
 
-        $response = $this->createMock(ResponseInterface::class);
-        $response->expects($this->exactly(2))
-            ->method('getStatusCode')
-            ->willReturn(400);
-        $response->expects($this->once())
-            ->method('getContent')
-            ->willReturn('{"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT"}}');
+        $client = new MockHttpClient(new MockResponse('{"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT"}}', ['http_code' => 400]));
 
-        $client = new MockHttpClient(function () use ($response): ResponseInterface {
-            return $response;
-        });
-
-        $transport = $this->createTransport($client);
+        $transport = self::createTransport($client);
 
         $sentMessage = $transport->send(new ChatMessage('testMessage'));
 
@@ -102,27 +83,17 @@ final class GoogleChatTransportTest extends TransportTestCase
     {
         $message = 'testMessage';
 
-        $response = $this->createMock(ResponseInterface::class);
+        $expectedBody = json_encode(['text' => $message, 'thread' => ['threadKey' => 'My-Thread']]);
 
-        $response->expects($this->exactly(2))
-            ->method('getStatusCode')
-            ->willReturn(200);
-
-        $response->expects($this->once())
-            ->method('getContent')
-            ->willReturn('{"name":"spaces/My-Space/messages/abcdefg.hijklmno"}');
-
-        $expectedBody = json_encode(['text' => $message]);
-
-        $client = new MockHttpClient(function (string $method, string $url, array $options = []) use ($response, $expectedBody): ResponseInterface {
+        $client = new MockHttpClient(function (string $method, string $url, array $options = []) use ($expectedBody): ResponseInterface {
             $this->assertSame('POST', $method);
-            $this->assertSame('https://chat.googleapis.com/v1/spaces/My-Space/messages?key=theAccessKey&token=theAccessToken%3D&threadKey=My-Thread', $url);
+            $this->assertSame('https://chat.googleapis.com/v1/spaces/My-Space/messages?key=theAccessKey&token=theAccessToken%3D&messageReplyOption=REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD', $url);
             $this->assertSame($expectedBody, $options['body']);
 
-            return $response;
+            return new MockResponse('{"name":"spaces/My-Space/messages/abcdefg.hijklmno"}');
         });
 
-        $transport = $this->createTransport($client, 'My-Thread');
+        $transport = self::createTransport($client, 'My-Thread');
 
         $sentMessage = $transport->send(new ChatMessage('testMessage'));
 
@@ -131,16 +102,6 @@ final class GoogleChatTransportTest extends TransportTestCase
 
     public function testSendWithNotification()
     {
-        $response = $this->createMock(ResponseInterface::class);
-
-        $response->expects($this->exactly(2))
-            ->method('getStatusCode')
-            ->willReturn(200);
-
-        $response->expects($this->once())
-            ->method('getContent')
-            ->willReturn('{"name":"spaces/My-Space/messages/abcdefg.hijklmno","thread":{"name":"spaces/My-Space/threads/abcdefg.hijklmno"}}');
-
         $notification = new Notification('testMessage');
         $chatMessage = ChatMessage::fromNotification($notification);
 
@@ -148,13 +109,13 @@ final class GoogleChatTransportTest extends TransportTestCase
             'text' => ' *testMessage* ',
         ]);
 
-        $client = new MockHttpClient(function (string $method, string $url, array $options = []) use ($response, $expectedBody): ResponseInterface {
+        $client = new MockHttpClient(function (string $method, string $url, array $options = []) use ($expectedBody): ResponseInterface {
             $this->assertSame($expectedBody, $options['body']);
 
-            return $response;
+            return new MockResponse('{"name":"spaces/My-Space/messages/abcdefg.hijklmno","thread":{"name":"spaces/My-Space/threads/abcdefg.hijklmno"}}');
         });
 
-        $transport = $this->createTransport($client);
+        $transport = self::createTransport($client);
 
         $sentMessage = $transport->send($chatMessage);
 
@@ -163,16 +124,15 @@ final class GoogleChatTransportTest extends TransportTestCase
 
     public function testSendWithInvalidOptions()
     {
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The "'.GoogleChatTransport::class.'" transport only supports instances of "'.GoogleChatOptions::class.'" for options.');
+        $options = $this->createStub(MessageOptionsInterface::class);
+        $this->expectException(UnsupportedOptionsException::class);
+        $this->expectExceptionMessage(\sprintf('The "%s" transport only supports instances of "%s" for options (instance of "%s" given).', GoogleChatTransport::class, GoogleChatOptions::class, get_debug_type($options)));
 
-        $client = new MockHttpClient(function (string $method, string $url, array $options = []): ResponseInterface {
-            return $this->createMock(ResponseInterface::class);
-        });
+        $client = new MockHttpClient(new MockResponse());
 
-        $transport = $this->createTransport($client);
+        $transport = self::createTransport($client);
 
-        $transport->send(new ChatMessage('testMessage', $this->createMock(MessageOptionsInterface::class)));
+        $transport->send(new ChatMessage('testMessage', $options));
     }
 
     public function testSendWith200ResponseButNotOk()
@@ -181,25 +141,15 @@ final class GoogleChatTransportTest extends TransportTestCase
 
         $this->expectException(TransportException::class);
 
-        $response = $this->createMock(ResponseInterface::class);
-
-        $response->expects($this->exactly(2))
-            ->method('getStatusCode')
-            ->willReturn(200);
-
-        $response->expects($this->once())
-            ->method('getContent')
-            ->willReturn('testErrorCode');
-
         $expectedBody = json_encode(['text' => $message]);
 
-        $client = new MockHttpClient(function (string $method, string $url, array $options = []) use ($response, $expectedBody): ResponseInterface {
+        $client = new MockHttpClient(function (string $method, string $url, array $options = []) use ($expectedBody): ResponseInterface {
             $this->assertSame($expectedBody, $options['body']);
 
-            return $response;
+            return new MockResponse('testErrorCode');
         });
 
-        $transport = $this->createTransport($client);
+        $transport = self::createTransport($client);
 
         $sentMessage = $transport->send(new ChatMessage('testMessage'));
 

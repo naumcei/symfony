@@ -11,7 +11,6 @@
 
 namespace Symfony\Component\Workflow\Dumper;
 
-use InvalidArgumentException;
 use Symfony\Component\Workflow\Definition;
 use Symfony\Component\Workflow\Marking;
 use Symfony\Component\Workflow\Metadata\MetadataStoreInterface;
@@ -52,17 +51,15 @@ class PlantUmlDumper implements DumperInterface
         ],
     ];
 
-    private string $transitionType = self::STATEMACHINE_TRANSITION;
-
-    public function __construct(string $transitionType)
-    {
+    public function __construct(
+        private string $transitionType,
+    ) {
         if (!\in_array($transitionType, self::TRANSITION_TYPES, true)) {
-            throw new InvalidArgumentException("Transition type '$transitionType' does not exist.");
+            throw new \InvalidArgumentException("Transition type '$transitionType' does not exist.");
         }
-        $this->transitionType = $transitionType;
     }
 
-    public function dump(Definition $definition, Marking $marking = null, array $options = []): string
+    public function dump(Definition $definition, ?Marking $marking = null, array $options = []): string
     {
         $options = array_replace_recursive(self::DEFAULT_OPTIONS, $options);
 
@@ -81,10 +78,10 @@ class PlantUmlDumper implements DumperInterface
         }
         foreach ($definition->getTransitions() as $transition) {
             $transitionEscaped = $this->escape($transition->getName());
-            foreach ($transition->getFroms() as $from) {
-                $fromEscaped = $this->escape($from);
-                foreach ($transition->getTos() as $to) {
-                    $toEscaped = $this->escape($to);
+            foreach ($transition->getFroms(true) as $fromArc) {
+                $fromEscaped = $this->escape($fromArc->place);
+                foreach ($transition->getTos(true) as $toArc) {
+                    $toEscaped = $this->escape($toArc->place);
 
                     $transitionEscapedWithStyle = $this->getTransitionEscapedWithStyle($workflowMetadata, $transition, $transitionEscaped);
 
@@ -118,7 +115,7 @@ class PlantUmlDumper implements DumperInterface
             }
         }
 
-        return $this->startPuml($options).$this->getLines($code).$this->endPuml($options);
+        return $this->startPuml().$this->getLines($code).$this->endPuml();
     }
 
     private function isWorkflowTransitionType(): bool
@@ -126,15 +123,12 @@ class PlantUmlDumper implements DumperInterface
         return self::WORKFLOW_TRANSITION === $this->transitionType;
     }
 
-    private function startPuml(array $options): string
+    private function startPuml(): string
     {
-        $start = '@startuml'.\PHP_EOL;
-        $start .= 'allow_mixing'.\PHP_EOL;
-
-        return $start;
+        return '@startuml'.\PHP_EOL.'allow_mixing'.\PHP_EOL;
     }
 
-    private function endPuml(array $options): string
+    private function endPuml(): string
     {
         return \PHP_EOL.'@enduml';
     }
@@ -192,11 +186,11 @@ class PlantUmlDumper implements DumperInterface
         return '"'.str_replace('"', '', $string).'"';
     }
 
-    private function getState(string $place, Definition $definition, Marking $marking = null): string
+    private function getState(string $place, Definition $definition, ?Marking $marking = null): string
     {
         $workflowMetadata = $definition->getMetadataStore();
 
-        $placeEscaped = $this->escape($place);
+        $placeEscaped = str_replace("\n", ' ', $this->escape($place));
 
         $output = "state $placeEscaped".
             (\in_array($place, $definition->getInitialPlaces(), true) ? ' '.self::INITIAL : '').
@@ -209,9 +203,9 @@ class PlantUmlDumper implements DumperInterface
 
         $description = $workflowMetadata->getMetadata('description', $place);
         if (null !== $description) {
-            $output .= ' as '.$place.
-                \PHP_EOL.
-                $place.' : '.$description;
+            foreach (array_filter(explode("\n", $description)) as $line) {
+                $output .= "\n".$placeEscaped.' : '.$line;
+            }
         }
 
         return $output;
@@ -220,11 +214,18 @@ class PlantUmlDumper implements DumperInterface
     private function getTransitionEscapedWithStyle(MetadataStoreInterface $workflowMetadata, Transition $transition, string $to): string
     {
         $to = $workflowMetadata->getMetadata('label', $transition) ?? $to;
+        // Change new lines symbols to actual '\n' string,
+        // PUML will render them as new lines
+        $to = str_replace("\n", '\n', $to);
 
         $color = $workflowMetadata->getMetadata('color', $transition) ?? null;
 
         if (null !== $color) {
-            $to = sprintf(
+            // Close and open <font> before and after every '\n' string,
+            // so that the style is applied properly on every line
+            $to = str_replace('\n', \sprintf('</font>\n<font color=%1$s>', $color), $to);
+
+            $to = \sprintf(
                 '<font color=%1$s>%2$s</font>',
                 $color,
                 $to
@@ -241,7 +242,7 @@ class PlantUmlDumper implements DumperInterface
             $color = '#'.$color;
         }
 
-        return sprintf('[%s]', $color);
+        return \sprintf('[%s]', $color);
     }
 
     private function getColorId(string $color): string

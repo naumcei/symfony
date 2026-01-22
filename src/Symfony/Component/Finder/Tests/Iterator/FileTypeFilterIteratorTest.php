@@ -11,13 +11,12 @@
 
 namespace Symfony\Component\Finder\Tests\Iterator;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Finder\Iterator\FileTypeFilterIterator;
 
 class FileTypeFilterIteratorTest extends RealIteratorTestCase
 {
-    /**
-     * @dataProvider getAcceptData
-     */
+    #[DataProvider('getAcceptData')]
     public function testAccept($mode, $expected)
     {
         $inner = new InnerTypeIterator(self::$files);
@@ -27,7 +26,7 @@ class FileTypeFilterIteratorTest extends RealIteratorTestCase
         $this->assertIterator($expected, $iterator);
     }
 
-    public function getAcceptData()
+    public static function getAcceptData()
     {
         $onlyFiles = [
             'test.py',
@@ -59,8 +58,8 @@ class FileTypeFilterIteratorTest extends RealIteratorTestCase
         ];
 
         return [
-            [FileTypeFilterIterator::ONLY_FILES, $this->toAbsolute($onlyFiles)],
-            [FileTypeFilterIterator::ONLY_DIRECTORIES, $this->toAbsolute($onlyDirectories)],
+            [FileTypeFilterIterator::ONLY_FILES, self::toAbsolute($onlyFiles)],
+            [FileTypeFilterIterator::ONLY_DIRECTORIES, self::toAbsolute($onlyDirectories)],
         ];
     }
 }

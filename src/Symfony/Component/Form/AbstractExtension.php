@@ -50,7 +50,7 @@ abstract class AbstractExtension implements FormExtensionInterface
         }
 
         if (!isset($this->types[$name])) {
-            throw new InvalidArgumentException(sprintf('The type "%s" cannot be loaded by this extension.', $name));
+            throw new InvalidArgumentException(\sprintf('The type "%s" cannot be loaded by this extension.', $name));
         }
 
         return $this->types[$name];
@@ -98,7 +98,7 @@ abstract class AbstractExtension implements FormExtensionInterface
      *
      * @return FormTypeInterface[]
      */
-    protected function loadTypes()
+    protected function loadTypes(): array
     {
         return [];
     }
@@ -115,10 +115,8 @@ abstract class AbstractExtension implements FormExtensionInterface
 
     /**
      * Registers the type guesser.
-     *
-     * @return FormTypeGuesserInterface|null
      */
-    protected function loadTypeGuesser()
+    protected function loadTypeGuesser(): ?FormTypeGuesserInterface
     {
         return null;
     }
@@ -128,7 +126,7 @@ abstract class AbstractExtension implements FormExtensionInterface
      *
      * @throws UnexpectedTypeException if any registered type is not an instance of FormTypeInterface
      */
-    private function initTypes()
+    private function initTypes(): void
     {
         $this->types = [];
 
@@ -147,7 +145,7 @@ abstract class AbstractExtension implements FormExtensionInterface
      * @throws UnexpectedTypeException if any registered type extension is not
      *                                 an instance of FormTypeExtensionInterface
      */
-    private function initTypeExtensions()
+    private function initTypeExtensions(): void
     {
         $this->typeExtensions = [];
 
@@ -167,7 +165,7 @@ abstract class AbstractExtension implements FormExtensionInterface
      *
      * @throws UnexpectedTypeException if the type guesser is not an instance of FormTypeGuesserInterface
      */
-    private function initTypeGuesser()
+    private function initTypeGuesser(): void
     {
         $this->typeGuesserLoaded = true;
 

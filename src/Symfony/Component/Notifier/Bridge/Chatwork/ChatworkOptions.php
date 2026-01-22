@@ -18,11 +18,9 @@ use Symfony\Component\Notifier\Message\MessageOptionsInterface;
  */
 class ChatworkOptions implements MessageOptionsInterface
 {
-    private array $options;
-
-    public function __construct(array $options = [])
-    {
-        $this->options = $options;
+    public function __construct(
+        private array $options = [],
+    ) {
     }
 
     public function toArray(): array
@@ -32,9 +30,12 @@ class ChatworkOptions implements MessageOptionsInterface
 
     public function getRecipientId(): ?string
     {
-        return '';
+        return null;
     }
 
+    /**
+     * @return $this
+     */
     public function to(array|string $userIds): static
     {
         $this->options['to'] = $userIds;
@@ -42,6 +43,9 @@ class ChatworkOptions implements MessageOptionsInterface
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function selfUnread(bool $selfUnread): static
     {
         $this->options['selfUnread'] = $selfUnread;

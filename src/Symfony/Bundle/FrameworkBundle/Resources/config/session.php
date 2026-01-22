@@ -69,6 +69,11 @@ return static function (ContainerConfigurator $container) {
 
         ->alias(\SessionHandlerInterface::class, 'session.handler')
 
+        ->set('session.handler.native', StrictSessionHandler::class)
+            ->args([
+                inline_service(\SessionHandler::class),
+            ])
+
         ->set('session.handler.native_file', StrictSessionHandler::class)
             ->args([
                 inline_service(NativeFileSessionHandler::class)
@@ -85,6 +90,7 @@ return static function (ContainerConfigurator $container) {
                     'session_factory' => service('session.factory')->ignoreOnInvalid(),
                     'logger' => service('logger')->ignoreOnInvalid(),
                     'session_collector' => service('data_collector.request.session_collector')->ignoreOnInvalid(),
+                    'request_stack' => service('request_stack')->ignoreOnInvalid(),
                 ]),
                 param('kernel.debug'),
                 param('session.storage.options'),

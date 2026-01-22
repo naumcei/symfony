@@ -41,8 +41,8 @@ class ProjectServiceContainer extends Container
      *
      * @return \Symfony\Component\DependencyInjection\Tests\Fixtures\NewInInitializer
      */
-    protected function getFooService()
+    protected static function getFooService($container)
     {
-        return $this->services['foo'] = new \Symfony\Component\DependencyInjection\Tests\Fixtures\NewInInitializer(bar: 234);
+        return $container->services['foo'] = new \Symfony\Component\DependencyInjection\Tests\Fixtures\NewInInitializer(bar: 234);
     }
 }

@@ -13,20 +13,15 @@ namespace Symfony\Component\HttpKernel\Tests\Controller\ArgumentResolver;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Exception\RuntimeException;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\HttpKernel\DependencyInjection\RegisterControllerArgumentLocatorsPass;
+use Symfony\Component\HttpKernel\Exception\NearMissValueResolverException;
 
 class ServiceValueResolverTest extends TestCase
 {
-    /**
-     * In Symfony 7, keep this test case but remove the call to supports().
-     *
-     * @group legacy
-     */
     public function testDoNotSupportWhenControllerDoNotExists()
     {
         $resolver = new ServiceValueResolver(new ServiceLocator([]));
@@ -34,19 +29,14 @@ class ServiceValueResolverTest extends TestCase
         $request = $this->requestWithAttributes(['_controller' => 'my_controller']);
 
         $this->assertSame([], $resolver->resolve($request, $argument));
-        $this->assertFalse($resolver->supports($request, $argument));
     }
 
     public function testExistingController()
     {
         $resolver = new ServiceValueResolver(new ServiceLocator([
-            'App\\Controller\\Mine::method' => function () {
-                return new ServiceLocator([
-                    'dummy' => function () {
-                        return new DummyService();
-                    },
-                ]);
-            },
+            'App\\Controller\\Mine::method' => static fn () => new ServiceLocator([
+                'dummy' => static fn () => new DummyService(),
+            ]),
         ]));
 
         $request = $this->requestWithAttributes(['_controller' => 'App\\Controller\\Mine::method']);
@@ -58,13 +48,9 @@ class ServiceValueResolverTest extends TestCase
     public function testExistingControllerWithATrailingBackSlash()
     {
         $resolver = new ServiceValueResolver(new ServiceLocator([
-            'App\\Controller\\Mine::method' => function () {
-                return new ServiceLocator([
-                    'dummy' => function () {
-                        return new DummyService();
-                    },
-                ]);
-            },
+            'App\\Controller\\Mine::method' => static fn () => new ServiceLocator([
+                'dummy' => static fn () => new DummyService(),
+            ]),
         ]));
 
         $request = $this->requestWithAttributes(['_controller' => '\\App\\Controller\\Mine::method']);
@@ -76,13 +62,9 @@ class ServiceValueResolverTest extends TestCase
     public function testExistingControllerWithMethodNameStartUppercase()
     {
         $resolver = new ServiceValueResolver(new ServiceLocator([
-            'App\\Controller\\Mine::method' => function () {
-                return new ServiceLocator([
-                    'dummy' => function () {
-                        return new DummyService();
-                    },
-                ]);
-            },
+            'App\\Controller\\Mine::method' => static fn () => new ServiceLocator([
+                'dummy' => static fn () => new DummyService(),
+            ]),
         ]));
         $request = $this->requestWithAttributes(['_controller' => 'App\\Controller\\Mine::Method']);
         $argument = new ArgumentMetadata('dummy', DummyService::class, false, false, null);
@@ -93,13 +75,9 @@ class ServiceValueResolverTest extends TestCase
     public function testControllerNameIsAnArray()
     {
         $resolver = new ServiceValueResolver(new ServiceLocator([
-            'App\\Controller\\Mine::method' => function () {
-                return new ServiceLocator([
-                    'dummy' => function () {
-                        return new DummyService();
-                    },
-                ]);
-            },
+            'App\\Controller\\Mine::method' => static fn () => new ServiceLocator([
+                'dummy' => static fn () => new DummyService(),
+            ]),
         ]));
 
         $request = $this->requestWithAttributes(['_controller' => ['App\\Controller\\Mine', 'method']]);
@@ -110,8 +88,8 @@ class ServiceValueResolverTest extends TestCase
 
     public function testErrorIsTruncated()
     {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Cannot autowire argument $dummy of "Symfony\Component\HttpKernel\Tests\Controller\ArgumentResolver\DummyController::index()": it references class "Symfony\Component\HttpKernel\Tests\Controller\ArgumentResolver\DummyService" but no such service exists.');
+        $this->expectException(NearMissValueResolverException::class);
+        $this->expectExceptionMessage('Cannot autowire argument $dummy required by "Symfony\Component\HttpKernel\Tests\Controller\ArgumentResolver\DummyController::index()": it references class "Symfony\Component\HttpKernel\Tests\Controller\ArgumentResolver\DummyService" but no such service exists.');
         $container = new ContainerBuilder();
         $container->addCompilerPass(new RegisterControllerArgumentLocatorsPass());
 

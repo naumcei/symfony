@@ -1,6 +1,26 @@
 CHANGELOG
 =========
 
+8.1
+---
+
+ * Add `SemaphoreKeyNormalizer`
+
+7.4
+---
+
+ * RedisStore uses `EVALSHA` over `EVAL` when evaluating LUA scripts
+
+7.3
+---
+
+ * Add support for `valkey:` / `valkeys:` schemes
+
+6.3
+---
+
+ * Add support for Relay PHP extension for Redis
+
 5.3
 ---
 

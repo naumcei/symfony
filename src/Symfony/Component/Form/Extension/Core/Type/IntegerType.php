@@ -20,19 +20,19 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class IntegerType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addViewTransformer(new IntegerToLocalizedStringTransformer($options['grouping'], $options['rounding_mode'], !$options['grouping'] ? 'en' : null));
     }
 
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         if ($options['grouping']) {
             $view->vars['type'] = 'text';
         }
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'grouping' => false,

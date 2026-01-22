@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Ldap\Tests;
 
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Ldap\Adapter\AdapterInterface;
@@ -21,11 +22,8 @@ use Symfony\Component\Ldap\Ldap;
 
 class LdapTest extends TestCase
 {
-    /** @var MockObject&AdapterInterface */
-    private $adapter;
-
-    /** @var Ldap */
-    private $ldap;
+    private MockObject&AdapterInterface $adapter;
+    private Ldap $ldap;
 
     protected function setUp(): void
     {
@@ -72,9 +70,7 @@ class LdapTest extends TestCase
         $this->ldap->query('foo', 'bar', ['baz']);
     }
 
-    /**
-     * @requires extension ldap
-     */
+    #[RequiresPhpExtension('ldap')]
     public function testLdapCreate()
     {
         $ldap = Ldap::create('ext_ldap');

@@ -11,19 +11,14 @@
 
 namespace Symfony\Component\Cache\Tests\Adapter;
 
-/**
- * @group integration
- */
-class PredisClusterAdapterTest extends AbstractRedisAdapterTest
+use PHPUnit\Framework\Attributes\Group;
+
+#[Group('integration')]
+class PredisClusterAdapterTest extends AbstractRedisAdapterTestCase
 {
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
         self::$redis = new \Predis\Client(array_combine(['host', 'port'], explode(':', getenv('REDIS_HOST')) + [1 => 6379]), ['prefix' => 'prefix_']);
-    }
-
-    public static function tearDownAfterClass(): void
-    {
-        self::$redis = null;
     }
 }

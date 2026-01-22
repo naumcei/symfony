@@ -11,15 +11,15 @@
 
 namespace Symfony\Component\Cache\Tests\Adapter;
 
-use PHPUnit\Framework\SkippedTestSuiteError;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\AbstractAdapter;
 use Symfony\Component\Cache\Adapter\MemcachedAdapter;
 use Symfony\Component\Cache\Exception\CacheException;
 
-/**
- * @group integration
- */
+#[Group('integration')]
 class MemcachedAdapterTest extends AdapterTestCase
 {
     protected $skippedTests = [
@@ -28,23 +28,23 @@ class MemcachedAdapterTest extends AdapterTestCase
         'testClearPrefix' => 'Memcached cannot clear by prefix',
     ];
 
-    protected static $client;
+    protected static \Memcached $client;
 
     public static function setUpBeforeClass(): void
     {
         if (!MemcachedAdapter::isSupported()) {
-            throw new SkippedTestSuiteError('Extension memcached > 3.1.5 required.');
+            self::markTestSkipped('Extension memcached > 3.1.5 required.');
         }
         self::$client = AbstractAdapter::createConnection('memcached://'.getenv('MEMCACHED_HOST'), ['binary_protocol' => false]);
         self::$client->get('foo');
         $code = self::$client->getResultCode();
 
         if (\Memcached::RES_SUCCESS !== $code && \Memcached::RES_NOTFOUND !== $code) {
-            throw new SkippedTestSuiteError('Memcached error: '.strtolower(self::$client->getResultMessage()));
+            self::markTestSkipped('Memcached error: '.strtolower(self::$client->getResultMessage()));
         }
     }
 
-    public function createCachePool(int $defaultLifetime = 0, string $testMethod = null, string $namespace = null): CacheItemPoolInterface
+    public function createCachePool(int $defaultLifetime = 0, ?string $testMethod = null, ?string $namespace = null): CacheItemPoolInterface
     {
         $client = $defaultLifetime ? AbstractAdapter::createConnection('memcached://'.getenv('MEMCACHED_HOST')) : self::$client;
 
@@ -68,9 +68,7 @@ class MemcachedAdapterTest extends AdapterTestCase
         $this->assertSame(\Memcached::DISTRIBUTION_MODULA, $client->getOption(\Memcached::OPT_DISTRIBUTION));
     }
 
-    /**
-     * @dataProvider provideBadOptions
-     */
+    #[DataProvider('provideBadOptions')]
     public function testBadOptions($name, $value)
     {
         $this->expectException(\Error::class);
@@ -79,7 +77,7 @@ class MemcachedAdapterTest extends AdapterTestCase
         MemcachedAdapter::createConnection([], [$name => $value]);
     }
 
-    public function provideBadOptions(): array
+    public static function provideBadOptions(): array
     {
         return [
             ['hash', 'zyx'],
@@ -102,18 +100,17 @@ class MemcachedAdapterTest extends AdapterTestCase
 
     public function testOptionSerializer()
     {
-        $this->expectException(CacheException::class);
-        $this->expectExceptionMessage('MemcachedAdapter: "serializer" option must be "php" or "igbinary".');
         if (!\Memcached::HAVE_JSON) {
             $this->markTestSkipped('Memcached::HAVE_JSON required');
         }
 
+        $this->expectException(CacheException::class);
+        $this->expectExceptionMessage('MemcachedAdapter: "serializer" option must be "php" or "igbinary".');
+
         new MemcachedAdapter(MemcachedAdapter::createConnection([], ['serializer' => 'json']));
     }
 
-    /**
-     * @dataProvider provideServersSetting
-     */
+    #[DataProvider('provideServersSetting')]
     public function testServersSetting(string $dsn, string $host, int $port)
     {
         $client1 = MemcachedAdapter::createConnection($dsn);
@@ -124,13 +121,13 @@ class MemcachedAdapterTest extends AdapterTestCase
             'port' => $port,
         ];
 
-        $f = function ($s) { return ['host' => $s['host'], 'port' => $s['port']]; };
+        $f = static fn ($s) => ['host' => $s['host'], 'port' => $s['port']];
         $this->assertSame([$expect], array_map($f, $client1->getServerList()));
         $this->assertSame([$expect], array_map($f, $client2->getServerList()));
         $this->assertSame([$expect], array_map($f, $client3->getServerList()));
     }
 
-    public function provideServersSetting(): iterable
+    public static function provideServersSetting(): iterable
     {
         yield [
             'memcached://127.0.0.1/50',
@@ -168,34 +165,26 @@ class MemcachedAdapterTest extends AdapterTestCase
         }
     }
 
-    /**
-     * @dataProvider provideDsnWithOptions
-     */
-    public function testDsnWithOptions(string $dsn, array $options, array $expectedOptions)
+    #[RequiresPhpExtension('memcached')]
+    public function testOptionsFromDsnWinOverAdditionallyPassedOptions()
     {
-        $client = MemcachedAdapter::createConnection($dsn, $options);
+        $client = MemcachedAdapter::createConnection('memcached://localhost:11222?retry_timeout=10', [
+            \Memcached::OPT_RETRY_TIMEOUT => 8,
+        ]);
 
-        foreach ($expectedOptions as $option => $expect) {
-            $this->assertSame($expect, $client->getOption($option));
-        }
+        $this->assertSame(10, $client->getOption(\Memcached::OPT_RETRY_TIMEOUT));
     }
 
-    public function provideDsnWithOptions(): iterable
+    #[RequiresPhpExtension('memcached')]
+    public function testOptionsFromDsnAndAdditionallyPassedOptionsAreMerged()
     {
-        if (!class_exists(\Memcached::class)) {
-            self::markTestSkipped('Extension memcached required.');
-        }
+        $client = MemcachedAdapter::createConnection('memcached://localhost:11222?socket_recv_size=1&socket_send_size=2', [
+            \Memcached::OPT_RETRY_TIMEOUT => 8,
+        ]);
 
-        yield [
-            'memcached://localhost:11222?retry_timeout=10',
-            [\Memcached::OPT_RETRY_TIMEOUT => 8],
-            [\Memcached::OPT_RETRY_TIMEOUT => 10],
-        ];
-        yield [
-            'memcached://localhost:11222?socket_recv_size=1&socket_send_size=2',
-            [\Memcached::OPT_RETRY_TIMEOUT => 8],
-            [\Memcached::OPT_SOCKET_RECV_SIZE => 1, \Memcached::OPT_SOCKET_SEND_SIZE => 2, \Memcached::OPT_RETRY_TIMEOUT => 8],
-        ];
+        $this->assertSame(1, $client->getOption(\Memcached::OPT_SOCKET_RECV_SIZE));
+        $this->assertSame(2, $client->getOption(\Memcached::OPT_SOCKET_SEND_SIZE));
+        $this->assertSame(8, $client->getOption(\Memcached::OPT_RETRY_TIMEOUT));
     }
 
     public function testClear()
@@ -253,7 +242,7 @@ class MemcachedAdapterTest extends AdapterTestCase
         $pool = $this->createCachePool(0, null, $namespace);
 
         /**
-         * Choose a key that is below {@see \Symfony\Component\Cache\Adapter\MemcachedAdapter::$maxIdLength} so that
+         * Choose a key that is below {@see MemcachedAdapter::$maxIdLength} so that
          * {@see \Symfony\Component\Cache\Traits\AbstractTrait::getId()} does not shorten the key but choose special
          * characters that would be encoded and therefore increase the key length over the Memcached limit.
          */

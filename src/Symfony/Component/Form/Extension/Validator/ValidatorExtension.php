@@ -27,15 +27,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class ValidatorExtension extends AbstractExtension
 {
-    private ValidatorInterface $validator;
-    private ?FormRendererInterface $formRenderer;
-    private ?TranslatorInterface $translator;
-    private bool $legacyErrorMessages;
-
-    public function __construct(ValidatorInterface $validator, bool $legacyErrorMessages = true, FormRendererInterface $formRenderer = null, TranslatorInterface $translator = null)
-    {
-        $this->legacyErrorMessages = $legacyErrorMessages;
-
+    public function __construct(
+        private ValidatorInterface $validator,
+        private bool $legacyErrorMessages = true,
+        private ?FormRendererInterface $formRenderer = null,
+        private ?TranslatorInterface $translator = null,
+    ) {
+        /** @var ClassMetadata $metadata */
         $metadata = $validator->getMetadataFor(\Symfony\Component\Form\Form::class);
 
         // Register the form constraints in the validator programmatically.
@@ -43,13 +41,8 @@ class ValidatorExtension extends AbstractExtension
         // the DIC, where the XML file is loaded automatically. Thus the following
         // code must be kept synchronized with validation.xml
 
-        /* @var $metadata ClassMetadata */
         $metadata->addConstraint(new Form());
         $metadata->addConstraint(new Traverse(false));
-
-        $this->validator = $validator;
-        $this->formRenderer = $formRenderer;
-        $this->translator = $translator;
     }
 
     public function loadTypeGuesser(): ?FormTypeGuesserInterface

@@ -11,10 +11,13 @@
 
 namespace Symfony\Component\Security\Core\Test;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManager;
 use Symfony\Component\Security\Core\Authorization\Strategy\AccessDecisionStrategyInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 
 /**
@@ -29,43 +32,50 @@ abstract class AccessDecisionStrategyTestCase extends TestCase
      *
      * @param VoterInterface[] $voters
      */
+    #[DataProvider('provideStrategyTests')]
     final public function testDecide(AccessDecisionStrategyInterface $strategy, array $voters, bool $expected)
     {
-        $token = $this->createMock(TokenInterface::class);
         $manager = new AccessDecisionManager($voters, $strategy);
 
-        $this->assertSame($expected, $manager->decide($token, ['ROLE_FOO']));
+        $this->assertSame($expected, $manager->decide(new NullToken(), ['ROLE_FOO']));
     }
 
     /**
      * @return iterable<array{AccessDecisionStrategyInterface, VoterInterface[], bool}>
      */
-    abstract public function provideStrategyTests(): iterable;
+    abstract public static function provideStrategyTests(): iterable;
 
     /**
      * @return VoterInterface[]
      */
-    final protected function getVoters(int $grants, int $denies, int $abstains): array
+    final protected static function getVoters(int $grants, int $denies, int $abstains): array
     {
         $voters = [];
         for ($i = 0; $i < $grants; ++$i) {
-            $voters[] = $this->getVoter(VoterInterface::ACCESS_GRANTED);
+            $voters[] = static::getVoter(VoterInterface::ACCESS_GRANTED);
         }
         for ($i = 0; $i < $denies; ++$i) {
-            $voters[] = $this->getVoter(VoterInterface::ACCESS_DENIED);
+            $voters[] = static::getVoter(VoterInterface::ACCESS_DENIED);
         }
         for ($i = 0; $i < $abstains; ++$i) {
-            $voters[] = $this->getVoter(VoterInterface::ACCESS_ABSTAIN);
+            $voters[] = static::getVoter(VoterInterface::ACCESS_ABSTAIN);
         }
 
         return $voters;
     }
 
-    final protected function getVoter(int $vote): VoterInterface
+    final protected static function getVoter(int $vote): VoterInterface
     {
-        $voter = $this->createMock(VoterInterface::class);
-        $voter->method('vote')->willReturn($vote);
+        return new class($vote) implements VoterInterface {
+            public function __construct(
+                private int $vote,
+            ) {
+            }
 
-        return $voter;
+            public function vote(TokenInterface $token, $subject, array $attributes, ?Vote $vote = null): int
+            {
+                return $this->vote;
+            }
+        };
     }
 }

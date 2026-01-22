@@ -21,16 +21,12 @@ use Symfony\Component\HttpKernel\Fragment\FragmentRendererInterface;
 
 class FragmentHandlerTest extends TestCase
 {
-    private $requestStack;
+    private RequestStack $requestStack;
 
     protected function setUp(): void
     {
-        $this->requestStack = $this->createMock(RequestStack::class);
-        $this->requestStack
-            ->expects($this->any())
-            ->method('getCurrentRequest')
-            ->willReturn(Request::create('/'))
-        ;
+        $this->requestStack = new RequestStack();
+        $this->requestStack->push(Request::create('/'));
     }
 
     public function testRenderWhenRendererDoesNotExist()
@@ -43,14 +39,14 @@ class FragmentHandlerTest extends TestCase
     public function testRenderWithUnknownRenderer()
     {
         $this->expectException(\InvalidArgumentException::class);
-        $handler = $this->getHandler($this->returnValue(new Response('foo')));
+        $handler = $this->getHandler(new Response('foo'));
 
         $handler->render('/', 'bar');
     }
 
     public function testDeliverWithUnsuccessfulResponse()
     {
-        $handler = $this->getHandler($this->returnValue(new Response('foo', 404)));
+        $handler = $this->getHandler(new Response('foo', 404));
         try {
             $handler->render('/', 'foo');
             $this->fail('->render() throws a \RuntimeException exception if response is not successful');
@@ -70,10 +66,10 @@ class FragmentHandlerTest extends TestCase
     {
         $expectedRequest = Request::create('/');
         $handler = $this->getHandler(
-            $this->returnValue(new Response('foo')),
+            new Response('foo'),
             [
                 '/',
-                $this->callback(function (Request $request) use ($expectedRequest) {
+                $this->callback(static function (Request $request) use ($expectedRequest) {
                     $expectedRequest->server->remove('REQUEST_TIME_FLOAT');
                     $request->server->remove('REQUEST_TIME_FLOAT');
 
@@ -88,16 +84,14 @@ class FragmentHandlerTest extends TestCase
 
     protected function getHandler($returnValue, $arguments = [])
     {
-        $renderer = $this->createMock(FragmentRendererInterface::class);
+        $renderer = $this->createStub(FragmentRendererInterface::class);
         $renderer
-            ->expects($this->any())
             ->method('getName')
             ->willReturn('foo')
         ;
         $e = $renderer
-            ->expects($this->any())
             ->method('render')
-            ->will($returnValue)
+            ->willReturn($returnValue)
         ;
 
         if ($arguments) {

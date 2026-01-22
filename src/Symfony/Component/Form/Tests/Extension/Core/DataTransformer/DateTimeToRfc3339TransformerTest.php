@@ -11,33 +11,26 @@
 
 namespace Symfony\Component\Form\Tests\Extension\Core\DataTransformer;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Component\Form\Extension\Core\DataTransformer\BaseDateTimeTransformer;
 use Symfony\Component\Form\Extension\Core\DataTransformer\DateTimeToRfc3339Transformer;
 use Symfony\Component\Form\Tests\Extension\Core\DataTransformer\Traits\DateTimeEqualsTrait;
 
-class DateTimeToRfc3339TransformerTest extends BaseDateTimeTransformerTest
+class DateTimeToRfc3339TransformerTest extends BaseDateTimeTransformerTestCase
 {
     use DateTimeEqualsTrait;
 
-    protected $dateTime;
-    protected $dateTimeWithoutSeconds;
+    protected \DateTime $dateTime;
+    protected \DateTime $dateTimeWithoutSeconds;
 
     protected function setUp(): void
     {
-        parent::setUp();
-
         $this->dateTime = new \DateTime('2010-02-03 04:05:06 UTC');
         $this->dateTimeWithoutSeconds = new \DateTime('2010-02-03 04:05:00 UTC');
     }
 
-    protected function tearDown(): void
-    {
-        $this->dateTime = null;
-        $this->dateTimeWithoutSeconds = null;
-    }
-
-    public function allProvider()
+    public static function allProvider(): array
     {
         return [
             ['UTC', 'UTC', '2010-02-03 04:05:06 UTC', '2010-02-03T04:05:06Z'],
@@ -49,14 +42,14 @@ class DateTimeToRfc3339TransformerTest extends BaseDateTimeTransformerTest
         ];
     }
 
-    public function transformProvider()
+    public static function transformProvider(): array
     {
-        return $this->allProvider();
+        return self::allProvider();
     }
 
-    public function reverseTransformProvider()
+    public static function reverseTransformProvider(): array
     {
-        return array_merge($this->allProvider(), [
+        return array_merge(self::allProvider(), [
             // format without seconds, as appears in some browsers
             ['UTC', 'UTC', '2010-02-03 04:05:00 UTC', '2010-02-03T04:05Z'],
             ['America/New_York', 'Asia/Hong_Kong', '2010-02-03 04:05:00 America/New_York', '2010-02-03T17:05+08:00'],
@@ -65,9 +58,7 @@ class DateTimeToRfc3339TransformerTest extends BaseDateTimeTransformerTest
         ]);
     }
 
-    /**
-     * @dataProvider transformProvider
-     */
+    #[DataProvider('transformProvider')]
     public function testTransform($fromTz, $toTz, $from, $to)
     {
         $transformer = new DateTimeToRfc3339Transformer($fromTz, $toTz);
@@ -75,9 +66,7 @@ class DateTimeToRfc3339TransformerTest extends BaseDateTimeTransformerTest
         $this->assertSame($to, $transformer->transform(null !== $from ? new \DateTime($from) : null));
     }
 
-    /**
-     * @dataProvider transformProvider
-     */
+    #[DataProvider('transformProvider')]
     public function testTransformDateTimeImmutable($fromTz, $toTz, $from, $to)
     {
         $transformer = new DateTimeToRfc3339Transformer($fromTz, $toTz);
@@ -92,9 +81,7 @@ class DateTimeToRfc3339TransformerTest extends BaseDateTimeTransformerTest
         $transformer->transform('2010-01-01');
     }
 
-    /**
-     * @dataProvider reverseTransformProvider
-     */
+    #[DataProvider('reverseTransformProvider')]
     public function testReverseTransform($toTz, $fromTz, $to, $from)
     {
         $transformer = new DateTimeToRfc3339Transformer($toTz, $fromTz);
@@ -121,9 +108,7 @@ class DateTimeToRfc3339TransformerTest extends BaseDateTimeTransformerTest
         $transformer->reverseTransform('2010-04-31T04:05Z');
     }
 
-    /**
-     * @dataProvider invalidDateStringProvider
-     */
+    #[DataProvider('invalidDateStringProvider')]
     public function testReverseTransformExpectsValidDateString($date)
     {
         $this->expectException(TransformationFailedException::class);
@@ -132,7 +117,7 @@ class DateTimeToRfc3339TransformerTest extends BaseDateTimeTransformerTest
         $transformer->reverseTransform($date);
     }
 
-    public function invalidDateStringProvider()
+    public static function invalidDateStringProvider(): array
     {
         return [
             'invalid month' => ['2010-2010-01'],
@@ -144,7 +129,7 @@ class DateTimeToRfc3339TransformerTest extends BaseDateTimeTransformerTest
         ];
     }
 
-    protected function createDateTimeTransformer(string $inputTimezone = null, string $outputTimezone = null): BaseDateTimeTransformer
+    protected function createDateTimeTransformer(?string $inputTimezone = null, ?string $outputTimezone = null): BaseDateTimeTransformer
     {
         return new DateTimeToRfc3339Transformer($inputTimezone, $outputTimezone);
     }

@@ -18,11 +18,9 @@ use Symfony\Component\Form\FormTypeInterface;
 
 class TestExtension implements FormExtensionInterface
 {
-    private $types = [];
-
-    private $extensions = [];
-
-    private $guesser;
+    private array $types = [];
+    private array $extensions = [];
+    private FormTypeGuesserInterface $guesser;
 
     public function __construct(FormTypeGuesserInterface $guesser)
     {
@@ -31,12 +29,12 @@ class TestExtension implements FormExtensionInterface
 
     public function addType(FormTypeInterface $type)
     {
-        $this->types[\get_class($type)] = $type;
+        $this->types[$type::class] = $type;
     }
 
     public function getType($name): FormTypeInterface
     {
-        return $this->types[$name] ?? null;
+        return $this->types[$name];
     }
 
     public function hasType($name): bool

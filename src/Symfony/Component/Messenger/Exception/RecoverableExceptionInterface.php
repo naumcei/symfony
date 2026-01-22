@@ -21,4 +21,8 @@ namespace Symfony\Component\Messenger\Exception;
  */
 interface RecoverableExceptionInterface extends \Throwable
 {
+    /**
+     * Returns the time to wait before potentially retrying, in millisecond.
+     */
+    public function getRetryDelay(): ?int;
 }

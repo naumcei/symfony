@@ -1,6 +1,100 @@
 CHANGELOG
 =========
 
+8.1
+---
+
+ * Add support for the `clientHints`, `prefetchCache`, and `prerenderCache` `ClearSite-Data` directives
+ * Add support for `#[AsTaggedItem]` attribute to configure voter priority
+
+8.0
+---
+
+ * Remove the deprecated `hide_user_not_found` configuration option, use `expose_security_errors` instead
+ * Remove the deprecated `algorithm` and `key` options from the OIDC token handler configuration, use `algorithms` and `keyset` instead
+ * Remove `LazyFirewallContext::__invoke()`
+ * Make `ExpressionCacheWarmer` class `final`
+ * Remove autowiring aliases for `RateLimiterFactory`; use `RateLimiterFactoryInterface` instead
+
+7.4
+---
+
+ * Add `debug:security:role-hierarchy` command to dump role hierarchy graphs in the Mermaid.js flowchart format
+ * Add `Security::getAccessDecision()` and `getAccessDecisionForUser()` helpers
+ * Add options to configure a cache pool and storage service for login throttling rate limiters
+ * Register alias for argument for password hasher when its key is not a class name:
+
+    With the following configuration:
+    ```yaml
+    security:
+      password_hashers:
+          recovery_code: auto
+    ```
+
+    It is possible to inject the `recovery_code` password hasher in a service:
+
+    ```php
+    public function __construct(
+        #[Target('recovery_code')]
+        private readonly PasswordHasherInterface $passwordHasher,
+    ) {
+    }
+    ```
+ * Deprecate `LazyFirewallContext::__invoke()`
+
+7.3
+---
+
+ * Add `Security::isGrantedForUser()` to test user authorization without relying on the session. For example, users not currently logged in, or while processing a message from a message queue
+ * Add encryption support to `OidcTokenHandler` (JWE)
+ * Add `expose_security_errors` config option to display `AccountStatusException`
+ * Deprecate the `security.hide_user_not_found` config option in favor of `security.expose_security_errors`
+ * Add ability to fetch LDAP roles
+ * Add `OAuth2TokenHandlerFactory` for `AccessTokenFactory`
+ * Add discovery support to `OidcTokenHandler` and `OidcUserInfoTokenHandler`
+
+7.2
+---
+
+ * Allow configuring the secret used to sign login links
+ * Allow passing optional passport attributes to `Security::login()`
+
+7.1
+---
+
+ * Mark class `ExpressionCacheWarmer` as `final`
+ * Support multiple signature algorithms for OIDC Token
+ * Support JWK or JWKSet for OIDC Token
+
+7.0
+---
+
+ * Enabling SecurityBundle and not configuring it is not allowed
+ * Remove the `enable_authenticator_manager` config option
+ * Remove the `security.firewalls.logout.csrf_token_generator` config option, use `security.firewalls.logout.csrf_token_manager` instead
+ * Remove the `require_previous_session` config option from authenticators
+
+6.4
+---
+
+ * Deprecate `Security::ACCESS_DENIED_ERROR`, `AUTHENTICATION_ERROR` and `LAST_USERNAME` constants, use the ones on `SecurityRequestAttributes` instead
+ * Allow an array of `pattern` in firewall configuration
+ * Add `$badges` argument to `Security::login`
+ * Deprecate the `require_previous_session` config option. Setting it has no effect anymore
+ * Add `LogoutRouteLoader`
+
+6.3
+---
+
+ * Deprecate enabling bundle and not configuring it
+ * Add `_stateless` attribute to the request when firewall is stateless and the attribute is not already set
+ * Add `StatelessAuthenticatorFactoryInterface` for authenticators targeting `stateless` firewalls only and that don't require a user provider
+ * Modify "icon.svg" to improve accessibility for blind/low vision users
+ * Make `Security::login()` return the authenticator response
+ * Deprecate the `security.firewalls.logout.csrf_token_generator` config option, use `security.firewalls.logout.csrf_token_manager` instead
+ * Make firewalls event dispatcher traceable on debug mode
+ * Add `TokenHandlerFactoryInterface`, `OidcUserInfoTokenHandlerFactory`, `OidcTokenHandlerFactory` and `ServiceTokenHandlerFactory` for `AccessTokenFactory`
+
 6.2
 ---
 

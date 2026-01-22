@@ -12,23 +12,28 @@
 namespace Symfony\Component\Notifier\Bridge\Chatwork\Tests;
 
 use Symfony\Component\Notifier\Bridge\Chatwork\ChatworkTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
+use Symfony\Component\Notifier\Test\MissingRequiredOptionTestTrait;
 use Symfony\Component\Notifier\Transport\TransportFactoryInterface;
 
-class ChatworkTransportFactoryTest extends TransportFactoryTestCase
+class ChatworkTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+    use MissingRequiredOptionTestTrait;
+
     public function createFactory(): TransportFactoryInterface
     {
         return new ChatworkTransportFactory();
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'chatwork://host?room_id=testRoomId'];
         yield [false, 'somethingElse://host?room_id=testRoomId'];
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'chatwork://host.test?room_id=testRoomId',
@@ -36,17 +41,17 @@ class ChatworkTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function incompleteDsnProvider(): iterable
+    public static function incompleteDsnProvider(): iterable
     {
         yield 'missing token' => ['chatwork://host.test?room_id=testRoomId'];
     }
 
-    public function missingRequiredOptionProvider(): iterable
+    public static function missingRequiredOptionProvider(): iterable
     {
         yield 'missing option: room_id' => ['chatwork://token@host'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://token@host?room_id=testRoomId'];
         yield ['somethingElse://token@host']; // missing "room_id" option

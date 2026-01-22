@@ -16,10 +16,13 @@ use Symfony\Component\Security\Core\User\UserInterface;
 /**
  * TokenInterface is the interface for the user authentication information.
  *
+ * The __serialize/__unserialize() magic methods can be implemented on the token
+ * class to prevent sensitive credentials from being put in the session storage.
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-interface TokenInterface
+interface TokenInterface extends \Stringable
 {
     /**
      * Returns a string representation of the Token.
@@ -52,19 +55,14 @@ interface TokenInterface
      *
      * @throws \InvalidArgumentException
      */
-    public function setUser(UserInterface $user);
-
-    /**
-     * Removes sensitive information from the token.
-     */
-    public function eraseCredentials();
+    public function setUser(UserInterface $user): void;
 
     public function getAttributes(): array;
 
     /**
      * @param array $attributes The token attributes
      */
-    public function setAttributes(array $attributes);
+    public function setAttributes(array $attributes): void;
 
     public function hasAttribute(string $name): bool;
 
@@ -73,7 +71,7 @@ interface TokenInterface
      */
     public function getAttribute(string $name): mixed;
 
-    public function setAttribute(string $name, mixed $value);
+    public function setAttribute(string $name, mixed $value): void;
 
     /**
      * Returns all the necessary state of the object for serialization purposes.

@@ -41,12 +41,9 @@ class MailerTest extends AbstractWebTestCase
         $logger = self::getContainer()->get('logger');
 
         $testTransport = new class($eventDispatcher, $logger, $onDoSend) extends AbstractTransport {
-            /**
-             * @var callable
-             */
-            private $onDoSend;
+            private \Closure $onDoSend;
 
-            public function __construct(EventDispatcherInterface $eventDispatcher, LoggerInterface $logger, callable $onDoSend)
+            public function __construct(EventDispatcherInterface $eventDispatcher, LoggerInterface $logger, \Closure $onDoSend)
             {
                 parent::__construct($eventDispatcher, $logger);
                 $this->onDoSend = $onDoSend;
@@ -102,10 +99,15 @@ class MailerTest extends AbstractWebTestCase
         $this->assertEmailHtmlBodyContains($email, 'Foo');
         $this->assertEmailHtmlBodyNotContains($email, 'Bar');
         $this->assertEmailAttachmentCount($email, 1);
+        $this->assertEmailAddressNotContains($email, 'To', 'thomas@symfony.com');
 
         $email = $this->getMailerMessage($second);
+        $this->assertEmailSubjectContains($email, 'Foo');
+        $this->assertEmailSubjectNotContains($email, 'Bar');
         $this->assertEmailAddressContains($email, 'To', 'fabien@symfony.com');
         $this->assertEmailAddressContains($email, 'To', 'thomas@symfony.com');
         $this->assertEmailAddressContains($email, 'Reply-To', 'me@symfony.com');
+        $this->assertEmailAddressNotContains($email, 'To', 'helene@symfony.com');
+        $this->assertEmailAddressNotContains($email, 'Reply-To', 'helene@symfony.com');
     }
 }

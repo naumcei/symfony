@@ -1,6 +1,6 @@
 <?php
 
 return [
-    'Names' => [
-    ],
+    'UserAssignedNames' => [],
+    'Names' => [],
 ];

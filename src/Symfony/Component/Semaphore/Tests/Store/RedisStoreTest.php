@@ -11,14 +11,13 @@
 
 namespace Symfony\Component\Semaphore\Tests\Store;
 
-use PHPUnit\Framework\SkippedTestSuiteError;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 
 /**
  * @author Jérémy Derussé <jeremy@derusse.com>
- *
- * @requires extension redis
  */
-class RedisStoreTest extends AbstractRedisStoreTest
+#[RequiresPhpExtension('redis')]
+class RedisStoreTest extends AbstractRedisStoreTestCase
 {
     protected function setUp(): void
     {
@@ -30,7 +29,7 @@ class RedisStoreTest extends AbstractRedisStoreTest
         try {
             (new \Redis())->connect(...explode(':', getenv('REDIS_HOST')));
         } catch (\Exception $e) {
-            throw new SkippedTestSuiteError($e->getMessage());
+            self::markTestSkipped($e->getMessage());
         }
     }
 

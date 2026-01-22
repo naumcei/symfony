@@ -11,9 +11,9 @@
 
 namespace Symfony\Component\Yaml\Tests\Command;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
-use Symfony\Component\Console\CI\GithubActionReporter;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandCompletionTester;
@@ -27,7 +27,7 @@ use Symfony\Component\Yaml\Command\LintCommand;
  */
 class LintCommandTest extends TestCase
 {
-    private $files;
+    private array $files;
 
     public function testLintCorrectFile()
     {
@@ -68,23 +68,14 @@ bar';
 
     public function testLintIncorrectFileWithGithubFormat()
     {
-        if (!class_exists(GithubActionReporter::class)) {
-            $this->expectException(\InvalidArgumentException::class);
-            $this->expectExceptionMessage('The "github" format is only available since "symfony/console" >= 5.3.');
-        }
-
         $incorrectContent = <<<YAML
-foo:
-bar
-YAML;
+            foo:
+            bar
+            YAML;
         $tester = $this->createCommandTester();
         $filename = $this->createFile($incorrectContent);
 
         $tester->execute(['filename' => $filename, '--format' => 'github'], ['decorated' => false]);
-
-        if (!class_exists(GithubActionReporter::class)) {
-            return;
-        }
 
         self::assertEquals(1, $tester->getStatusCode(), 'Returns 1 in case of error');
         self::assertStringMatchesFormat('%A::error file=%s,line=2,col=0::Unable to parse at line 2 (near "bar")%A', trim($tester->getDisplay()));
@@ -99,9 +90,9 @@ YAML;
             putenv('GITHUB_ACTIONS=1');
 
             $incorrectContent = <<<YAML
-foo:
-bar
-YAML;
+                foo:
+                bar
+                YAML;
             $tester = $this->createCommandTester();
             $filename = $this->createFile($incorrectContent);
 
@@ -116,8 +107,8 @@ YAML;
     public function testConstantAsKey()
     {
         $yaml = <<<YAML
-!php/const 'Symfony\Component\Yaml\Tests\Command\Foo::TEST': bar
-YAML;
+            !php/const 'Symfony\Component\Yaml\Tests\Command\Foo::TEST': bar
+            YAML;
         $ret = $this->createCommandTester()->execute(['filename' => $this->createFile($yaml)], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE, 'decorated' => false]);
         $this->assertSame(0, $ret, 'lint:yaml exits with code 0 in case of success');
     }
@@ -125,8 +116,8 @@ YAML;
     public function testCustomTags()
     {
         $yaml = <<<YAML
-foo: !my_tag {foo: bar}
-YAML;
+            foo: !my_tag {foo: bar}
+            YAML;
         $ret = $this->createCommandTester()->execute(['filename' => $this->createFile($yaml), '--parse-tags' => true], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE, 'decorated' => false]);
         $this->assertSame(0, $ret, 'lint:yaml exits with code 0 in case of success');
     }
@@ -134,8 +125,8 @@ YAML;
     public function testCustomTagsError()
     {
         $yaml = <<<YAML
-foo: !my_tag {foo: bar}
-YAML;
+            foo: !my_tag {foo: bar}
+            YAML;
         $ret = $this->createCommandTester()->execute(['filename' => $this->createFile($yaml)], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE, 'decorated' => false]);
         $this->assertSame(1, $ret, 'lint:yaml exits with code 1 in case of error');
     }
@@ -153,17 +144,16 @@ YAML;
 
     public function testLintFileNotReadable()
     {
-        $this->expectException(\RuntimeException::class);
         $tester = $this->createCommandTester();
         $filename = $this->createFile('');
         unlink($filename);
 
+        $this->expectException(\RuntimeException::class);
+
         $tester->execute(['filename' => $filename], ['decorated' => false]);
     }
 
-    /**
-     * @dataProvider provideCompletionSuggestions
-     */
+    #[DataProvider('provideCompletionSuggestions')]
     public function testComplete(array $input, array $expectedSuggestions)
     {
         $tester = new CommandCompletionTester($this->createCommand());
@@ -171,7 +161,7 @@ YAML;
         $this->assertSame($expectedSuggestions, $tester->complete($input));
     }
 
-    public function provideCompletionSuggestions()
+    public static function provideCompletionSuggestions()
     {
         yield 'option' => [['--format', ''], ['txt', 'json', 'github']];
     }
@@ -189,7 +179,7 @@ YAML;
     protected function createCommand(): Command
     {
         $application = new Application();
-        $application->add(new LintCommand());
+        $application->addCommand(new LintCommand());
 
         return $application->find('lint:yaml');
     }

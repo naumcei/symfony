@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Validator\Tests\Constraints;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\Uuid;
 use Symfony\Component\Validator\Constraints\UuidValidator;
@@ -44,8 +45,9 @@ class UuidValidatorTest extends ConstraintValidatorTestCase
 
     public function testExpectsUuidConstraintCompatibleType()
     {
+        $constraint = $this->createStub(Constraint::class);
+
         $this->expectException(UnexpectedTypeException::class);
-        $constraint = $this->getMockForAbstractClass(Constraint::class);
 
         $this->validator->validate('216fff40-98d9-11e3-a5e2-0800200c9a66', $constraint);
     }
@@ -56,9 +58,7 @@ class UuidValidatorTest extends ConstraintValidatorTestCase
         $this->validator->validate(new \stdClass(), new Uuid());
     }
 
-    /**
-     * @dataProvider getValidStrictUuids
-     */
+    #[DataProvider('getValidStrictUuids')]
     public function testValidStrictUuids($uuid, $versions = null)
     {
         $constraint = new Uuid();
@@ -72,7 +72,7 @@ class UuidValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    public function getValidStrictUuids()
+    public static function getValidStrictUuids()
     {
         return [
             ['216fff40-98d9-11e3-a5e2-0800200c9a66'], // Version 1 UUID in lowercase
@@ -87,12 +87,10 @@ class UuidValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    /**
-     * @dataProvider getValidStrictUuidsWithWhitespaces
-     */
+    #[DataProvider('getValidStrictUuidsWithWhitespaces')]
     public function testValidStrictUuidsWithWhitespaces($uuid, $versions = null)
     {
-        $constraint = new Uuid(['normalizer' => 'trim']);
+        $constraint = new Uuid(normalizer: 'trim');
 
         if (null !== $versions) {
             $constraint->versions = $versions;
@@ -103,7 +101,7 @@ class UuidValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    public function getValidStrictUuidsWithWhitespaces()
+    public static function getValidStrictUuidsWithWhitespaces()
     {
         return [
             ["\x20216fff40-98d9-11e3-a5e2-0800200c9a66"], // Version 1 UUID in lowercase
@@ -125,14 +123,10 @@ class UuidValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    /**
-     * @dataProvider getInvalidStrictUuids
-     */
+    #[DataProvider('getInvalidStrictUuids')]
     public function testInvalidStrictUuids($uuid, $code, $versions = null)
     {
-        $constraint = new Uuid([
-            'message' => 'testMessage',
-        ]);
+        $constraint = new Uuid(message: 'testMessage');
 
         if (null !== $versions) {
             $constraint->versions = $versions;
@@ -146,7 +140,7 @@ class UuidValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    public function getInvalidStrictUuids()
+    public static function getInvalidStrictUuids()
     {
         return [
             ['216fff40-98d9-11e3-a5e2_0800200c9a66', Uuid::INVALID_CHARACTERS_ERROR],
@@ -189,21 +183,17 @@ class UuidValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    /**
-     * @dataProvider getValidNonStrictUuids
-     */
+    #[DataProvider('getValidNonStrictUuids')]
     public function testValidNonStrictUuids($uuid)
     {
-        $constraint = new Uuid([
-            'strict' => false,
-        ]);
+        $constraint = new Uuid(strict: false);
 
         $this->validator->validate($uuid, $constraint);
 
         $this->assertNoViolation();
     }
 
-    public function getValidNonStrictUuids()
+    public static function getValidNonStrictUuids()
     {
         return [
             ['216fff40-98d9-11e3-a5e2-0800200c9a66'],    // Version 1 UUID in lowercase
@@ -220,15 +210,13 @@ class UuidValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    /**
-     * @dataProvider getInvalidNonStrictUuids
-     */
+    #[DataProvider('getInvalidNonStrictUuids')]
     public function testInvalidNonStrictUuids($uuid, $code)
     {
-        $constraint = new Uuid([
-            'strict' => false,
-            'message' => 'myMessage',
-        ]);
+        $constraint = new Uuid(
+            strict: false,
+            message: 'myMessage',
+        );
 
         $this->validator->validate($uuid, $constraint);
 
@@ -238,7 +226,7 @@ class UuidValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    public function getInvalidNonStrictUuids()
+    public static function getInvalidNonStrictUuids()
     {
         return [
             ['216fff40-98d9-11e3-a5e2_0800200c9a66', Uuid::INVALID_CHARACTERS_ERROR],
@@ -262,5 +250,43 @@ class UuidValidatorTest extends ConstraintValidatorTestCase
             ->setParameter('{{ value }}', '"216fff40-98d9-11e3-a5e2_0800200c9a66"')
             ->setCode(Uuid::INVALID_CHARACTERS_ERROR)
             ->assertRaised();
+    }
+
+    #[DataProvider('getUuidForTimeBasedAssertions')]
+    public function testTimeBasedUuid(string $uid, bool $expectedTimeBased)
+    {
+        $constraint = new Uuid(versions: Uuid::TIME_BASED_VERSIONS);
+
+        $this->validator->validate($uid, $constraint);
+
+        if ($expectedTimeBased) {
+            $this->assertNoViolation();
+        } else {
+            $this->buildViolation('This is not a valid UUID.')
+                ->setParameter('{{ value }}', '"'.$uid.'"')
+                ->setCode(Uuid::INVALID_TIME_BASED_VERSION_ERROR)
+                ->assertRaised();
+        }
+    }
+
+    public static function getUuidForTimeBasedAssertions(): \Generator
+    {
+        yield Uuid::V1_MAC => ['95ab107e-6fc2-11ed-9d6b-01bfd6e71dbd', true];
+        yield Uuid::V2_DCE => ['216fff40-98d9-21e3-a5e2-0800200c9a66', false];
+        yield Uuid::V3_MD5 => ['5d5b5ae1-5857-3531-9431-e8ac73c3e61d', false];
+        yield Uuid::V4_RANDOM => ['ba6479dd-a5ea-403c-96ae-5964d0582e81', false];
+        yield Uuid::V5_SHA1 => ['fc1cc19d-cb3c-5f6a-a0f6-706424f68e3a', false];
+        yield Uuid::V6_SORTABLE => ['1ed6fc29-5ab1-6b6e-8aad-cfa821180d14', true];
+        yield Uuid::V7_MONOTONIC => ['0184c292-b133-7e10-a3b4-d49c1ab49b2a', true];
+        yield Uuid::V8_CUSTOM => ['00112233-4455-8677-8899-aabbccddeeff', false];
+    }
+
+    public function testAcceptsSingleIntegerAsVersion()
+    {
+        $constraint = new Uuid(versions: 7);
+
+        $this->validator->validate('0184c292-b133-7e10-a3b4-d49c1ab49b2a', $constraint);
+
+        $this->assertNoViolation();
     }
 }

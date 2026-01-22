@@ -1,6 +1,55 @@
 CHANGELOG
 =========
 
+8.0
+---
+
+ * Remove support for passing a tag to the constructor of `FormThemeNode`
+
+7.4
+---
+
+ * Add `access_decision()` and `access_decision_for_user()` Twig functions
+ * Call `form_label_content` inside `button_widget` block to render button label
+ * Add `aria-invalid` and `aria-describedby` attributes to form fields when validation errors are present
+
+7.3
+---
+
+ * Add `is_granted_for_user()` Twig function
+ * Add `field_id()` Twig form helper function
+ * Add a `Twig` constraint that validates Twig templates
+ * Make `lint:twig` collect all deprecations instead of stopping at the first one
+ * Add `name` argument to `email.image` to override the attachment file name being set as the file path
+
+7.2
+---
+
+ * Deprecate passing a tag to the constructor of `FormThemeNode`
+
+7.1
+---
+
+ * Add `emojify` Twig filter
+
+7.0
+---
+
+ * Drop support for Twig 2
+
+6.4
+---
+
+ * Allow an array to be passed as the first argument to the `importmap()` Twig function
+ * Add `TemplatedEmail::locale()` to set the locale for the email rendering
+ * Add `AppVariable::getEnabledLocales()` to retrieve the enabled locales
+ * Add `impersonation_path()` and `impersonation_url()` Twig functions
+
+6.3
+---
+
+ * Add `AppVariable::getLocale()` to retrieve the current locale when using the `LocaleSwitcher`
+
 6.2
 ---
 

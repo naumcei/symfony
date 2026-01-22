@@ -11,14 +11,15 @@
 
 namespace Symfony\Component\HttpKernel\Tests\Profiler;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Profiler\FileProfilerStorage;
 use Symfony\Component\HttpKernel\Profiler\Profile;
 
 class FileProfilerStorageTest extends TestCase
 {
-    private $tmpDir;
-    private $storage;
+    private string $tmpDir;
+    private FileProfilerStorage $storage;
 
     protected function setUp(): void
     {
@@ -203,12 +204,19 @@ class FileProfilerStorageTest extends TestCase
         $profile->setMethod('GET');
         $this->storage->write($profile);
 
+        $profile = new Profile('webp');
+        $profile->setIp('127.0.0.1');
+        $profile->setUrl('http://foo.bar/img.webp');
+        $profile->setMethod('GET');
+        $this->storage->write($profile);
+
         $this->assertCount(1, $this->storage->find('127.0.0.1', 'http://foo.bar/\'', 10, 'GET'), '->find() accepts single quotes in URLs');
         $this->assertCount(1, $this->storage->find('127.0.0.1', 'http://foo.bar/"', 10, 'GET'), '->find() accepts double quotes in URLs');
         $this->assertCount(1, $this->storage->find('127.0.0.1', 'http://foo\\bar/', 10, 'GET'), '->find() accepts backslash in URLs');
         $this->assertCount(1, $this->storage->find('127.0.0.1', 'http://foo.bar/;', 10, 'GET'), '->find() accepts semicolon in URLs');
         $this->assertCount(1, $this->storage->find('127.0.0.1', 'http://foo.bar/%', 10, 'GET'), '->find() does not interpret a "%" as a wildcard in the URL');
         $this->assertCount(1, $this->storage->find('127.0.0.1', 'http://foo.bar/_', 10, 'GET'), '->find() does not interpret a "_" as a wildcard in the URL');
+        $this->assertCount(6, $this->storage->find('127.0.0.1', '!.webp', 10, 'GET'), '->find() does not interpret a "!" at the beginning as a negation operator in the URL');
     }
 
     public function testStoreTime()
@@ -285,7 +293,7 @@ class FileProfilerStorageTest extends TestCase
 
         $this->storage->purge();
 
-        $this->assertEmpty($this->storage->read('token'), '->purge() removes all data stored by profiler');
+        $this->assertNull($this->storage->read('token'), '->purge() removes all data stored by profiler');
         $this->assertCount(0, $this->storage->find('127.0.0.1', '', 10, 'GET'), '->purge() removes all items from index');
     }
 
@@ -336,12 +344,87 @@ class FileProfilerStorageTest extends TestCase
 
         $handle = fopen($this->tmpDir.'/index.csv', 'r');
         for ($i = 0; $i < $iteration; ++$i) {
-            $row = fgetcsv($handle);
+            $row = fgetcsv($handle, null, ',', '"', '\\');
             $this->assertEquals('token'.$i, $row[0]);
             $this->assertEquals('127.0.0.'.$i, $row[1]);
             $this->assertEquals('http://foo.bar/'.$i, $row[3]);
         }
-        $this->assertFalse(fgetcsv($handle));
+        $this->assertFalse(fgetcsv($handle, null, ',', '"', '\\'));
+    }
+
+    #[DataProvider('provideExpiredProfiles')]
+    public function testRemoveExpiredProfiles(string $index, string $expectedOffset)
+    {
+        $file = $this->tmpDir.'/index.csv';
+        file_put_contents($file, $index);
+
+        $r = new \ReflectionMethod($this->storage, 'removeExpiredProfiles');
+        $r->invoke($this->storage);
+
+        $this->assertSame($expectedOffset, file_get_contents($this->tmpDir.'/index.csv.offset'));
+    }
+
+    public static function provideExpiredProfiles()
+    {
+        $oneHourAgo = new \DateTimeImmutable('-1 hour');
+
+        yield 'One unexpired profile' => [
+            <<<CSV
+                token0,127.0.0.0,,http://foo.bar/0,{$oneHourAgo->getTimestamp()},,
+
+                CSV,
+            '0',
+        ];
+
+        yield 'One unexpired profile with virtual type' => [
+            <<<CSV
+                token0,127.0.0.0,,http://foo.bar/0,{$oneHourAgo->getTimestamp()},,virtual
+
+                CSV,
+            '0',
+        ];
+
+        $threeDaysAgo = new \DateTimeImmutable('-3 days');
+
+        yield 'One expired profile' => [
+            <<<CSV
+                token0,127.0.0.0,,http://foo.bar/0,{$threeDaysAgo->getTimestamp()},,
+
+                CSV,
+            '48',
+        ];
+
+        yield 'One expired profile with virtual type' => [
+            <<<CSV
+                token0,127.0.0.0,,http://foo.bar/0,{$threeDaysAgo->getTimestamp()},,virtual
+
+                CSV,
+            '55',
+        ];
+
+        $fourDaysAgo = new \DateTimeImmutable('-4 days');
+        $threeDaysAgo = new \DateTimeImmutable('-3 days');
+        $oneHourAgo = new \DateTimeImmutable('-1 hour');
+
+        yield 'Multiple expired profiles' => [
+            <<<CSV
+                token0,127.0.0.0,,http://foo.bar/0,{$fourDaysAgo->getTimestamp()},,
+                token1,127.0.0.1,,http://foo.bar/1,{$threeDaysAgo->getTimestamp()},,
+                token2,127.0.0.2,,http://foo.bar/2,{$oneHourAgo->getTimestamp()},,
+
+                CSV,
+            '96',
+        ];
+
+        yield 'Multiple expired profiles with virtual type' => [
+            <<<CSV
+                token0,127.0.0.0,,http://foo.bar/0,{$fourDaysAgo->getTimestamp()},,virtual
+                token1,127.0.0.1,,http://foo.bar/1,{$threeDaysAgo->getTimestamp()},,virtual
+                token2,127.0.0.2,,http://foo.bar/2,{$oneHourAgo->getTimestamp()},,virtual
+
+                CSV,
+            '110',
+        ];
     }
 
     public function testReadLineFromFile()

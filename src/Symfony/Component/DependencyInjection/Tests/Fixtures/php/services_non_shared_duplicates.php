@@ -19,7 +19,6 @@ class ProjectServiceContainer extends Container
 
     public function __construct()
     {
-        $this->getService = $this->getService(...);
         $this->services = $this->privates = [];
         $this->methodMap = [
             'bar' => 'getBarService',
@@ -42,7 +41,6 @@ class ProjectServiceContainer extends Container
     public function getRemovedIds(): array
     {
         return [
-            '.service_locator.mtT6G8y' => true,
             'foo' => true,
         ];
     }
@@ -52,9 +50,9 @@ class ProjectServiceContainer extends Container
      *
      * @return \stdClass
      */
-    protected function getBarService()
+    protected static function getBarService($container)
     {
-        return $this->services['bar'] = new \stdClass((new \stdClass()), (new \stdClass()));
+        return $container->services['bar'] = new \stdClass((new \stdClass()), (new \stdClass()));
     }
 
     /**
@@ -62,9 +60,9 @@ class ProjectServiceContainer extends Container
      *
      * @return \stdClass
      */
-    protected function getBazService()
+    protected static function getBazService($container)
     {
-        return $this->services['baz'] = new \stdClass(new \Symfony\Component\DependencyInjection\Argument\ServiceLocator($this->getService, [
+        return $container->services['baz'] = new \stdClass(new \Symfony\Component\DependencyInjection\Argument\ServiceLocator($container->getService ??= $container->getService(...), [
             'foo' => [false, 'foo', 'getFooService', false],
         ], [
             'foo' => '?',
@@ -76,12 +74,12 @@ class ProjectServiceContainer extends Container
      *
      * @return \stdClass
      */
-    protected function getFooService()
+    protected static function getFooService($container)
     {
-        $this->factories['service_container']['foo'] = function () {
+        $container->factories['service_container']['foo'] = function ($container) {
             return new \stdClass();
         };
 
-        return $this->factories['service_container']['foo']();
+        return $container->factories['service_container']['foo']($container);
     }
 }

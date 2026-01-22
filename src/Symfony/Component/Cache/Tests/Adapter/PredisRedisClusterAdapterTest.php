@@ -11,25 +11,18 @@
 
 namespace Symfony\Component\Cache\Tests\Adapter;
 
-use PHPUnit\Framework\SkippedTestSuiteError;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 
-/**
- * @group integration
- */
-class PredisRedisClusterAdapterTest extends AbstractRedisAdapterTest
+#[Group('integration')]
+class PredisRedisClusterAdapterTest extends AbstractRedisAdapterTestCase
 {
     public static function setUpBeforeClass(): void
     {
         if (!$hosts = getenv('REDIS_CLUSTER_HOSTS')) {
-            throw new SkippedTestSuiteError('REDIS_CLUSTER_HOSTS env var is not defined.');
+            self::markTestSkipped('REDIS_CLUSTER_HOSTS env var is not defined.');
         }
 
         self::$redis = RedisAdapter::createConnection('redis:?host['.str_replace(' ', ']&host[', $hosts).']', ['class' => \Predis\Client::class, 'redis_cluster' => true, 'prefix' => 'prefix_']);
-    }
-
-    public static function tearDownAfterClass(): void
-    {
-        self::$redis = null;
     }
 }

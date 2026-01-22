@@ -12,48 +12,46 @@
 namespace Symfony\Component\Notifier\Bridge\ContactEveryone\Tests;
 
 use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
+use Symfony\Component\Notifier\Bridge\ContactEveryone\ContactEveryoneOptions;
 use Symfony\Component\Notifier\Bridge\ContactEveryone\ContactEveryoneTransport;
 use Symfony\Component\Notifier\Exception\InvalidArgumentException;
 use Symfony\Component\Notifier\Message\ChatMessage;
-use Symfony\Component\Notifier\Message\MessageInterface;
 use Symfony\Component\Notifier\Message\SmsMessage;
 use Symfony\Component\Notifier\Test\TransportTestCase;
-use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Notifier\Tests\Transport\DummyMessage;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 final class ContactEveryoneTransportTest extends TransportTestCase
 {
-    public function createTransport(HttpClientInterface $client = null): ContactEveryoneTransport
+    public static function createTransport(?HttpClientInterface $client = null): ContactEveryoneTransport
     {
-        return new ContactEveryoneTransport('API_TOKEN', 'Symfony', 'Foo', $client ?? $this->createMock(HttpClientInterface::class));
+        return new ContactEveryoneTransport('API_TOKEN', 'Symfony', 'Foo', $client ?? new MockHttpClient());
     }
 
-    public function toStringProvider(): iterable
+    public static function toStringProvider(): iterable
     {
-        yield ['contact-everyone://contact-everyone.orange-business.com?diffusionname=Symfony&category=Foo', $this->createTransport()];
+        yield ['contact-everyone://contact-everyone.orange-business.com?diffusionname=Symfony&category=Foo', self::createTransport()];
     }
 
-    public function supportedMessagesProvider(): iterable
+    public static function supportedMessagesProvider(): iterable
     {
         yield [new SmsMessage('0611223344', 'Hello!')];
+        yield [new SmsMessage('0611223344', 'Hello!', 'from', new ContactEveryoneOptions(['from' => 'foo']))];
     }
 
-    public function unsupportedMessagesProvider(): iterable
+    public static function unsupportedMessagesProvider(): iterable
     {
         yield [new ChatMessage('Hello!')];
-        yield [$this->createMock(MessageInterface::class)];
+        yield [new DummyMessage()];
     }
 
     public function testSendSuccessfully()
     {
-        $messageId = Uuid::v4()->toRfc4122();
-        $response = $this->createMock(ResponseInterface::class);
-        $response->method('getStatusCode')->willReturn(200);
-        $response->method('getContent')->willReturn($messageId);
-        $client = new MockHttpClient(static function () use ($response): ResponseInterface {
-            return $response;
-        });
+        $messageId = bin2hex(random_bytes(7));
+        $response = new MockResponse($messageId);
+        $client = new MockHttpClient(static fn (): ResponseInterface => $response);
 
         $transport = $this->createTransport($client);
 

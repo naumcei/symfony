@@ -70,6 +70,7 @@ class ServiceLocatorTagPassTest extends TestCase
                 new Reference('bar'),
                 new Reference('baz'),
                 'some.service' => new Reference('bar'),
+                'inlines.service' => new Definition(CustomDefinition::class),
             ]])
             ->addTag('container.service_locator')
         ;
@@ -79,9 +80,30 @@ class ServiceLocatorTagPassTest extends TestCase
         /** @var ServiceLocator $locator */
         $locator = $container->get('foo');
 
-        $this->assertSame(CustomDefinition::class, \get_class($locator('bar')));
-        $this->assertSame(CustomDefinition::class, \get_class($locator('baz')));
-        $this->assertSame(CustomDefinition::class, \get_class($locator('some.service')));
+        $this->assertSame(CustomDefinition::class, $locator('bar')::class);
+        $this->assertSame(CustomDefinition::class, $locator('baz')::class);
+        $this->assertSame(CustomDefinition::class, $locator('some.service')::class);
+        $this->assertSame(CustomDefinition::class, $locator('inlines.service')::class);
+    }
+
+    public function testServiceListIsOrdered()
+    {
+        $container = new ContainerBuilder();
+
+        $container->register('bar', CustomDefinition::class);
+        $container->register('baz', CustomDefinition::class);
+
+        $container->register('foo', ServiceLocator::class)
+            ->setArguments([[
+                new Reference('baz'),
+                new Reference('bar'),
+            ]])
+            ->addTag('container.service_locator')
+        ;
+
+        (new ServiceLocatorTagPass())->process($container);
+
+        $this->assertSame(['bar', 'baz'], array_keys($container->getDefinition('foo')->getArgument(0)));
     }
 
     public function testServiceWithKeyOverwritesPreviousInheritedKey()
@@ -104,7 +126,7 @@ class ServiceLocatorTagPassTest extends TestCase
         /** @var ServiceLocator $locator */
         $locator = $container->get('foo');
 
-        $this->assertSame(TestDefinition2::class, \get_class($locator('bar')));
+        $this->assertSame(TestDefinition2::class, $locator('bar')::class);
     }
 
     public function testInheritedKeyOverwritesPreviousServiceWithKey()
@@ -128,8 +150,8 @@ class ServiceLocatorTagPassTest extends TestCase
         /** @var ServiceLocator $locator */
         $locator = $container->get('foo');
 
-        $this->assertSame(TestDefinition1::class, \get_class($locator('bar')));
-        $this->assertSame(TestDefinition2::class, \get_class($locator(16)));
+        $this->assertSame(TestDefinition1::class, $locator('bar')::class);
+        $this->assertSame(TestDefinition2::class, $locator(16)::class);
     }
 
     public function testBindingsAreCopied()
@@ -155,7 +177,7 @@ class ServiceLocatorTagPassTest extends TestCase
         $container->register('baz', TestDefinition2::class)->addTag('test_tag');
 
         $container->register('foo', ServiceLocator::class)
-            ->setArguments([new TaggedIteratorArgument('test_tag', null, null, true)])
+            ->setArguments([new TaggedIteratorArgument('test_tag', null, true)])
             ->addTag('container.service_locator')
         ;
 
@@ -164,8 +186,29 @@ class ServiceLocatorTagPassTest extends TestCase
         /** @var ServiceLocator $locator */
         $locator = $container->get('foo');
 
-        $this->assertSame(TestDefinition1::class, \get_class($locator('bar')));
-        $this->assertSame(TestDefinition2::class, \get_class($locator('baz')));
+        $this->assertSame(TestDefinition1::class, $locator('bar')::class);
+        $this->assertSame(TestDefinition2::class, $locator('baz')::class);
+    }
+
+    public function testTaggedServicesKeysAreKept()
+    {
+        $container = new ContainerBuilder();
+
+        $container->register('bar', TestDefinition1::class)->addTag('test_tag', ['index' => 0]);
+        $container->register('baz', TestDefinition2::class)->addTag('test_tag', ['index' => 1]);
+
+        $container->register('foo', ServiceLocator::class)
+            ->setArguments([new TaggedIteratorArgument('test_tag', 'index', true)])
+            ->addTag('container.service_locator')
+        ;
+
+        (new ServiceLocatorTagPass())->process($container);
+
+        /** @var ServiceLocator $locator */
+        $locator = $container->get('foo');
+
+        $this->assertSame(TestDefinition1::class, $locator(0)::class);
+        $this->assertSame(TestDefinition2::class, $locator(1)::class);
     }
 
     public function testIndexedByServiceIdWithDecoration()
@@ -174,7 +217,7 @@ class ServiceLocatorTagPassTest extends TestCase
 
         $locator = new Definition(Locator::class);
         $locator->setPublic(true);
-        $locator->addArgument(new ServiceLocatorArgument(new TaggedIteratorArgument('test_tag', null, null, true)));
+        $locator->addArgument(new ServiceLocatorArgument(new TaggedIteratorArgument('test_tag', null, true)));
 
         $container->setDefinition(Locator::class, $locator);
 
@@ -197,6 +240,24 @@ class ServiceLocatorTagPassTest extends TestCase
         static::assertTrue($locator->has(Service::class));
         static::assertFalse($locator->has(DecoratedService::class));
         static::assertInstanceOf(DecoratedService::class, $locator->get(Service::class));
+    }
+
+    public function testServicesKeysAreKept()
+    {
+        $container = new ContainerBuilder();
+        $container->register('service-1');
+        $container->register('service-2');
+        $container->register('service-3');
+
+        $locator = ServiceLocatorTagPass::register($container, [
+            new Reference('service-1'),
+            'service-2' => new Reference('service-2'),
+            'foo' => new Reference('service-3'),
+        ]);
+        $locator = $container->getDefinition($locator);
+        $factories = $locator->getArguments()[0];
+
+        static::assertSame([0, 'service-2', 'foo'], array_keys($factories));
     }
 
     public function testDefinitionOrderIsTheSame()
@@ -230,10 +291,7 @@ class ServiceLocatorTagPassTest extends TestCase
 
 class Locator
 {
-    /**
-     * @var ServiceLocator
-     */
-    public $locator;
+    public ServiceLocator $locator;
 
     public function __construct(ServiceLocator $locator)
     {

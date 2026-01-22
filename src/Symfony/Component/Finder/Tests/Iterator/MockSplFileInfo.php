@@ -17,11 +17,11 @@ class MockSplFileInfo extends \SplFileInfo
     public const TYPE_FILE = 2;
     public const TYPE_UNKNOWN = 3;
 
-    private $contents = null;
-    private $mode = null;
-    private $type = null;
-    private $relativePath = null;
-    private $relativePathname = null;
+    private ?string $contents = null;
+    private ?string $mode = null;
+    private ?int $type = null;
+    private ?string $relativePath = null;
+    private ?string $relativePathname = null;
 
     public function __construct($param)
     {
@@ -44,7 +44,7 @@ class MockSplFileInfo extends \SplFileInfo
             $this->setRelativePath($defaults['relativePath']);
             $this->setRelativePathname($defaults['relativePathname']);
         } else {
-            throw new \RuntimeException(sprintf('Incorrect parameter "%s"', $param));
+            throw new \RuntimeException(\sprintf('Incorrect parameter "%s"', $param));
         }
     }
 

@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Notifier\Bridge\MicrosoftTeams\Tests\Action;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Notifier\Bridge\MicrosoftTeams\Action\ActionCard;
 use Symfony\Component\Notifier\Bridge\MicrosoftTeams\Action\ActionCardCompatibleActionInterface;
@@ -31,9 +32,7 @@ final class ActionCardTest extends TestCase
         $this->assertSame($value, $action->toArray()['name']);
     }
 
-    /**
-     * @dataProvider availableInputs
-     */
+    #[DataProvider('availableInputs')]
     public function testInput(array $expected, InputInterface $input)
     {
         $action = (new ActionCard())
@@ -43,16 +42,14 @@ final class ActionCardTest extends TestCase
         $this->assertSame($expected, $action->toArray()['inputs']);
     }
 
-    public function availableInputs(): \Generator
+    public static function availableInputs(): \Generator
     {
         yield [[['@type' => 'DateInput']], new DateInput()];
         yield [[['@type' => 'TextInput']], new TextInput()];
         yield [[['@type' => 'MultichoiceInput']], new MultiChoiceInput()];
     }
 
-    /**
-     * @dataProvider compatibleActions
-     */
+    #[DataProvider('compatibleActions')]
     public function testAction(array $expected, ActionCardCompatibleActionInterface $action)
     {
         $section = (new ActionCard())
@@ -62,7 +59,7 @@ final class ActionCardTest extends TestCase
         $this->assertSame($expected, $section->toArray()['actions']);
     }
 
-    public function compatibleActions(): \Generator
+    public static function compatibleActions(): \Generator
     {
         yield [[['@type' => 'HttpPOST']], new HttpPostAction()];
         yield [[['@type' => 'OpenUri']], new OpenUriAction()];

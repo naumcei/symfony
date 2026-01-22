@@ -28,19 +28,18 @@ class ChatworkTransport extends AbstractTransport
 {
     protected const HOST = 'api.chatwork.com';
 
-    private string $apiToken;
-    private string $roomId;
-
-    public function __construct(#[\SensitiveParameter] string $apiToken, string $roomId, HttpClientInterface $client = null, EventDispatcherInterface $dispatcher = null)
-    {
-        $this->apiToken = $apiToken;
-        $this->roomId = $roomId;
+    public function __construct(
+        #[\SensitiveParameter] private string $apiToken,
+        private string $roomId,
+        ?HttpClientInterface $client = null,
+        ?EventDispatcherInterface $dispatcher = null,
+    ) {
         parent::__construct($client, $dispatcher);
     }
 
     public function __toString(): string
     {
-        return sprintf('chatwork://%s?room_id=%s', $this->getEndpoint(), $this->roomId);
+        return \sprintf('chatwork://%s?room_id=%s', $this->getEndpoint(), $this->roomId);
     }
 
     public function supports(MessageInterface $message): bool
@@ -54,8 +53,7 @@ class ChatworkTransport extends AbstractTransport
             throw new UnsupportedMessageTypeException(__CLASS__, ChatMessage::class, $message);
         }
 
-        $messageOptions = $message->getOptions();
-        $options = $messageOptions ? $messageOptions->toArray() : [];
+        $options = $message->getOptions()?->toArray() ?? [];
 
         $bodyBuilder = new ChatworkMessageBodyBuilder();
         if (\array_key_exists('to', $options)) {
@@ -69,12 +67,11 @@ class ChatworkTransport extends AbstractTransport
             ->body($message->getSubject())
             ->getMessageBody();
 
-        $endpoint = sprintf('https://%s/v2/rooms/%s/messages', $this->getEndpoint(), $this->roomId);
+        $endpoint = \sprintf('https://%s/v2/rooms/%s/messages', $this->getEndpoint(), $this->roomId);
         $response = $this->client->request('POST', $endpoint, [
             'body' => $messageBody,
             'headers' => [
                 'X-ChatWorkToken' => $this->apiToken,
-                'Content-Type' => 'application/x-www-form-urlencoded',
             ],
         ]);
 
@@ -88,7 +85,7 @@ class ChatworkTransport extends AbstractTransport
             $originalContent = $message->getSubject();
             $result = $response->toArray(false);
             $errors = $result['errors'];
-            throw new TransportException(sprintf('Unable to post the Chatwork message: "%s" (%d: %s).', $originalContent, $statusCode, implode(', ', $errors)), $response);
+            throw new TransportException(\sprintf('Unable to post the Chatwork message: "%s" (%d: %s).', $originalContent, $statusCode, implode(', ', $errors)), $response);
         }
 
         return new SentMessage($message, (string) $this);

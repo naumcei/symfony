@@ -12,16 +12,21 @@
 namespace Symfony\Component\Notifier\Bridge\Vonage\Tests;
 
 use Symfony\Component\Notifier\Bridge\Vonage\VonageTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
+use Symfony\Component\Notifier\Test\MissingRequiredOptionTestTrait;
 
-final class VonageTransportFactoryTest extends TransportFactoryTestCase
+final class VonageTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+    use MissingRequiredOptionTestTrait;
+
     public function createFactory(): VonageTransportFactory
     {
         return new VonageTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'vonage://host.test?from=0611223344',
@@ -29,20 +34,26 @@ final class VonageTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'vonage://apiKey:apiSecret@default?from=0611223344'];
         yield [false, 'somethingElse://apiKey:apiSecret@default?from=0611223344'];
     }
 
-    public function missingRequiredOptionProvider(): iterable
+    public static function missingRequiredOptionProvider(): iterable
     {
         yield 'missing option: from' => ['vonage://apiKey:apiSecret@default'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://apiKey:apiSecret@default?from=0611223344'];
         yield ['somethingElse://apiKey:apiSecret@default']; // missing "from" option
+    }
+
+    public static function incompleteDsnProvider(): iterable
+    {
+        yield ['vonage://:apiSecret@default?from=0611223344'];
+        yield ['vonage://apiKey:@default?from=0611223344'];
     }
 }

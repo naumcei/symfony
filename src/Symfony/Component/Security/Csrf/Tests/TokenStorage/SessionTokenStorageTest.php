@@ -26,15 +26,8 @@ class SessionTokenStorageTest extends TestCase
 {
     private const SESSION_NAMESPACE = 'foobar';
 
-    /**
-     * @var Session
-     */
-    private $session;
-
-    /**
-     * @var SessionTokenStorage
-     */
-    private $storage;
+    private Session $session;
+    private SessionTokenStorage $storage;
 
     protected function setUp(): void
     {
@@ -101,8 +94,10 @@ class SessionTokenStorageTest extends TestCase
 
     public function testGetNonExistingTokenFromActiveSession()
     {
-        $this->expectException(TokenNotFoundException::class);
         $this->session->start();
+
+        $this->expectException(TokenNotFoundException::class);
+
         $this->storage->getToken('token_id');
     }
 

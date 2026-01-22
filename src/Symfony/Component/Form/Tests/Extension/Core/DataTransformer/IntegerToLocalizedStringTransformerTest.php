@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Form\Tests\Extension\Core\DataTransformer;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Component\Form\Extension\Core\DataTransformer\IntegerToLocalizedStringTransformer;
@@ -18,7 +19,7 @@ use Symfony\Component\Intl\Util\IntlTestHelper;
 
 class IntegerToLocalizedStringTransformerTest extends TestCase
 {
-    private $defaultLocale;
+    private string $defaultLocale;
 
     protected function setUp(): void
     {
@@ -31,7 +32,7 @@ class IntegerToLocalizedStringTransformerTest extends TestCase
         \Locale::setDefault($this->defaultLocale);
     }
 
-    public function transformWithRoundingProvider()
+    public static function transformWithRoundingProvider()
     {
         return [
             // towards positive infinity (1.6 -> 2, -1.6 -> -1)
@@ -82,9 +83,7 @@ class IntegerToLocalizedStringTransformerTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider transformWithRoundingProvider
-     */
+    #[DataProvider('transformWithRoundingProvider')]
     public function testTransformWithRounding($input, $output, $roundingMode)
     {
         $transformer = new IntegerToLocalizedStringTransformer(null, $roundingMode);
@@ -95,7 +94,7 @@ class IntegerToLocalizedStringTransformerTest extends TestCase
     public function testReverseTransform()
     {
         // Since we test against "de_AT", we need the full implementation
-        IntlTestHelper::requireFullIntl($this, false);
+        IntlTestHelper::requireFullIntl($this);
 
         \Locale::setDefault('de_AT');
 
@@ -115,7 +114,7 @@ class IntegerToLocalizedStringTransformerTest extends TestCase
     public function testReverseTransformWithGrouping()
     {
         // Since we test against "de_DE", we need the full implementation
-        IntlTestHelper::requireFullIntl($this, false);
+        IntlTestHelper::requireFullIntl($this);
 
         \Locale::setDefault('de_DE');
 
@@ -127,7 +126,7 @@ class IntegerToLocalizedStringTransformerTest extends TestCase
         $this->assertEquals(12345, $transformer->reverseTransform('12345'));
     }
 
-    public function reverseTransformWithRoundingProvider()
+    public static function reverseTransformWithRoundingProvider()
     {
         return [
             // towards positive infinity (1.6 -> 2, -1.6 -> -1)
@@ -178,9 +177,7 @@ class IntegerToLocalizedStringTransformerTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider reverseTransformWithRoundingProvider
-     */
+    #[DataProvider('reverseTransformWithRoundingProvider')]
     public function testReverseTransformWithRounding($input, $output, $roundingMode)
     {
         $transformer = new IntegerToLocalizedStringTransformer(null, $roundingMode);
@@ -204,13 +201,11 @@ class IntegerToLocalizedStringTransformerTest extends TestCase
         $transformer->reverseTransform('foo');
     }
 
-    /**
-     * @dataProvider floatNumberProvider
-     */
+    #[DataProvider('floatNumberProvider')]
     public function testReverseTransformExpectsInteger($number, $locale)
     {
         $this->expectException(TransformationFailedException::class);
-        IntlTestHelper::requireFullIntl($this, false);
+        IntlTestHelper::requireFullIntl($this);
 
         \Locale::setDefault($locale);
 
@@ -219,7 +214,7 @@ class IntegerToLocalizedStringTransformerTest extends TestCase
         $transformer->reverseTransform($number);
     }
 
-    public function floatNumberProvider()
+    public static function floatNumberProvider()
     {
         return [
             ['12345.912', 'en'],

@@ -15,29 +15,29 @@ use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\HubRegistry;
 use Symfony\Component\Notifier\Bridge\Mercure\MercureTransportFactory;
 use Symfony\Component\Notifier\Exception\IncompleteDsnException;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
 use Symfony\Component\Notifier\Transport\Dsn;
 
 /**
  * @author Mathias Arlaud <mathias.arlaud@gmail.com>
  */
-final class MercureTransportFactoryTest extends TransportFactoryTestCase
+final class MercureTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
     public function createFactory(): MercureTransportFactory
     {
-        $hub = $this->createMock(HubInterface::class);
+        $hub = $this->createStub(HubInterface::class);
         $hubRegistry = new HubRegistry($hub, ['hubId' => $hub]);
 
         return new MercureTransportFactory($hubRegistry);
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'mercure://hubId?topic=topic'];
         yield [false, 'somethingElse://hubId?topic=topic'];
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'mercure://hubId?topic=%2Ftopic%2F1',
@@ -55,14 +55,14 @@ final class MercureTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://hubId?topic=topic'];
     }
 
     public function testNotFoundHubThrows()
     {
-        $hub = $this->createMock(HubInterface::class);
+        $hub = $this->createStub(HubInterface::class);
         $hubRegistry = new HubRegistry($hub, ['hubId' => $hub, 'anotherHubId' => $hub]);
         $factory = new MercureTransportFactory($hubRegistry);
 

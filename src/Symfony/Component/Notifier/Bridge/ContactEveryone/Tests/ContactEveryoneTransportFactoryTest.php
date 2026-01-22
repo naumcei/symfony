@@ -12,16 +12,19 @@
 namespace Symfony\Component\Notifier\Bridge\ContactEveryone\Tests;
 
 use Symfony\Component\Notifier\Bridge\ContactEveryone\ContactEveryoneTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
 
-final class ContactEveryoneTransportFactoryTest extends TransportFactoryTestCase
+final class ContactEveryoneTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+
     public function createFactory(): ContactEveryoneTransportFactory
     {
         return new ContactEveryoneTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'contact-everyone://host.test',
@@ -44,18 +47,18 @@ final class ContactEveryoneTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'contact-everyone://token@default'];
         yield [false, 'somethingElse://token@default'];
     }
 
-    public function incompleteDsnProvider(): iterable
+    public static function incompleteDsnProvider(): iterable
     {
         yield 'missing token' => ['contact-everyone://default'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://token@default'];
     }

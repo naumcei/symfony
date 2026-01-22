@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Form\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Form\Exception\AlreadySubmittedException;
@@ -38,7 +39,7 @@ use Symfony\Component\PropertyAccess\PropertyPath;
 
 class SimpleFormTest_Countable implements \Countable
 {
-    private $count;
+    private int $count;
 
     public function __construct($count)
     {
@@ -53,7 +54,7 @@ class SimpleFormTest_Countable implements \Countable
 
 class SimpleFormTest_Traversable implements \IteratorAggregate
 {
-    private $iterator;
+    private \ArrayIterator $iterator;
 
     public function __construct($count)
     {
@@ -68,16 +69,14 @@ class SimpleFormTest_Traversable implements \IteratorAggregate
 
 class SimpleFormTest extends TestCase
 {
-    private $form;
+    private Form $form;
 
     protected function setUp(): void
     {
         $this->form = $this->createForm();
     }
 
-    /**
-     * @dataProvider provideFormNames
-     */
+    #[DataProvider('provideFormNames')]
     public function testGetPropertyPath($name, $propertyPath)
     {
         $config = new FormConfigBuilder($name, null, new EventDispatcher());
@@ -86,7 +85,7 @@ class SimpleFormTest extends TestCase
         $this->assertEquals($propertyPath, $form->getPropertyPath());
     }
 
-    public function provideFormNames()
+    public static function provideFormNames(): iterable
     {
         yield [null, null];
         yield ['', null];
@@ -230,9 +229,7 @@ class SimpleFormTest extends TestCase
         $this->assertFalse($child->isRequired());
     }
 
-    /**
-     * @dataProvider getDisabledStates
-     */
+    #[DataProvider('getDisabledStates')]
     public function testAlwaysDisabledIfParentDisabled($parentDisabled, $disabled, $result)
     {
         $parent = $this->getBuilder()->setDisabled($parentDisabled)->getForm();
@@ -243,7 +240,7 @@ class SimpleFormTest extends TestCase
         $this->assertSame($result, $child->isDisabled());
     }
 
-    public function getDisabledStates()
+    public static function getDisabledStates()
     {
         return [
             // parent, button, result
@@ -503,9 +500,9 @@ class SimpleFormTest extends TestCase
     {
         $form = $this->getBuilder()
             ->addModelTransformer(new FixedDataTransformer([
-            '' => '',
-            1 => 23,
-        ]))
+                '' => '',
+                1 => 23,
+            ]))
             ->getForm();
 
         $form->setData(1);
@@ -548,7 +545,7 @@ class SimpleFormTest extends TestCase
         $config
             ->setData('default')
             ->setDataLocked(true)
-            ->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+            ->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) {
                 $event->setData('foobar');
             });
         $form = new Form($config);
@@ -912,7 +909,7 @@ class SimpleFormTest extends TestCase
         $this->expectExceptionMessage('A cycle was detected. Listeners to the PRE_SET_DATA event must not call setData(). You should call setData() on the FormEvent object instead.');
         // Cycle detection to prevent endless loops
         $config = new FormConfigBuilder('name', 'stdClass', new EventDispatcher());
-        $config->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+        $config->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) {
             $event->getForm()->setData('bar');
         });
         $form = new Form($config);
@@ -925,7 +922,7 @@ class SimpleFormTest extends TestCase
         $called = 0;
 
         $child = $this->getBuilder('child');
-        $child->addEventListener(FormEvents::PRE_SUBMIT, function () use (&$called) {
+        $child->addEventListener(FormEvents::PRE_SUBMIT, static function () use (&$called) {
             ++$called;
         });
 
@@ -1036,7 +1033,7 @@ class SimpleFormTest extends TestCase
     {
         $called = 0;
         $form = $this->getBuilder()
-            ->addEventListener(FormEvents::SUBMIT, function () use (&$called) {
+            ->addEventListener(FormEvents::SUBMIT, static function () use (&$called) {
                 ++$called;
             })
             ->setInheritData(true)
@@ -1074,7 +1071,7 @@ class SimpleFormTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('A cycle was detected. Listeners to the PRE_SET_DATA event must not call getData() if the form data has not already been set. You should call getData() on the FormEvent object instead.');
         $config = new FormConfigBuilder('name', 'stdClass', new EventDispatcher());
-        $config->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+        $config->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) {
             $event->getForm()->getData();
         });
         $form = new Form($config);
@@ -1087,7 +1084,7 @@ class SimpleFormTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('A cycle was detected. Listeners to the PRE_SET_DATA event must not call getNormData() if the form data has not already been set.');
         $config = new FormConfigBuilder('name', 'stdClass', new EventDispatcher());
-        $config->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+        $config->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) {
             $event->getForm()->getNormData();
         });
         $form = new Form($config);
@@ -1100,7 +1097,7 @@ class SimpleFormTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('A cycle was detected. Listeners to the PRE_SET_DATA event must not call getViewData() if the form data has not already been set.');
         $config = new FormConfigBuilder('name', 'stdClass', new EventDispatcher());
-        $config->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+        $config->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) {
             $event->getForm()->getViewData();
         });
         $form = new Form($config);
@@ -1112,12 +1109,12 @@ class SimpleFormTest extends TestCase
     {
         $config = new FormConfigBuilder('foo', null, new EventDispatcher());
 
-        $config->setIsEmptyCallback(function ($modelData): bool { return 'ccc' === $modelData; });
+        $config->setIsEmptyCallback(static fn ($modelData): bool => 'ccc' === $modelData);
         $form = new Form($config);
         $form->setData('ccc');
         $this->assertTrue($form->isEmpty());
 
-        $config->setIsEmptyCallback(function (): bool { return false; });
+        $config->setIsEmptyCallback(static fn (): bool => false);
         $form = new Form($config);
         $form->setData(null);
         $this->assertFalse($form->isEmpty());
@@ -1128,7 +1125,7 @@ class SimpleFormTest extends TestCase
         return $this->getBuilder()->getForm();
     }
 
-    private function getBuilder(?string $name = 'name', string $dataClass = null, array $options = []): FormBuilder
+    private function getBuilder(?string $name = 'name', ?string $dataClass = null, array $options = []): FormBuilder
     {
         return new FormBuilder($name, $dataClass, new EventDispatcher(), new FormFactory(new FormRegistry([], new ResolvedFormTypeFactory())), $options);
     }

@@ -11,22 +11,18 @@
 
 namespace Symfony\Component\Validator\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 
 class ConstraintViolationListTest extends TestCase
 {
-    protected $list;
+    protected ConstraintViolationList $list;
 
     protected function setUp(): void
     {
         $this->list = new ConstraintViolationList();
-    }
-
-    protected function tearDown(): void
-    {
-        $this->list = null;
     }
 
     public function testInit()
@@ -112,25 +108,23 @@ class ConstraintViolationListTest extends TestCase
         ]);
 
         $expected = <<<'EOF'
-Root:
-    Error 1
-Root.foo.bar:
-    Error 2
-Root[baz]:
-    Error 3
-foo.bar:
-    Error 4
-[baz]:
-    Error 5
+            Root:
+                Error 1
+            Root.foo.bar:
+                Error 2
+            Root[baz]:
+                Error 3
+            foo.bar:
+                Error 4
+            [baz]:
+                Error 5
 
-EOF;
+            EOF;
 
         $this->assertEquals($expected, (string) $this->list);
     }
 
-    /**
-     * @dataProvider findByCodesProvider
-     */
+    #[DataProvider('findByCodesProvider')]
     public function testFindByCodes($code, $violationsCount)
     {
         $violations = [
@@ -146,7 +140,7 @@ EOF;
         $this->assertCount($violationsCount, $specificErrors);
     }
 
-    public function findByCodesProvider()
+    public static function findByCodesProvider()
     {
         return [
             ['code1', 2],

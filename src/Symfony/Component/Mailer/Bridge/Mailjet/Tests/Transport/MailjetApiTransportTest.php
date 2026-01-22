@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Mailer\Bridge\Mailjet\Tests\Transport;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -26,15 +27,13 @@ class MailjetApiTransportTest extends TestCase
     protected const USER = 'u$er';
     protected const PASSWORD = 'pa$s';
 
-    /**
-     * @dataProvider getTransportData
-     */
+    #[DataProvider('getTransportData')]
     public function testToString(MailjetApiTransport $transport, string $expected)
     {
         $this->assertSame($expected, (string) $transport);
     }
 
-    public function getTransportData()
+    public static function getTransportData()
     {
         return [
             [
@@ -44,6 +43,10 @@ class MailjetApiTransportTest extends TestCase
             [
                 (new MailjetApiTransport(self::USER, self::PASSWORD))->setHost('example.com'),
                 'mailjet+api://example.com',
+            ],
+            [
+                (new MailjetApiTransport(self::USER, self::PASSWORD, sandbox: true))->setHost('example.com'),
+                'mailjet+api://example.com?sandbox=true',
             ],
         ];
     }
@@ -101,15 +104,21 @@ class MailjetApiTransportTest extends TestCase
     {
         $json = json_encode([
             'Messages' => [
-                'foo' => 'bar',
+                [
+                    'Status' => 'success',
+                    'To' => [
+                        [
+                            'Email' => 'passenger1@mailjet.com',
+                            'MessageUUID' => '7c5f9f29-42ba-4959-b19c-dcd8b2f327ca',
+                            'MessageID' => '576460756513665525',
+                            'MessageHref' => 'https://api.mailjet.com/v3/message/576460756513665525',
+                        ],
+                    ],
+                ],
             ],
         ]);
 
-        $responseHeaders = [
-            'x-mj-request-guid' => ['baz'],
-        ];
-
-        $response = new MockResponse($json, ['response_headers' => $responseHeaders]);
+        $response = new MockResponse($json);
 
         $client = new MockHttpClient($response);
 
@@ -123,7 +132,7 @@ class MailjetApiTransportTest extends TestCase
 
         $sentMessage = $transport->send($email);
         $this->assertInstanceOf(SentMessage::class, $sentMessage);
-        $this->assertSame('baz', $sentMessage->getMessageId());
+        $this->assertSame('576460756513665525', $sentMessage->getMessageId());
     }
 
     public function testSendWithDecodingException()
@@ -227,9 +236,7 @@ class MailjetApiTransportTest extends TestCase
         $transport->send($email);
     }
 
-    /**
-     * @dataProvider getMalformedResponse
-     */
+    #[DataProvider('getMalformedResponse')]
     public function testSendWithMalformedResponse(array $body)
     {
         $json = json_encode($body);
@@ -247,13 +254,13 @@ class MailjetApiTransportTest extends TestCase
             ->text('foobar');
 
         $this->expectExceptionObject(
-            new HttpTransportException(sprintf('Unable to send an email: "%s" malformed api response.', $json), $response)
+            new HttpTransportException(\sprintf('Unable to send an email: "%s" malformed api response.', $json), $response)
         );
 
         $transport->send($email);
     }
 
-    public function getMalformedResponse(): \Generator
+    public static function getMalformedResponse(): \Generator
     {
         yield 'Missing Messages key' => [
             [
@@ -318,7 +325,6 @@ class MailjetApiTransportTest extends TestCase
 
         $transport = new MailjetApiTransport(self::USER, self::PASSWORD);
         $method = new \ReflectionMethod(MailjetApiTransport::class, 'getPayload');
-        $method->setAccessible(true);
         self::assertSame(
             [
                 'Messages' => [
@@ -360,10 +366,63 @@ class MailjetApiTransportTest extends TestCase
                         'CustomCampaign' => 'SendAPI_campaign',
                         'DeduplicateCampaign' => true,
                         'Priority' => 2,
-                        'TrackClick' => 'account_default',
-                        'TrackOpen' => 'account_default',
+                        'TrackClicks' => 'account_default',
+                        'TrackOpens' => 'account_default',
                     ],
                 ],
+                'SandBoxMode' => false,
+            ],
+            $method->invoke($transport, $email, $envelope)
+        );
+
+        $transport = new MailjetApiTransport(self::USER, self::PASSWORD, sandbox: true);
+        $method = new \ReflectionMethod(MailjetApiTransport::class, 'getPayload');
+        self::assertSame(
+            [
+                'Messages' => [
+                    [
+                        'From' => [
+                            'Email' => 'foo@example.com',
+                            'Name' => 'Foo',
+                        ],
+                        'To' => [
+                            [
+                                'Email' => 'bar@example.com',
+                                'Name' => '',
+                            ],
+                        ],
+                        'Subject' => 'Sending email to mailjet API',
+                        'Attachments' => [],
+                        'InlinedAttachments' => [],
+                        'ReplyTo' => [
+                            'Email' => 'qux@example.com',
+                            'Name' => 'Qux',
+                        ],
+                        'Headers' => [
+                            'X-authorized-header' => 'authorized',
+                        ],
+                        'TemplateLanguage' => true,
+                        'TemplateID' => 12345,
+                        'TemplateErrorReporting' => [
+                            'Email' => 'errors@mailjet.com',
+                            'Name' => 'Error Email',
+                        ],
+                        'TemplateErrorDeliver' => true,
+                        'Variables' => [
+                            'varname1' => 'value1',
+                            'varname2' => 'value2',
+                            'varname3' => 'value3',
+                        ],
+                        'CustomID' => 'CustomValue',
+                        'EventPayload' => 'Eticket,1234,row,15,seat,B',
+                        'CustomCampaign' => 'SendAPI_campaign',
+                        'DeduplicateCampaign' => true,
+                        'Priority' => 2,
+                        'TrackClicks' => 'account_default',
+                        'TrackOpens' => 'account_default',
+                    ],
+                ],
+                'SandBoxMode' => true,
             ],
             $method->invoke($transport, $email, $envelope)
         );

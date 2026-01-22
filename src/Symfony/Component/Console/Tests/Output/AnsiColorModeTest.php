@@ -11,29 +11,26 @@
 
 namespace Symfony\Component\Console\Tests\Output;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Output\AnsiColorMode;
 
 class AnsiColorModeTest extends TestCase
 {
-    /**
-     * @dataProvider provideColorsConversion
-     */
+    #[DataProvider('provideColorsConversion')]
     public function testColorsConversionToAnsi4(string $corlorHex, array $expected)
     {
         $this->assertSame((string) $expected[AnsiColorMode::Ansi4->name], AnsiColorMode::Ansi4->convertFromHexToAnsiColorCode($corlorHex));
     }
 
-    /**
-     * @dataProvider provideColorsConversion
-     */
+    #[DataProvider('provideColorsConversion')]
     public function testColorsConversionToAnsi8(string $corlorHex, array $expected)
     {
         $this->assertSame('8;5;'.$expected[AnsiColorMode::Ansi8->name], AnsiColorMode::Ansi8->convertFromHexToAnsiColorCode($corlorHex));
     }
 
-    public function provideColorsConversion(): \Generator
+    public static function provideColorsConversion(): \Generator
     {
         yield ['#606702', [
             AnsiColorMode::Ansi8->name => 100,
@@ -62,6 +59,16 @@ class AnsiColorModeTest extends TestCase
 
         yield ['#a8a8a8', [
             AnsiColorMode::Ansi8->name => 248,
+            AnsiColorMode::Ansi4->name => 7,
+        ]];
+
+        yield ['#000000', [
+            AnsiColorMode::Ansi8->name => 16,
+            AnsiColorMode::Ansi4->name => 0,
+        ]];
+
+        yield ['#ffffff', [
+            AnsiColorMode::Ansi8->name => 231,
             AnsiColorMode::Ansi4->name => 7,
         ]];
     }

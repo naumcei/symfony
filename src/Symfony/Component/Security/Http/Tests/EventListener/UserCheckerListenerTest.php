@@ -11,23 +11,24 @@
 
 namespace Symfony\Component\Security\Http\Tests\EventListener;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Event\AuthenticationSuccessEvent;
 use Symfony\Component\Security\Core\User\InMemoryUser;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
-use Symfony\Component\Security\Http\Authenticator\AuthenticatorInterface;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\PreAuthenticatedUserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken;
 use Symfony\Component\Security\Http\Event\CheckPassportEvent;
 use Symfony\Component\Security\Http\EventListener\UserCheckerListener;
+use Symfony\Component\Security\Http\Tests\Fixtures\DummyAuthenticator;
 
 class UserCheckerListenerTest extends TestCase
 {
-    private $userChecker;
-    private $listener;
-    private $user;
+    private MockObject&UserCheckerInterface $userChecker;
+    private UserCheckerListener $listener;
+    private InMemoryUser $user;
 
     protected function setUp(): void
     {
@@ -47,7 +48,7 @@ class UserCheckerListenerTest extends TestCase
     {
         $this->userChecker->expects($this->never())->method('checkPreAuth');
 
-        $this->listener->preCheckCredentials($this->createCheckPassportEvent(new SelfValidatingPassport(new UserBadge('test', function () { return $this->user; }), [new PreAuthenticatedUserBadge()])));
+        $this->listener->preCheckCredentials($this->createCheckPassportEvent(new SelfValidatingPassport(new UserBadge('test', fn () => $this->user), [new PreAuthenticatedUserBadge()])));
     }
 
     public function testPostAuthValidCredentials()
@@ -57,15 +58,18 @@ class UserCheckerListenerTest extends TestCase
         $this->listener->postCheckCredentials(new AuthenticationSuccessEvent(new PostAuthenticationToken($this->user, 'main', [])));
     }
 
-    private function createCheckPassportEvent($passport = null)
+    public function testTokenIsPassedToPost()
     {
-        $passport ??= new SelfValidatingPassport(new UserBadge('test', function () { return $this->user; }));
+        $token = new PostAuthenticationToken($this->user, 'main', []);
+        $this->userChecker->expects($this->once())->method('checkPostAuth')->with($this->user, $token);
 
-        return new CheckPassportEvent($this->createMock(AuthenticatorInterface::class), $passport);
+        $this->listener->postCheckCredentials(new AuthenticationSuccessEvent($token));
     }
 
-    private function createAuthenticationSuccessEvent()
+    private function createCheckPassportEvent($passport = null)
     {
-        return new AuthenticationSuccessEvent(new PostAuthenticationToken($this->user, 'main', []));
+        $passport ??= new SelfValidatingPassport(new UserBadge('test', fn () => $this->user));
+
+        return new CheckPassportEvent(new DummyAuthenticator(), $passport);
     }
 }

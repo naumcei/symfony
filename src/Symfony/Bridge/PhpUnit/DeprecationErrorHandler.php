@@ -11,9 +11,11 @@
 
 namespace Symfony\Bridge\PhpUnit;
 
+use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\TestResult;
+use PHPUnit\Runner\ErrorHandler;
 use PHPUnit\Util\Error\Handler;
-use PHPUnit\Util\ErrorHandler;
+use PHPUnit\Util\ErrorHandler as UtilErrorHandler;
 use Symfony\Bridge\PhpUnit\DeprecationErrorHandler\Configuration;
 use Symfony\Bridge\PhpUnit\DeprecationErrorHandler\Deprecation;
 use Symfony\Bridge\PhpUnit\DeprecationErrorHandler\DeprecationGroup;
@@ -75,7 +77,12 @@ class DeprecationErrorHandler
         if (null !== $oldErrorHandler) {
             restore_error_handler();
 
-            if ($oldErrorHandler instanceof ErrorHandler || [ErrorHandler::class, 'handleError'] === $oldErrorHandler) {
+            if (
+                $oldErrorHandler instanceof UtilErrorHandler
+                || [UtilErrorHandler::class, 'handleError'] === $oldErrorHandler
+                || $oldErrorHandler instanceof ErrorHandler
+                || [ErrorHandler::class, 'handleError'] === $oldErrorHandler
+            ) {
                 restore_error_handler();
                 self::register($mode);
             }
@@ -89,8 +96,8 @@ class DeprecationErrorHandler
     public static function collectDeprecations($outputFile)
     {
         $deprecations = [];
-        $previousErrorHandler = set_error_handler(function ($type, $msg, $file, $line, $context = []) use (&$deprecations, &$previousErrorHandler) {
-            if (\E_USER_DEPRECATED !== $type && \E_DEPRECATED !== $type && (\E_WARNING !== $type || false === strpos($msg, '" targeting switch is equivalent to "break'))) {
+        $previousErrorHandler = set_error_handler(static function ($type, $msg, $file, $line, $context = []) use (&$deprecations, &$previousErrorHandler) {
+            if (\E_USER_DEPRECATED !== $type && \E_DEPRECATED !== $type && (\E_WARNING !== $type || !str_contains($msg, '" targeting switch is equivalent to "break'))) {
                 if ($previousErrorHandler) {
                     return $previousErrorHandler($type, $msg, $file, $line, $context);
                 }
@@ -112,7 +119,7 @@ class DeprecationErrorHandler
             return null;
         });
 
-        register_shutdown_function(function () use ($outputFile, &$deprecations) {
+        register_shutdown_function(static function () use ($outputFile, &$deprecations) {
             file_put_contents($outputFile, serialize($deprecations));
         });
     }
@@ -122,7 +129,7 @@ class DeprecationErrorHandler
      */
     public function handleError($type, $msg, $file, $line, $context = [])
     {
-        if ((\E_USER_DEPRECATED !== $type && \E_DEPRECATED !== $type && (\E_WARNING !== $type || false === strpos($msg, '" targeting switch is equivalent to "break'))) || !$this->getConfiguration()->isEnabled()) {
+        if ((\E_USER_DEPRECATED !== $type && \E_DEPRECATED !== $type && (\E_WARNING !== $type || !str_contains($msg, '" targeting switch is equivalent to "break'))) || !$this->getConfiguration()->isEnabled()) {
             return \call_user_func(self::getPhpUnitErrorHandler(), $type, $msg, $file, $line, $context);
         }
 
@@ -164,6 +171,13 @@ class DeprecationErrorHandler
             exit(1);
         }
 
+        if (\PHP_VERSION_ID >= 80500 && \in_array($msg, [
+            'The __sleep() serialization magic method has been deprecated. Implement __serialize() instead (or in addition, if support for old PHP versions is necessary)',
+            'The __wakeup() serialization magic method has been deprecated. Implement __unserialize() instead (or in addition, if support for old PHP versions is necessary)',
+        ], true)) {
+            return null;
+        }
+
         if ('legacy' === $group) {
             $this->deprecationGroups[$group]->addNotice();
         } elseif ($deprecation->originatesFromAnObject()) {
@@ -203,7 +217,7 @@ class DeprecationErrorHandler
         // store failing status
         $isFailing = !$configuration->tolerates($this->deprecationGroups);
 
-        $this->displayDeprecations($groups, $configuration, $isFailing);
+        $this->displayDeprecations($groups, $configuration);
 
         $this->resetDeprecationGroups();
 
@@ -216,7 +230,7 @@ class DeprecationErrorHandler
             }
 
             $isFailingAtShutdown = !$configuration->tolerates($this->deprecationGroups);
-            $this->displayDeprecations($groups, $configuration, $isFailingAtShutdown);
+            $this->displayDeprecations($groups, $configuration);
 
             if ($configuration->isGeneratingBaseline()) {
                 $configuration->writeBaseline();
@@ -272,13 +286,7 @@ class DeprecationErrorHandler
         return $this->configuration = Configuration::fromUrlEncodedString((string) $mode);
     }
 
-    /**
-     * @param string $str
-     * @param bool   $red
-     *
-     * @return string
-     */
-    private static function colorize($str, $red)
+    private static function colorize(string $str, bool $red): string
     {
         if (!self::hasColorSupport()) {
             return $str;
@@ -290,21 +298,17 @@ class DeprecationErrorHandler
     }
 
     /**
-     * @param string[]      $groups
-     * @param Configuration $configuration
-     * @param bool          $isFailing
-     *
-     * @throws \InvalidArgumentException
+     * @param string[] $groups
      */
-    private function displayDeprecations($groups, $configuration, $isFailing)
+    private function displayDeprecations(array $groups, Configuration $configuration): void
     {
-        $cmp = function ($a, $b) {
+        $cmp = static function ($a, $b) {
             return $b->count() - $a->count();
         };
 
         if ($configuration->shouldWriteToLogFile()) {
             if (false === $handle = @fopen($file = $configuration->getLogFile(), 'a')) {
-                throw new \InvalidArgumentException(sprintf('The configured log file "%s" is not writeable.', $file));
+                throw new \InvalidArgumentException(\sprintf('The configured log file "%s" is not writeable.', $file));
             }
         } else {
             $handle = fopen('php://output', 'w');
@@ -312,7 +316,7 @@ class DeprecationErrorHandler
 
         foreach ($groups as $group) {
             if ($this->deprecationGroups[$group]->count()) {
-                $deprecationGroupMessage = sprintf(
+                $deprecationGroupMessage = \sprintf(
                     '%s deprecation notices (%d)',
                     \in_array($group, ['direct', 'indirect', 'self'], true) ? "Remaining $group" : ucfirst($group),
                     $this->deprecationGroups[$group]->count()
@@ -323,14 +327,15 @@ class DeprecationErrorHandler
                     fwrite($handle, "\n".self::colorize($deprecationGroupMessage, 'legacy' !== $group && 'indirect' !== $group)."\n");
                 }
 
-                if ('legacy' !== $group && !$configuration->verboseOutput($group) && !$isFailing) {
+                // Skip the verbose output if the group is quiet and not failing according to its threshold:
+                if ('legacy' !== $group && !$configuration->verboseOutput($group) && $configuration->toleratesForGroup($group, $this->deprecationGroups)) {
                     continue;
                 }
                 $notices = $this->deprecationGroups[$group]->notices();
                 uasort($notices, $cmp);
 
                 foreach ($notices as $msg => $notice) {
-                    fwrite($handle, sprintf("\n  %sx: %s\n", $notice->count(), $msg));
+                    fwrite($handle, \sprintf("\n  %sx: %s\n", $notice->count(), $msg));
 
                     $countsByCaller = $notice->getCountsByCaller();
                     arsort($countsByCaller);
@@ -342,7 +347,7 @@ class DeprecationErrorHandler
                                 fwrite($handle, "    ...\n");
                                 break;
                             }
-                            fwrite($handle, sprintf("    %dx in %s\n", $count, preg_replace('/(.*)\\\\(.*?::.*?)$/', '$2 from $1', $method)));
+                            fwrite($handle, \sprintf("    %dx in %s\n", $count, preg_replace('/(.*)\\\\(.*?::.*?)$/', '$2 from $1', $method)));
                         }
                     }
                 }
@@ -354,11 +359,13 @@ class DeprecationErrorHandler
         }
     }
 
-    private static function getPhpUnitErrorHandler()
+    private static function getPhpUnitErrorHandler(): callable
     {
         if (!$eh = self::$errorHandler) {
             if (class_exists(Handler::class)) {
                 $eh = self::$errorHandler = Handler::class;
+            } elseif (method_exists(UtilErrorHandler::class, '__invoke')) {
+                $eh = self::$errorHandler = UtilErrorHandler::class;
             } elseif (method_exists(ErrorHandler::class, '__invoke')) {
                 $eh = self::$errorHandler = ErrorHandler::class;
             } else {
@@ -371,17 +378,27 @@ class DeprecationErrorHandler
         }
 
         foreach (debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS) as $frame) {
-            if (isset($frame['object']) && $frame['object'] instanceof TestResult) {
+            if (!isset($frame['object'])) {
+                continue;
+            }
+
+            if ($frame['object'] instanceof TestResult) {
                 return new $eh(
                     $frame['object']->getConvertDeprecationsToExceptions(),
                     $frame['object']->getConvertErrorsToExceptions(),
                     $frame['object']->getConvertNoticesToExceptions(),
                     $frame['object']->getConvertWarningsToExceptions()
                 );
+            } elseif (ErrorHandler::class === $eh && $frame['object'] instanceof TestCase) {
+                return static function (int $errorNumber, string $errorString, string $errorFile, int $errorLine) {
+                    ErrorHandler::instance()($errorNumber, $errorString, $errorFile, $errorLine);
+
+                    return true;
+                };
             }
         }
 
-        return function () { return false; };
+        return static function () { return false; };
     }
 
     /**
@@ -389,43 +406,46 @@ class DeprecationErrorHandler
      *
      * Reference: Composer\XdebugHandler\Process::supportsColor
      * https://github.com/composer/xdebug-handler
-     *
-     * @return bool
      */
-    private static function hasColorSupport()
+    private static function hasColorSupport(): bool
     {
         if (!\defined('STDOUT')) {
             return false;
         }
 
         // Follow https://no-color.org/
-        if (isset($_SERVER['NO_COLOR']) || false !== getenv('NO_COLOR')) {
+        if ('' !== (($_SERVER['NO_COLOR'] ?? getenv('NO_COLOR'))[0] ?? '')) {
             return false;
         }
 
-        if ('Hyper' === getenv('TERM_PROGRAM')) {
+        // Follow https://force-color.org/
+        if ('' !== (($_SERVER['FORCE_COLOR'] ?? getenv('FORCE_COLOR'))[0] ?? '')) {
             return true;
         }
 
-        if (\DIRECTORY_SEPARATOR === '\\') {
-            return (\function_exists('sapi_windows_vt100_support')
-                && sapi_windows_vt100_support(\STDOUT))
-                || false !== getenv('ANSICON')
-                || 'ON' === getenv('ConEmuANSI')
-                || 'xterm' === getenv('TERM');
+        // Detect msysgit/mingw and assume this is a tty because detection
+        // does not work correctly, see https://github.com/composer/composer/issues/9690
+        if (!@stream_isatty(\STDOUT) && !\in_array(strtoupper((string) getenv('MSYSTEM')), ['MINGW32', 'MINGW64'], true)) {
+            return false;
         }
 
-        if (\function_exists('stream_isatty')) {
-            return @stream_isatty(\STDOUT);
+        if ('\\' === \DIRECTORY_SEPARATOR && @sapi_windows_vt100_support(\STDOUT)) {
+            return true;
         }
 
-        if (\function_exists('posix_isatty')) {
-            return @posix_isatty(\STDOUT);
+        if ('Hyper' === getenv('TERM_PROGRAM')
+            || false !== getenv('COLORTERM')
+            || false !== getenv('ANSICON')
+            || 'ON' === getenv('ConEmuANSI')
+        ) {
+            return true;
         }
 
-        $stat = fstat(\STDOUT);
+        if ('dumb' === $term = (string) getenv('TERM')) {
+            return false;
+        }
 
-        // Check if formatted mode is S_IFCHR
-        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
+        // See https://github.com/chalk/supports-color/blob/d4f413efaf8da045c5ab440ed418ef02dbb28bf1/index.js#L157
+        return preg_match('/^((screen|xterm|vt100|vt220|putty|rxvt|ansi|cygwin|linux).*)|(.*-256(color)?(-bce)?)$/', $term);
     }
 }

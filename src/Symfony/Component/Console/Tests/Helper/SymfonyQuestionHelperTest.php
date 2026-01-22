@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Console\Tests\Helper;
 
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Helper\HelperSet;
@@ -20,10 +21,8 @@ use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 
-/**
- * @group tty
- */
-class SymfonyQuestionHelperTest extends AbstractQuestionHelperTest
+#[Group('tty')]
+class SymfonyQuestionHelperTest extends AbstractQuestionHelperTestCase
 {
     public function testAskChoice()
     {
@@ -101,7 +100,7 @@ class SymfonyQuestionHelperTest extends AbstractQuestionHelperTest
     {
         $questionHelper = new SymfonyQuestionHelper();
         $question = new Question('What is your favorite superhero?');
-        $question->setValidator(function ($value) { return $value; });
+        $question->setValidator(static fn ($value) => $value);
         $input = $this->createStreamableInputInterfaceMock($this->getInputStream("\n"));
         $this->assertNull($questionHelper->ask($input, $this->createOutputInterface(), $question));
     }
@@ -137,8 +136,7 @@ class SymfonyQuestionHelperTest extends AbstractQuestionHelperTest
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Aborted.');
-        $dialog = new SymfonyQuestionHelper();
-        $dialog->ask($this->createStreamableInputInterfaceMock($this->getInputStream('')), $this->createOutputInterface(), new Question('What\'s your name?'));
+        (new SymfonyQuestionHelper())->ask($this->createStreamableInputInterfaceMock($this->getInputStream('')), $this->createOutputInterface(), new Question('What\'s your name?'));
     }
 
     public function testChoiceQuestionPadding()
@@ -156,13 +154,15 @@ class SymfonyQuestionHelperTest extends AbstractQuestionHelperTest
         );
 
         $this->assertOutputContains(<<<EOT
- qqq:
-  [foo   ] foo
-  [żółw  ] bar
-  [łabądź] baz
- >
-EOT
-            , $output, true);
+             qqq:
+              [foo   ] foo
+              [żółw  ] bar
+              [łabądź] baz
+             >
+            EOT,
+            $output,
+            true
+        );
     }
 
     public function testChoiceQuestionCustomPrompt()
@@ -177,11 +177,13 @@ EOT
         );
 
         $this->assertOutputContains(<<<EOT
- qqq:
-  [0] foo
- >ccc>
-EOT
-            , $output, true);
+             qqq:
+              [0] foo
+             >ccc>
+            EOT,
+            $output,
+            true
+        );
     }
 
     protected function getInputStream($input)
@@ -203,8 +205,8 @@ EOT
 
     protected function createInputInterfaceMock($interactive = true)
     {
-        $mock = $this->createMock(InputInterface::class);
-        $mock->expects($this->any())
+        $mock = $this->createStub(InputInterface::class);
+        $mock
             ->method('isInteractive')
             ->willReturn($interactive);
 

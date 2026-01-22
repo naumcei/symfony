@@ -9,30 +9,32 @@
  * file that was distributed with this source code.
  */
 
-use Doctrine\Common\Annotations\AnnotationRegistry;
+use Doctrine\Deprecations\Deprecation;
 use Symfony\Bridge\PhpUnit\DeprecationErrorHandler;
 
+// Skip if we're using PHPUnit >=10
+if (class_exists(PHPUnit\Metadata\Metadata::class)) {
+    return;
+}
+
 // Detect if we need to serialize deprecations to a file.
-if ($file = getenv('SYMFONY_DEPRECATIONS_SERIALIZE')) {
+if (in_array(\PHP_SAPI, ['cli', 'phpdbg'], true) && $file = getenv('SYMFONY_DEPRECATIONS_SERIALIZE')) {
     DeprecationErrorHandler::collectDeprecations($file);
 
     return;
 }
 
 // Detect if we're loaded by an actual run of phpunit
-if (!defined('PHPUNIT_COMPOSER_INSTALL') && !class_exists(\PHPUnit\TextUI\Command::class, false)) {
+if (!defined('PHPUNIT_COMPOSER_INSTALL') && !class_exists(PHPUnit\TextUI\Command::class, false)) {
     return;
 }
 
-// Enforce a consistent locale
-setlocale(\LC_ALL, 'C');
+if (isset($fileIdentifier)) {
+    unset($GLOBALS['__composer_autoload_files'][$fileIdentifier]);
+}
 
-if (!class_exists(AnnotationRegistry::class, false) && class_exists(AnnotationRegistry::class)) {
-    if (method_exists(AnnotationRegistry::class, 'registerUniqueLoader')) {
-        AnnotationRegistry::registerUniqueLoader('class_exists');
-    } else {
-        AnnotationRegistry::registerLoader('class_exists');
-    }
+if (class_exists(Deprecation::class)) {
+    Deprecation::withoutDeduplication();
 }
 
 if ('disabled' !== getenv('SYMFONY_DEPRECATIONS_HELPER')) {

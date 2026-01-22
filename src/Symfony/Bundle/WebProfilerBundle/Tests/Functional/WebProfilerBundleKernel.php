@@ -43,24 +43,23 @@ class WebProfilerBundleKernel extends Kernel
 
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
-        $routes->import(__DIR__.'/../../Resources/config/routing/profiler.xml')->prefix('/_profiler');
-        $routes->import(__DIR__.'/../../Resources/config/routing/wdt.xml')->prefix('/_wdt');
+        $routes->import(__DIR__.'/../../Resources/config/routing/profiler.php')->prefix('/_profiler');
+        $routes->import(__DIR__.'/../../Resources/config/routing/wdt.php')->prefix('/_wdt');
         $routes->add('_', '/')->controller('kernel::homepageController');
     }
 
-    protected function configureContainer(ContainerBuilder $containerBuilder, LoaderInterface $loader): void
+    protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader): void
     {
         $config = [
-            'http_method_override' => false,
             'secret' => 'foo-secret',
             'profiler' => ['only_exceptions' => false],
-            'session' => ['storage_factory_id' => 'session.storage.factory.mock_file'],
+            'session' => ['handler_id' => null, 'storage_factory_id' => 'session.storage.factory.mock_file', 'cookie-secure' => 'auto', 'cookie-samesite' => 'lax'],
             'router' => ['utf8' => true],
         ];
 
-        $containerBuilder->loadFromExtension('framework', $config);
+        $container->loadFromExtension('framework', $config);
 
-        $containerBuilder->loadFromExtension('web_profiler', [
+        $container->loadFromExtension('web_profiler', [
             'toolbar' => true,
             'intercept_redirects' => false,
         ]);
@@ -76,13 +75,13 @@ class WebProfilerBundleKernel extends Kernel
         return sys_get_temp_dir().'/log-'.spl_object_hash($this);
     }
 
-    protected function build(ContainerBuilder $container)
+    protected function build(ContainerBuilder $container): void
     {
         $container->register('data_collector.dump', DumpDataCollector::class);
         $container->register('logger', NullLogger::class);
     }
 
-    public function homepageController()
+    public function homepageController(): Response
     {
         return new Response('<html><head></head><body>Homepage Controller.</body></html>');
     }

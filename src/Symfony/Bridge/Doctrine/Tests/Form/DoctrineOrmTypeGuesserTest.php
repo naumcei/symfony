@@ -13,8 +13,11 @@ namespace Symfony\Bridge\Doctrine\Tests\Form;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Mapping\JoinColumnMapping;
+use Doctrine\ORM\Mapping\ManyToOneAssociationMapping;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\Form\DoctrineOrmTypeGuesser;
 use Symfony\Component\Form\Guess\Guess;
@@ -23,9 +26,7 @@ use Symfony\Component\Form\Guess\ValueGuess;
 
 class DoctrineOrmTypeGuesserTest extends TestCase
 {
-    /**
-     * @dataProvider requiredType
-     */
+    #[DataProvider('requiredType')]
     public function testTypeGuesser(string $type, $expected)
     {
         $classMetadata = $this->createMock(ClassMetadata::class);
@@ -35,7 +36,7 @@ class DoctrineOrmTypeGuesserTest extends TestCase
         $this->assertEquals($expected, $this->getGuesser($classMetadata)->guessType('TestEntity', 'field'));
     }
 
-    public function requiredType()
+    public static function requiredType()
     {
         yield [Types::DATE_IMMUTABLE, new TypeGuess('Symfony\Component\Form\Extension\Core\Type\DateType', ['input' => 'datetime_immutable'], Guess::HIGH_CONFIDENCE)];
         yield [Types::DATE_MUTABLE, new TypeGuess('Symfony\Component\Form\Extension\Core\Type\DateType', [], Guess::HIGH_CONFIDENCE)];
@@ -49,66 +50,67 @@ class DoctrineOrmTypeGuesserTest extends TestCase
         yield [Types::DATETIMETZ_MUTABLE, new TypeGuess('Symfony\Component\Form\Extension\Core\Type\DateTimeType', [], Guess::HIGH_CONFIDENCE)];
     }
 
-    /**
-     * @dataProvider requiredProvider
-     */
-    public function testRequiredGuesser($classMetadata, $expected)
+    public function testRequiredGuesserSimpleFieldNotNullable()
     {
-        $this->assertEquals($expected, $this->getGuesser($classMetadata)->guessRequired('TestEntity', 'field'));
-    }
-
-    public function requiredProvider()
-    {
-        $return = [];
-
-        // Simple field, not nullable
         $classMetadata = $this->createMock(ClassMetadata::class);
         $classMetadata->fieldMappings['field'] = true;
         $classMetadata->expects($this->once())->method('isNullable')->with('field')->willReturn(false);
 
-        $return[] = [$classMetadata, new ValueGuess(true, Guess::HIGH_CONFIDENCE)];
+        $this->assertEquals(new ValueGuess(true, Guess::HIGH_CONFIDENCE), $this->getGuesser($classMetadata)->guessRequired('TestEntity', 'field'));
+    }
 
-        // Simple field, nullable
+    public function testRequiredGuesserSimpleFieldNullable()
+    {
         $classMetadata = $this->createMock(ClassMetadata::class);
         $classMetadata->fieldMappings['field'] = true;
         $classMetadata->expects($this->once())->method('isNullable')->with('field')->willReturn(true);
 
-        $return[] = [$classMetadata, new ValueGuess(false, Guess::MEDIUM_CONFIDENCE)];
+        $this->assertEquals(new ValueGuess(false, Guess::MEDIUM_CONFIDENCE), $this->getGuesser($classMetadata)->guessRequired('TestEntity', 'field'));
+    }
 
-        // One-to-one, nullable (by default)
-        $classMetadata = $this->createMock(ClassMetadata::class);
-        $classMetadata->expects($this->once())->method('isAssociationWithSingleJoinColumn')->with('field')->willReturn(true);
+    public function testRequiredGuesserOneToOneNullable()
+    {
+        $classMetadata = new ClassMetadata('Acme\Entity\Foo');
 
-        $mapping = ['joinColumns' => [[]]];
-        $classMetadata->expects($this->once())->method('getAssociationMapping')->with('field')->willReturn($mapping);
+        $associationMapping = new ManyToOneAssociationMapping('field', 'Acme\Entity\Foo', 'Acme\Entity\Bar');
+        $associationMapping->joinColumns[] = new JoinColumnMapping('field', 'field');
+        $classMetadata->associationMappings['field'] = $associationMapping;
 
-        $return[] = [$classMetadata, new ValueGuess(false, Guess::HIGH_CONFIDENCE)];
+        $this->assertEquals(new ValueGuess(false, Guess::HIGH_CONFIDENCE), $this->getGuesser($classMetadata)->guessRequired('TestEntity', 'field'));
+    }
 
-        // One-to-one, nullable (explicit)
-        $classMetadata = $this->createMock(ClassMetadata::class);
-        $classMetadata->expects($this->once())->method('isAssociationWithSingleJoinColumn')->with('field')->willReturn(true);
+    public function testRequiredGuesserOneToOneExplicitNullable()
+    {
+        $classMetadata = new ClassMetadata('Acme\Entity\Foo');
 
-        $mapping = ['joinColumns' => [['nullable' => true]]];
-        $classMetadata->expects($this->once())->method('getAssociationMapping')->with('field')->willReturn($mapping);
+        $associationMapping = new ManyToOneAssociationMapping('field', 'Acme\Entity\Foo', 'Acme\Entity\Bar');
+        $joinColumnMapping = new JoinColumnMapping('field', 'field');
+        $joinColumnMapping->nullable = true;
+        $associationMapping->joinColumns[] = $joinColumnMapping;
+        $classMetadata->associationMappings['field'] = $associationMapping;
 
-        $return[] = [$classMetadata, new ValueGuess(false, Guess::HIGH_CONFIDENCE)];
+        $this->assertEquals(new ValueGuess(false, Guess::HIGH_CONFIDENCE), $this->getGuesser($classMetadata)->guessRequired('TestEntity', 'field'));
+    }
 
-        // One-to-one, not nullable
-        $classMetadata = $this->createMock(ClassMetadata::class);
-        $classMetadata->expects($this->once())->method('isAssociationWithSingleJoinColumn')->with('field')->willReturn(true);
+    public function testRequiredGuesserOneToOneNotNullable()
+    {
+        $classMetadata = new ClassMetadata('Acme\Entity\Foo');
 
-        $mapping = ['joinColumns' => [['nullable' => false]]];
-        $classMetadata->expects($this->once())->method('getAssociationMapping')->with('field')->willReturn($mapping);
+        $associationMapping = new ManyToOneAssociationMapping('field', 'Acme\Entity\Foo', 'Acme\Entity\Bar');
+        $joinColumnMapping = new JoinColumnMapping('field', 'field');
+        $joinColumnMapping->nullable = false;
+        $associationMapping->joinColumns[] = $joinColumnMapping;
+        $classMetadata->associationMappings['field'] = $associationMapping;
 
-        $return[] = [$classMetadata, new ValueGuess(true, Guess::HIGH_CONFIDENCE)];
+        $this->assertEquals(new ValueGuess(true, Guess::HIGH_CONFIDENCE), $this->getGuesser($classMetadata)->guessRequired('TestEntity', 'field'));
+    }
 
-        // One-to-many, no clue
+    public function testRequiredGuesserOneToMany()
+    {
         $classMetadata = $this->createMock(ClassMetadata::class);
         $classMetadata->expects($this->once())->method('isAssociationWithSingleJoinColumn')->with('field')->willReturn(false);
 
-        $return[] = [$classMetadata, null];
-
-        return $return;
+        $this->assertNull($this->getGuesser($classMetadata)->guessRequired('TestEntity', 'field'));
     }
 
     private function getGuesser(ClassMetadata $classMetadata)

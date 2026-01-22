@@ -12,7 +12,6 @@
 namespace Symfony\Component\Serializer\Debug;
 
 use Symfony\Component\Serializer\DataCollector\SerializerDataCollector;
-use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
@@ -25,34 +24,40 @@ use Symfony\Component\Serializer\SerializerInterface;
  *
  * @author Mathias Arlaud <mathias.arlaud@gmail.com>
  *
- * @internal
+ * @final
  */
-class TraceableNormalizer implements NormalizerInterface, DenormalizerInterface, SerializerAwareInterface, NormalizerAwareInterface, DenormalizerAwareInterface, CacheableSupportsMethodInterface
+class TraceableNormalizer implements NormalizerInterface, DenormalizerInterface, SerializerAwareInterface, NormalizerAwareInterface, DenormalizerAwareInterface
 {
     public function __construct(
         private NormalizerInterface|DenormalizerInterface $normalizer,
         private SerializerDataCollector $dataCollector,
+        private readonly string $serializerName = 'default',
     ) {
     }
 
-    public function normalize(mixed $object, string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
+    public function getSupportedTypes(?string $format): array
+    {
+        return $this->normalizer->getSupportedTypes($format);
+    }
+
+    public function normalize(mixed $data, ?string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
     {
         if (!$this->normalizer instanceof NormalizerInterface) {
-            throw new \BadMethodCallException(sprintf('The "%s()" method cannot be called as nested normalizer doesn\'t implements "%s".', __METHOD__, NormalizerInterface::class));
+            throw new \BadMethodCallException(\sprintf('The "%s()" method cannot be called as nested normalizer doesn\'t implements "%s".', __METHOD__, NormalizerInterface::class));
         }
 
         $startTime = microtime(true);
-        $normalized = $this->normalizer->normalize($object, $format, $context);
+        $normalized = $this->normalizer->normalize($data, $format, $context);
         $time = microtime(true) - $startTime;
 
         if ($traceId = ($context[TraceableSerializer::DEBUG_TRACE_ID] ?? null)) {
-            $this->dataCollector->collectNormalization($traceId, \get_class($this->normalizer), $time);
+            $this->dataCollector->collectNormalization($traceId, $this->normalizer::class, $time, $this->serializerName);
         }
 
         return $normalized;
     }
 
-    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         if (!$this->normalizer instanceof NormalizerInterface) {
             return false;
@@ -61,10 +66,10 @@ class TraceableNormalizer implements NormalizerInterface, DenormalizerInterface,
         return $this->normalizer->supportsNormalization($data, $format, $context);
     }
 
-    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): mixed
+    public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): mixed
     {
         if (!$this->normalizer instanceof DenormalizerInterface) {
-            throw new \BadMethodCallException(sprintf('The "%s()" method cannot be called as nested normalizer doesn\'t implements "%s".', __METHOD__, DenormalizerInterface::class));
+            throw new \BadMethodCallException(\sprintf('The "%s()" method cannot be called as nested normalizer doesn\'t implements "%s".', __METHOD__, DenormalizerInterface::class));
         }
 
         $startTime = microtime(true);
@@ -72,13 +77,13 @@ class TraceableNormalizer implements NormalizerInterface, DenormalizerInterface,
         $time = microtime(true) - $startTime;
 
         if ($traceId = ($context[TraceableSerializer::DEBUG_TRACE_ID] ?? null)) {
-            $this->dataCollector->collectDenormalization($traceId, \get_class($this->normalizer), $time);
+            $this->dataCollector->collectDenormalization($traceId, $this->normalizer::class, $time, $this->serializerName);
         }
 
         return $denormalized;
     }
 
-    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         if (!$this->normalizer instanceof DenormalizerInterface) {
             return false;
@@ -87,7 +92,7 @@ class TraceableNormalizer implements NormalizerInterface, DenormalizerInterface,
         return $this->normalizer->supportsDenormalization($data, $type, $format, $context);
     }
 
-    public function setSerializer(SerializerInterface $serializer)
+    public function setSerializer(SerializerInterface $serializer): void
     {
         if (!$this->normalizer instanceof SerializerAwareInterface) {
             return;
@@ -96,7 +101,7 @@ class TraceableNormalizer implements NormalizerInterface, DenormalizerInterface,
         $this->normalizer->setSerializer($serializer);
     }
 
-    public function setNormalizer(NormalizerInterface $normalizer)
+    public function setNormalizer(NormalizerInterface $normalizer): void
     {
         if (!$this->normalizer instanceof NormalizerAwareInterface) {
             return;
@@ -105,18 +110,13 @@ class TraceableNormalizer implements NormalizerInterface, DenormalizerInterface,
         $this->normalizer->setNormalizer($normalizer);
     }
 
-    public function setDenormalizer(DenormalizerInterface $denormalizer)
+    public function setDenormalizer(DenormalizerInterface $denormalizer): void
     {
         if (!$this->normalizer instanceof DenormalizerAwareInterface) {
             return;
         }
 
         $this->normalizer->setDenormalizer($denormalizer);
-    }
-
-    public function hasCacheableSupportsMethod(): bool
-    {
-        return $this->normalizer instanceof CacheableSupportsMethodInterface && $this->normalizer->hasCacheableSupportsMethod();
     }
 
     /**

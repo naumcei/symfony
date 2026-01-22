@@ -32,7 +32,7 @@ class RememberMeFactory implements AuthenticatorFactoryInterface, PrependExtensi
 {
     public const PRIORITY = -50;
 
-    protected $options = [
+    protected array $options = [
         'name' => 'REMEMBERME',
         'lifetime' => 31536000,
         'path' => '/',
@@ -58,7 +58,7 @@ class RememberMeFactory implements AuthenticatorFactoryInterface, PrependExtensi
         // create remember me handler (which manage the remember-me cookies)
         $rememberMeHandlerId = 'security.authenticator.remember_me_handler.'.$firewallName;
         if (isset($config['service']) && isset($config['token_provider'])) {
-            throw new InvalidConfigurationException(sprintf('You cannot use both "service" and "token_provider" in "security.firewalls.%s.remember_me".', $firewallName));
+            throw new InvalidConfigurationException(\sprintf('You cannot use both "service" and "token_provider" in "security.firewalls.%s.remember_me".', $firewallName));
         }
 
         if (isset($config['service'])) {
@@ -70,10 +70,9 @@ class RememberMeFactory implements AuthenticatorFactoryInterface, PrependExtensi
             $tokenVerifier = $this->createTokenVerifier($container, $firewallName, $config['token_verifier'] ?? null);
             $container->setDefinition($rememberMeHandlerId, new ChildDefinition('security.authenticator.persistent_remember_me_handler'))
                 ->replaceArgument(0, new Reference($tokenProviderId))
-                ->replaceArgument(1, $config['secret'])
-                ->replaceArgument(2, new Reference($userProviderId))
-                ->replaceArgument(4, $config)
-                ->replaceArgument(6, $tokenVerifier)
+                ->replaceArgument(1, new Reference($userProviderId))
+                ->replaceArgument(3, $config)
+                ->replaceArgument(5, $tokenVerifier)
                 ->addTag('security.remember_me_handler', ['firewall' => $firewallName]);
         } else {
             $signatureHasherId = 'security.authenticator.remember_me_signature_hasher.'.$firewallName;
@@ -108,17 +107,8 @@ class RememberMeFactory implements AuthenticatorFactoryInterface, PrependExtensi
         $container
             ->setDefinition($authenticatorId, new ChildDefinition('security.authenticator.remember_me'))
             ->replaceArgument(0, new Reference($rememberMeHandlerId))
-            ->replaceArgument(3, $config['name'] ?? $this->options['name'])
+            ->replaceArgument(2, $config['name'] ?? $this->options['name'])
         ;
-
-        foreach ($container->findTaggedServiceIds('security.remember_me_aware') as $serviceId => $attributes) {
-            // register ContextListener
-            if (str_starts_with($serviceId, 'security.context_listener')) {
-                continue;
-            }
-
-            throw new \LogicException(sprintf('Symfony Authenticator Security dropped support for the "security.remember_me_aware" tag, service "%s" will no longer work as expected.', $serviceId));
-        }
 
         return $authenticatorId;
     }
@@ -133,27 +123,21 @@ class RememberMeFactory implements AuthenticatorFactoryInterface, PrependExtensi
         return 'remember-me';
     }
 
-    public function addConfiguration(NodeDefinition $node)
+    public function addConfiguration(NodeDefinition $node): void
     {
-        $builder = $node
-            ->fixXmlConfig('user_provider')
-            ->children()
-        ;
-
+        $builder = $node->children();
         $builder
             ->scalarNode('secret')
                 ->cannotBeEmpty()
                 ->defaultValue('%kernel.secret%')
             ->end()
             ->scalarNode('service')->end()
-            ->arrayNode('user_providers')
-                ->beforeNormalization()
-                    ->ifString()->then(function ($v) { return [$v]; })
-                ->end()
+            ->arrayNode('user_providers', 'user_provider')
+                ->acceptAndWrap(['string'])
                 ->prototype('scalar')->end()
             ->end()
             ->booleanNode('catch_exceptions')->defaultTrue()->end()
-            ->arrayNode('signature_properties')
+            ->arrayNode('signature_properties', 'signature_property')
                 ->prototype('scalar')->end()
                 ->requiresAtLeastOneElement()
                 ->info('An array of properties on your User that are used to sign the remember-me cookie. If any of these change, all existing cookies will become invalid.')
@@ -161,11 +145,9 @@ class RememberMeFactory implements AuthenticatorFactoryInterface, PrependExtensi
                 ->defaultValue(['password'])
             ->end()
             ->arrayNode('token_provider')
-                ->beforeNormalization()
-                    ->ifString()->then(function ($v) { return ['service' => $v]; })
-                ->end()
+                ->acceptAndWrap(['string'], 'service')
                 ->children()
-                    ->scalarNode('service')->info('The service ID of a custom rememberme token provider.')->end()
+                    ->scalarNode('service')->info('The service ID of a custom remember-me token provider.')->end()
                     ->arrayNode('doctrine')
                         ->canBeEnabled()
                         ->children()
@@ -213,7 +195,7 @@ class RememberMeFactory implements AuthenticatorFactoryInterface, PrependExtensi
         }
 
         if (!$tokenProviderId) {
-            throw new InvalidConfigurationException(sprintf('No token provider was set for firewall "%s". Either configure a service ID or set "remember_me.token_provider.doctrine" to true.', $firewallName));
+            throw new InvalidConfigurationException(\sprintf('No token provider was set for firewall "%s". Either configure a service ID or set "remember_me.token_provider.doctrine" to true.', $firewallName));
         }
 
         return $tokenProviderId;
@@ -235,7 +217,7 @@ class RememberMeFactory implements AuthenticatorFactoryInterface, PrependExtensi
         return new Reference($tokenVerifierId, ContainerInterface::NULL_ON_INVALID_REFERENCE);
     }
 
-    public function prepend(ContainerBuilder $container)
+    public function prepend(ContainerBuilder $container): void
     {
         $rememberMeSecureDefault = false;
         $rememberMeSameSiteDefault = null;

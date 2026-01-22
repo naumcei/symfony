@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Validator\Tests\Constraints;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Validator\Constraints\CardScheme;
 use Symfony\Component\Validator\Constraints\CardSchemeValidator;
 use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
@@ -24,26 +25,35 @@ class CardSchemeValidatorTest extends ConstraintValidatorTestCase
 
     public function testNullIsValid()
     {
-        $this->validator->validate(null, new CardScheme(['schemes' => []]));
+        $this->validator->validate(null, new CardScheme(schemes: []));
 
         $this->assertNoViolation();
     }
 
     public function testEmptyStringIsValid()
     {
-        $this->validator->validate('', new CardScheme(['schemes' => []]));
+        $this->validator->validate('', new CardScheme(schemes: []));
 
         $this->assertNoViolation();
     }
 
-    /**
-     * @dataProvider getValidNumbers
-     */
+    #[DataProvider('getValidNumbers')]
     public function testValidNumbers($scheme, $number)
     {
-        $this->validator->validate($number, new CardScheme(['schemes' => $scheme]));
+        $this->validator->validate($number, new CardScheme(schemes: $scheme));
 
         $this->assertNoViolation();
+    }
+
+    #[DataProvider('getValidNumbers')]
+    public function testValidNumbersWithNewLine($scheme, $number)
+    {
+        $this->validator->validate($number."\n", new CardScheme(schemes: $scheme, message: 'myMessage'));
+
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ value }}', '"'.$number."\n\"")
+            ->setCode(CardScheme::INVALID_FORMAT_ERROR)
+            ->assertRaised();
     }
 
     public function testValidNumberWithOrderedArguments()
@@ -56,15 +66,13 @@ class CardSchemeValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    /**
-     * @dataProvider getInvalidNumbers
-     */
+    #[DataProvider('getInvalidNumbers')]
     public function testInvalidNumbers($scheme, $number, $code)
     {
-        $constraint = new CardScheme([
-            'schemes' => $scheme,
-            'message' => 'myMessage',
-        ]);
+        $constraint = new CardScheme(
+            schemes: $scheme,
+            message: 'myMessage',
+        );
 
         $this->validator->validate($number, $constraint);
 
@@ -87,7 +95,7 @@ class CardSchemeValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
-    public function getValidNumbers()
+    public static function getValidNumbers()
     {
         return [
             ['AMEX', '378282246310005'],
@@ -142,7 +150,7 @@ class CardSchemeValidatorTest extends ConstraintValidatorTestCase
         ];
     }
 
-    public function getInvalidNumbers()
+    public static function getInvalidNumbers()
     {
         return [
             ['VISA', '42424242424242424242', CardScheme::INVALID_FORMAT_ERROR],

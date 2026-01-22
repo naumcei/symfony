@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'UserAssignedNames' => [
+        'XK' => 'Kosovo',
+    ],
     'Names' => [
         'AD' => 'Andorra',
         'AE' => 'United Arab Emirates',
@@ -226,7 +229,7 @@ return [
         'TM' => 'Turkmenistan',
         'TN' => 'Tunisia',
         'TO' => 'Tonga',
-        'TR' => 'Turkey',
+        'TR' => 'Türkiye',
         'TT' => 'Trinidad & Tobago',
         'TV' => 'Tuvalu',
         'TW' => 'Taiwan',

@@ -11,15 +11,14 @@
 
 namespace Symfony\Component\HttpClient\Tests\Response;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\Exception\InvalidArgumentException;
 use Symfony\Component\HttpClient\Exception\JsonException;
 use Symfony\Component\HttpClient\Exception\TransportException;
+use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 
-/**
- * Test methods from Symfony\Component\HttpClient\Response\*ResponseTrait.
- */
 class MockResponseTest extends TestCase
 {
     public function testTotalTimeShouldBeSimulatedWhenNotProvided()
@@ -49,9 +48,7 @@ class MockResponseTest extends TestCase
         $this->assertSame($data, $response->toArray());
     }
 
-    /**
-     * @dataProvider toArrayErrors
-     */
+    #[DataProvider('toArrayErrors')]
     public function testToArrayError($content, $responseHeaders, $message)
     {
         $this->expectException(JsonException::class);
@@ -75,7 +72,7 @@ class MockResponseTest extends TestCase
         $this->assertSame($url, $responseMock->getRequestUrl());
     }
 
-    public function toArrayErrors()
+    public static function toArrayErrors()
     {
         yield [
             'content' => '',
@@ -86,13 +83,13 @@ class MockResponseTest extends TestCase
         yield [
             'content' => 'not json',
             'responseHeaders' => [],
-            'message' => 'Syntax error for "https://example.com/file.json".',
+            'message' => \PHP_VERSION_ID < 80600 ? 'Syntax error for "https://example.com/file.json".' : 'Syntax error near location 1:1 for "https://example.com/file.json".',
         ];
 
         yield [
             'content' => '[1,2}',
             'responseHeaders' => [],
-            'message' => 'State mismatch (invalid or malformed JSON) for "https://example.com/file.json".',
+            'message' => \PHP_VERSION_ID < 80600 ? 'State mismatch (invalid or malformed JSON) for "https://example.com/file.json".' : 'State mismatch (invalid or malformed JSON) near location 1:5 for "https://example.com/file.json".',
         ];
 
         yield [
@@ -118,11 +115,27 @@ class MockResponseTest extends TestCase
         ]))->getStatusCode();
     }
 
+    public function testCancelingAMockResponseNotIssuedByMockHttpClient()
+    {
+        $mockResponse = new MockResponse();
+        $mockResponse->cancel();
+
+        $this->assertTrue($mockResponse->getInfo('canceled'));
+    }
+
     public function testMustBeIssuedByMockHttpClient()
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('MockResponse instances must be issued by MockHttpClient before processing.');
 
         (new MockResponse())->getContent();
+    }
+
+    public function testFromFile()
+    {
+        $client = new MockHttpClient(MockResponse::fromFile(__DIR__.'/Fixtures/response.txt'));
+        $response = $client->request('GET', 'https://symfony.com');
+
+        $this->assertSame('foo bar ccc', $response->getContent());
     }
 }

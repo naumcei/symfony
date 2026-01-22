@@ -24,6 +24,9 @@ class GetAttrNode extends Node
     public const METHOD_CALL = 2;
     public const ARRAY_CALL = 3;
 
+    /**
+     * @param self::* $type
+     */
     public function __construct(Node $node, Node $attribute, ArrayNode $arguments, int $type)
     {
         parent::__construct(
@@ -32,7 +35,7 @@ class GetAttrNode extends Node
         );
     }
 
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $nullSafe = $this->nodes['attribute'] instanceof ConstantNode && $this->nodes['attribute']->isNullSafe;
         switch ($this->attributes['type']) {
@@ -65,7 +68,7 @@ class GetAttrNode extends Node
         }
     }
 
-    public function evaluate(array $functions, array $values)
+    public function evaluate(array $functions, array $values): mixed
     {
         switch ($this->attributes['type']) {
             case self::PROPERTY_CALL:
@@ -80,7 +83,7 @@ class GetAttrNode extends Node
                 }
 
                 if (!\is_object($obj)) {
-                    throw new \RuntimeException(sprintf('Unable to get property "%s" of non-object "%s".', $this->nodes['attribute']->dump(), $this->nodes['node']->dump()));
+                    throw new \RuntimeException(\sprintf('Unable to get property "%s" of non-object "%s".', $this->nodes['attribute']->dump(), $this->nodes['node']->dump()));
                 }
 
                 $property = $this->nodes['attribute']->attributes['value'];
@@ -104,10 +107,10 @@ class GetAttrNode extends Node
                 }
 
                 if (!\is_object($obj)) {
-                    throw new \RuntimeException(sprintf('Unable to call method "%s" of non-object "%s".', $this->nodes['attribute']->dump(), $this->nodes['node']->dump()));
+                    throw new \RuntimeException(\sprintf('Unable to call method "%s" of non-object "%s".', $this->nodes['attribute']->dump(), $this->nodes['node']->dump()));
                 }
                 if (!\is_callable($toCall = [$obj, $this->nodes['attribute']->attributes['value']])) {
-                    throw new \RuntimeException(sprintf('Unable to call method "%s" of object "%s".', $this->nodes['attribute']->attributes['value'], get_debug_type($obj)));
+                    throw new \RuntimeException(\sprintf('Unable to call method "%s" of object "%s".', $this->nodes['attribute']->attributes['value'], get_debug_type($obj)));
                 }
 
                 return $toCall(...array_values($this->nodes['arguments']->evaluate($functions, $values)));
@@ -120,7 +123,7 @@ class GetAttrNode extends Node
                 }
 
                 if (!\is_array($array) && !$array instanceof \ArrayAccess && !(null === $array && $this->attributes['is_null_coalesce'])) {
-                    throw new \RuntimeException(sprintf('Unable to get an item of non-array "%s".', $this->nodes['node']->dump()));
+                    throw new \RuntimeException(\sprintf('Unable to get an item of non-array "%s".', $this->nodes['node']->dump()));
                 }
 
                 if ($this->attributes['is_null_coalesce']) {
@@ -136,14 +139,15 @@ class GetAttrNode extends Node
         return $this->attributes['is_short_circuited'] || ($this->nodes['node'] instanceof self && $this->nodes['node']->isShortCircuited());
     }
 
-    public function toArray()
+    public function toArray(): array
     {
+        $nullSafe = $this->nodes['attribute'] instanceof ConstantNode && $this->nodes['attribute']->isNullSafe;
         switch ($this->attributes['type']) {
             case self::PROPERTY_CALL:
-                return [$this->nodes['node'], '.', $this->nodes['attribute']];
+                return [$this->nodes['node'], $nullSafe ? '?.' : '.', $this->nodes['attribute']];
 
             case self::METHOD_CALL:
-                return [$this->nodes['node'], '.', $this->nodes['attribute'], '(', $this->nodes['arguments'], ')'];
+                return [$this->nodes['node'], $nullSafe ? '?.' : '.', $this->nodes['attribute'], '(', $this->nodes['arguments'], ')'];
 
             case self::ARRAY_CALL:
                 return [$this->nodes['node'], '[', $this->nodes['attribute'], ']'];
@@ -151,7 +155,7 @@ class GetAttrNode extends Node
     }
 
     /**
-     * Provides BC with instances serialized before v6.2
+     * Provides BC with instances serialized before v6.2.
      */
     public function __unserialize(array $data): void
     {

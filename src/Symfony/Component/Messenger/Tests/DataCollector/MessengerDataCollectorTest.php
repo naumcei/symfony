@@ -25,8 +25,7 @@ use Symfony\Component\VarDumper\Dumper\CliDumper;
  */
 class MessengerDataCollectorTest extends TestCase
 {
-    /** @var CliDumper */
-    private $dumper;
+    private CliDumper $dumper;
 
     protected function setUp(): void
     {
@@ -39,7 +38,7 @@ class MessengerDataCollectorTest extends TestCase
         $message = new DummyMessage('dummy message');
         $envelope = new Envelope($message);
 
-        $bus = $this->createMock(MessageBusInterface::class);
+        $bus = $this->createStub(MessageBusInterface::class);
         $bus->method('dispatch')->with($message)->willReturn($envelope);
         $bus = new TraceableMessageBus($bus);
 
@@ -55,23 +54,23 @@ class MessengerDataCollectorTest extends TestCase
 
         $file = __FILE__;
         $expected = <<<DUMP
-array:5 [
-  "bus" => "default"
-  "stamps" => []
-  "stamps_after_dispatch" => []
-  "message" => array:2 [
-    "type" => "Symfony\Component\Messenger\Tests\Fixtures\DummyMessage"
-    "value" => Symfony\Component\Messenger\Tests\Fixtures\DummyMessage %A
-      -message: "dummy message"
-    }
-  ]
-  "caller" => array:3 [
-    "name" => "MessengerDataCollectorTest.php"
-    "file" => "$file"
-    "line" => %d
-  ]
-]
-DUMP;
+            array:5 [
+              "bus" => "default"
+              "stamps" => []
+              "stamps_after_dispatch" => []
+              "message" => array:2 [
+                "type" => "Symfony\Component\Messenger\Tests\Fixtures\DummyMessage"
+                "value" => Symfony\Component\Messenger\Tests\Fixtures\DummyMessage %A
+                  -message: "dummy message"
+                }
+              ]
+              "caller" => array:3 [
+                "name" => "MessengerDataCollectorTest.php"
+                "file" => "$file"
+                "line" => %d
+              ]
+            ]
+            DUMP;
 
         $this->assertStringMatchesFormat($expected, $this->getDataAsString($messages[0]));
     }
@@ -80,7 +79,7 @@ DUMP;
     {
         $message = new DummyMessage('dummy message');
 
-        $bus = $this->createMock(MessageBusInterface::class);
+        $bus = $this->createStub(MessageBusInterface::class);
         $bus->method('dispatch')->with($message)->willThrowException(new \RuntimeException('foo'));
         $bus = new TraceableMessageBus($bus);
 
@@ -101,37 +100,38 @@ DUMP;
 
         $file = __FILE__;
         $this->assertStringMatchesFormat(<<<DUMP
-array:6 [
-  "bus" => "default"
-  "stamps" => []
-  "stamps_after_dispatch" => []
-  "message" => array:2 [
-    "type" => "Symfony\Component\Messenger\Tests\Fixtures\DummyMessage"
-    "value" => Symfony\Component\Messenger\Tests\Fixtures\DummyMessage %A
-      -message: "dummy message"
-    }
-  ]
-  "caller" => array:3 [
-    "name" => "MessengerDataCollectorTest.php"
-    "file" => "$file"
-    "line" => $line
-  ]
-  "exception" => array:2 [
-    "type" => "RuntimeException"
-    "value" => RuntimeException %A
-  ]
-]
-DUMP
-            , $this->getDataAsString($messages[0]));
+            array:6 [
+              "bus" => "default"
+              "stamps" => []
+              "stamps_after_dispatch" => []
+              "message" => array:2 [
+                "type" => "Symfony\Component\Messenger\Tests\Fixtures\DummyMessage"
+                "value" => Symfony\Component\Messenger\Tests\Fixtures\DummyMessage %A
+                  -message: "dummy message"
+                }
+              ]
+              "caller" => array:3 [
+                "name" => "MessengerDataCollectorTest.php"
+                "file" => "$file"
+                "line" => $line
+              ]
+              "exception" => array:2 [
+                "type" => "RuntimeException"
+                "value" => RuntimeException %A
+              ]
+            ]
+            DUMP,
+            $this->getDataAsString($messages[0])
+        );
     }
 
     public function testKeepsOrderedDispatchCalls()
     {
-        $firstBus = $this->createMock(MessageBusInterface::class);
+        $firstBus = $this->createStub(MessageBusInterface::class);
         $firstBus->method('dispatch')->willReturn(new Envelope(new \stdClass()));
         $firstBus = new TraceableMessageBus($firstBus);
 
-        $secondBus = $this->createMock(MessageBusInterface::class);
+        $secondBus = $this->createStub(MessageBusInterface::class);
         $secondBus->method('dispatch')->willReturn(new Envelope(new \stdClass()));
         $secondBus = new TraceableMessageBus($secondBus);
 

@@ -16,8 +16,8 @@ use Symfony\Component\BrowserKit\Response;
 
 class TestClient extends AbstractBrowser
 {
-    protected $nextResponse = null;
-    protected $nextScript = null;
+    protected ?Response $nextResponse = null;
+    protected string $nextScript;
 
     public function setNextResponse(Response $response)
     {
@@ -41,17 +41,17 @@ class TestClient extends AbstractBrowser
         return $response;
     }
 
-    protected function getScript(object $request)
+    protected function getScript(object $request): string
     {
         $r = new \ReflectionClass(Response::class);
         $path = $r->getFileName();
 
         return <<<EOF
-<?php
+            <?php
 
-require_once('$path');
+            require_once('$path');
 
-echo serialize($this->nextScript);
-EOF;
+            echo serialize($this->nextScript);
+            EOF;
     }
 }

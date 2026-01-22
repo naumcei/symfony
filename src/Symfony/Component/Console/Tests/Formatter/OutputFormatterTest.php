@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Console\Tests\Formatter;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
@@ -159,10 +160,8 @@ class OutputFormatterTest extends TestCase
         $this->assertEquals("\033[34;41msome text\033[39;49m", $formatter->format('<fg=blue;bg=red>some text</fg=blue;bg=red>'));
     }
 
-    /**
-     * @dataProvider provideInlineStyleOptionsCases
-     */
-    public function testInlineStyleOptions(string $tag, string $expected = null, string $input = null, bool $truecolor = false)
+    #[DataProvider('provideInlineStyleOptionsCases')]
+    public function testInlineStyleOptions(string $tag, ?string $expected = null, ?string $input = null, bool $truecolor = false)
     {
         if ($truecolor && 'truecolor' !== getenv('COLORTERM')) {
             $this->markTestSkipped('The terminal does not support true colors.');
@@ -184,7 +183,7 @@ class OutputFormatterTest extends TestCase
         }
     }
 
-    public function provideInlineStyleOptionsCases()
+    public static function provideInlineStyleOptionsCases()
     {
         return [
             ['<unknown=_unknown_>'],
@@ -199,7 +198,7 @@ class OutputFormatterTest extends TestCase
         ];
     }
 
-    public function provideInlineStyleTagsWithUnknownOptions()
+    public static function provideInlineStyleTagsWithUnknownOptions()
     {
         return [
             ['<options=abc;>', 'abc'],
@@ -241,11 +240,11 @@ class OutputFormatterTest extends TestCase
         $this->assertTrue($formatter->hasStyle('question'));
     }
 
-    /**
-     * @dataProvider provideDecoratedAndNonDecoratedOutput
-     */
-    public function testNotDecoratedFormatter(string $input, string $expectedNonDecoratedOutput, string $expectedDecoratedOutput, string $terminalEmulator = 'foo')
+    #[DataProvider('provideDecoratedAndNonDecoratedOutput')]
+    public function testNotDecoratedFormatterOnJediTermEmulator(string $input, string $expectedNonDecoratedOutput, string $expectedDecoratedOutput, bool $shouldBeJediTerm = false)
     {
+        $terminalEmulator = $shouldBeJediTerm ? 'JetBrains-JediTerm' : 'Unknown';
+
         $prevTerminalEmulator = getenv('TERMINAL_EMULATOR');
         putenv('TERMINAL_EMULATOR='.$terminalEmulator);
 
@@ -257,7 +256,34 @@ class OutputFormatterTest extends TestCase
         }
     }
 
-    public function provideDecoratedAndNonDecoratedOutput()
+    #[DataProvider('provideDecoratedAndNonDecoratedOutput')]
+    public function testNotDecoratedFormatterOnIDEALikeEnvironment(string $input, string $expectedNonDecoratedOutput, string $expectedDecoratedOutput, bool $expectsIDEALikeTerminal = false)
+    {
+        // Backup previous env variable
+        $previousValue = $_SERVER['IDEA_INITIAL_DIRECTORY'] ?? null;
+        $hasPreviousValue = \array_key_exists('IDEA_INITIAL_DIRECTORY', $_SERVER);
+
+        if ($expectsIDEALikeTerminal) {
+            $_SERVER['IDEA_INITIAL_DIRECTORY'] = __DIR__;
+        } elseif ($hasPreviousValue) {
+            // Forcibly remove the variable because the test runner may contain it
+            unset($_SERVER['IDEA_INITIAL_DIRECTORY']);
+        }
+
+        try {
+            $this->assertEquals($expectedDecoratedOutput, (new OutputFormatter(true))->format($input));
+            $this->assertEquals($expectedNonDecoratedOutput, (new OutputFormatter(false))->format($input));
+        } finally {
+            // Rollback previous env state
+            if ($hasPreviousValue) {
+                $_SERVER['IDEA_INITIAL_DIRECTORY'] = $previousValue;
+            } else {
+                unset($_SERVER['IDEA_INITIAL_DIRECTORY']);
+            }
+        }
+    }
+
+    public static function provideDecoratedAndNonDecoratedOutput()
     {
         return [
             ['<error>some error</error>', 'some error', "\033[37;41msome error\033[39;49m"],
@@ -267,7 +293,7 @@ class OutputFormatterTest extends TestCase
             ['<fg=red>some text with inline style</>', 'some text with inline style', "\033[31msome text with inline style\033[39m"],
             ['<href=idea://open/?file=/path/SomeFile.php&line=12>some URL</>', 'some URL', "\033]8;;idea://open/?file=/path/SomeFile.php&line=12\033\\some URL\033]8;;\033\\"],
             ['<href=https://example.com/\<woohoo\>>some URL with \<woohoo\></>', 'some URL with <woohoo>', "\033]8;;https://example.com/<woohoo>\033\\some URL with <woohoo>\033]8;;\033\\"],
-            ['<href=idea://open/?file=/path/SomeFile.php&line=12>some URL</>', 'some URL', 'some URL', 'JetBrains-JediTerm'],
+            ['<href=idea://open/?file=/path/SomeFile.php&line=12>some URL</>', 'some URL', 'some URL', true],
         ];
     }
 
@@ -276,50 +302,54 @@ class OutputFormatterTest extends TestCase
         $formatter = new OutputFormatter(true);
 
         $this->assertEquals(<<<EOF
-\033[32m
-some text\033[39m
-EOF
-            , $formatter->format(<<<'EOF'
-<info>
-some text</info>
-EOF
-            ));
+            \033[32m
+            some text\033[39m
+            EOF,
+            $formatter->format(<<<'EOF'
+                <info>
+                some text</info>
+                EOF
+            )
+        );
 
         $this->assertEquals(<<<EOF
-\033[32msome text
-\033[39m
-EOF
-            , $formatter->format(<<<'EOF'
-<info>some text
-</info>
-EOF
-            ));
+            \033[32msome text
+            \033[39m
+            EOF,
+            $formatter->format(<<<'EOF'
+                <info>some text
+                </info>
+                EOF
+            )
+        );
 
         $this->assertEquals(<<<EOF
-\033[32m
-some text
-\033[39m
-EOF
-            , $formatter->format(<<<'EOF'
-<info>
-some text
-</info>
-EOF
-            ));
+            \033[32m
+            some text
+            \033[39m
+            EOF,
+            $formatter->format(<<<'EOF'
+                <info>
+                some text
+                </info>
+                EOF
+            )
+        );
 
         $this->assertEquals(<<<EOF
-\033[32m
-some text
-more text
-\033[39m
-EOF
-            , $formatter->format(<<<'EOF'
-<info>
-some text
-more text
-</info>
-EOF
-            ));
+            \033[32m
+            some text
+            more text
+            \033[39m
+            EOF,
+            $formatter->format(<<<'EOF'
+                <info>
+                some text
+                more text
+                </info>
+                EOF
+            )
+        );
     }
 
     public function testFormatAndWrap()
@@ -327,22 +357,42 @@ EOF
         $formatter = new OutputFormatter(true);
 
         $this->assertSame("fo\no\e[37;41mb\e[39;49m\n\e[37;41mar\e[39;49m\nba\nz", $formatter->formatAndWrap('foo<error>bar</error> baz', 2));
-        $this->assertSame("pr\ne \e[37;41m\e[39;49m\n\e[37;41mfo\e[39;49m\n\e[37;41mo \e[39;49m\n\e[37;41mba\e[39;49m\n\e[37;41mr \e[39;49m\n\e[37;41mba\e[39;49m\n\e[37;41mz\e[39;49m \npo\nst", $formatter->formatAndWrap('pre <error>foo bar baz</error> post', 2));
+        $this->assertSame("pr\ne \e[37;41m\e[39;49m\n\e[37;41mfo\e[39;49m\n\e[37;41mo\e[39;49m\n\e[37;41mba\e[39;49m\n\e[37;41mr\e[39;49m\n\e[37;41mba\e[39;49m\n\e[37;41mz\e[39;49m \npo\nst", $formatter->formatAndWrap('pre <error>foo bar baz</error> post', 2));
         $this->assertSame("pre\e[37;41m\e[39;49m\n\e[37;41mfoo\e[39;49m\n\e[37;41mbar\e[39;49m\n\e[37;41mbaz\e[39;49m\npos\nt", $formatter->formatAndWrap('pre <error>foo bar baz</error> post', 3));
-        $this->assertSame("pre \e[37;41m\e[39;49m\n\e[37;41mfoo \e[39;49m\n\e[37;41mbar \e[39;49m\n\e[37;41mbaz\e[39;49m \npost", $formatter->formatAndWrap('pre <error>foo bar baz</error> post', 4));
-        $this->assertSame("pre \e[37;41mf\e[39;49m\n\e[37;41moo ba\e[39;49m\n\e[37;41mr baz\e[39;49m\npost", $formatter->formatAndWrap('pre <error>foo bar baz</error> post', 5));
+        $this->assertSame("pre \e[37;41m\e[39;49m\n\e[37;41mfoo\e[39;49m\n\e[37;41mbar\e[39;49m\n\e[37;41mbaz\e[39;49m \npost", $formatter->formatAndWrap('pre <error>foo bar baz</error> post', 4));
+        $this->assertSame("pre \e[37;41mf\e[39;49m\n\e[37;41moo\e[39;49m\n\e[37;41mbar\e[39;49m\n\e[37;41mbaz\e[39;49m p\nost", $formatter->formatAndWrap('pre <error>foo bar baz</error> post', 5));
         $this->assertSame("Lore\nm \e[37;41mip\e[39;49m\n\e[37;41msum\e[39;49m \ndolo\nr \e[32msi\e[39m\n\e[32mt\e[39m am\net", $formatter->formatAndWrap('Lorem <error>ipsum</error> dolor <info>sit</info> amet', 4));
         $this->assertSame("Lorem \e[37;41mip\e[39;49m\n\e[37;41msum\e[39;49m dolo\nr \e[32msit\e[39m am\net", $formatter->formatAndWrap('Lorem <error>ipsum</error> dolor <info>sit</info> amet', 8));
         $this->assertSame("Lorem \e[37;41mipsum\e[39;49m dolor \e[32m\e[39m\n\e[32msit\e[39m, \e[37;41mamet\e[39;49m et \e[32mlauda\e[39m\n\e[32mntium\e[39m architecto", $formatter->formatAndWrap('Lorem <error>ipsum</error> dolor <info>sit</info>, <error>amet</error> et <info>laudantium</info> architecto', 18));
+        $this->assertSame("\e[37;41mnon-empty-array\e[39;49m\e[37;41m<mixed, mixed>\e[39;49m given.\n🪪  argument.type", $formatter->formatAndWrap("<error>non-empty-array<mixed, mixed></error> given.\n🪪  argument.type", 38));
+        $this->assertSame("Usuário <strong>{{user_name}}</strong> não é válid\no.", $formatter->formatAndWrap('Usuário <strong>{{user_name}}</strong> não é válido.', 50));
+        $this->assertSame("foo\e[37;41mb\e[39;49m\n\e[37;41mar\e[39;49mbaz", $formatter->formatAndWrap("foo<error>b\nar</error>baz", 7));
+        $this->assertSame("foo\e[37;41mbar\e[39;49mbaz\nnewline", $formatter->formatAndWrap("foo<error>bar</error>baz\nnewline", 11));
+        $this->assertSame("foobarbaz\n\e[37;41mnewline\e[39;49m", $formatter->formatAndWrap("foobarbaz\n<error>newline</error>", 11));
+        $this->assertSame("foobar\e[37;41mbaz\e[39;49m\n\e[37;41mnewline\e[39;49m", $formatter->formatAndWrap("foobar<error>baz\nnewline</error>", 11));
+        $this->assertSame("foobar\e[37;41mbazne\e[39;49m\n\e[37;41mwline\e[39;49m", $formatter->formatAndWrap("foobar<error>bazne\nwline</error>", 11));
+        $this->assertSame("foobar\e[37;41mbazne\e[39;49m\n\e[37;41mw\e[39;49m\n\e[37;41mline\e[39;49m", $formatter->formatAndWrap("foobar<error>baznew\nline</error>", 11));
+        $this->assertSame("\e[37;41m👩‍🌾\e[39;49m", $formatter->formatAndWrap('<error>👩‍🌾</error>', 1));
 
         $formatter = new OutputFormatter();
 
         $this->assertSame("fo\nob\nar\nba\nz", $formatter->formatAndWrap('foo<error>bar</error> baz', 2));
-        $this->assertSame("pr\ne \nfo\no \nba\nr \nba\nz \npo\nst", $formatter->formatAndWrap('pre <error>foo bar baz</error> post', 2));
+        $this->assertSame("pr\ne \nfo\no\nba\nr\nba\nz \npo\nst", $formatter->formatAndWrap('pre <error>foo bar baz</error> post', 2));
         $this->assertSame("pre\nfoo\nbar\nbaz\npos\nt", $formatter->formatAndWrap('pre <error>foo bar baz</error> post', 3));
-        $this->assertSame("pre \nfoo \nbar \nbaz \npost", $formatter->formatAndWrap('pre <error>foo bar baz</error> post', 4));
-        $this->assertSame("pre f\noo ba\nr baz\npost", $formatter->formatAndWrap('pre <error>foo bar baz</error> post', 5));
+        $this->assertSame("pre \nfoo\nbar\nbaz \npost", $formatter->formatAndWrap('pre <error>foo bar baz</error> post', 4));
+        $this->assertSame("pre f\noo\nbar\nbaz p\nost", $formatter->formatAndWrap('pre <error>foo bar baz</error> post', 5));
+        $this->assertSame("Â rèälly\nlöng tîtlè\nthät cöüld\nnèêd\nmúltîplê\nlínès", $formatter->formatAndWrap('Â rèälly löng tîtlè thät cöüld nèêd múltîplê línès', 10));
+        $this->assertSame("Â rèälly\nlöng tîtlè\nthät cöüld\nnèêd\nmúltîplê\n línès", $formatter->formatAndWrap("Â rèälly löng tîtlè thät cöüld nèêd múltîplê\n línès", 10));
         $this->assertSame('', $formatter->formatAndWrap(null, 5));
+        $this->assertSame("non-empty-array<mixed, mixed> given.\n🪪  argument.type", $formatter->formatAndWrap("<error>non-empty-array<mixed, mixed></error> given.\n🪪  argument.type", 38));
+        $this->assertSame("Usuário <strong>{{user_name}}</strong> não é válid\no.", $formatter->formatAndWrap('Usuário <strong>{{user_name}}</strong> não é válido.', 50));
+        $this->assertSame("foob\narbaz", $formatter->formatAndWrap("foo<error>b\nar</error>baz", 7));
+        $this->assertSame("foobarbaz\nnewline", $formatter->formatAndWrap("foo<error>bar</error>baz\nnewline", 11));
+        $this->assertSame("foobarbaz\nnewline", $formatter->formatAndWrap("foobarbaz\n<error>newline</error>", 11));
+        $this->assertSame("foobarbaz\nnewline", $formatter->formatAndWrap("foobar<error>baz\nnewline</error>", 11));
+        $this->assertSame("foobarbazne\nwline", $formatter->formatAndWrap("foobar<error>bazne\nwline</error>", 11));
+        $this->assertSame("foobarbazne\nw\nline", $formatter->formatAndWrap("foobar<error>baznew\nline</error>", 11));
+        $this->assertSame('👩‍🌾', $formatter->formatAndWrap('👩‍🌾', 1));
     }
 }
 

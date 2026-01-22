@@ -15,7 +15,7 @@ use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Component\Form\Extension\Core\DataTransformer\BaseDateTimeTransformer;
 use Symfony\Component\Form\Extension\Core\DataTransformer\DateTimeToTimestampTransformer;
 
-class DateTimeToTimestampTransformerTest extends BaseDateTimeTransformerTest
+class DateTimeToTimestampTransformerTest extends BaseDateTimeTransformerTestCase
 {
     public function testTransform()
     {
@@ -115,7 +115,7 @@ class DateTimeToTimestampTransformerTest extends BaseDateTimeTransformerTest
         $reverseTransformer->reverseTransform('2010-2010-2010');
     }
 
-    protected function createDateTimeTransformer(string $inputTimezone = null, string $outputTimezone = null): BaseDateTimeTransformer
+    protected function createDateTimeTransformer(?string $inputTimezone = null, ?string $outputTimezone = null): BaseDateTimeTransformer
     {
         return new DateTimeToTimestampTransformer($inputTimezone, $outputTimezone);
     }

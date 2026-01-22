@@ -13,17 +13,14 @@ namespace Symfony\Component\HtmlSanitizer\Visitor\Node;
 
 /**
  * @author Titouan Galopin <galopintitouan@gmail.com>
- *
- * @experimental
  */
 final class BlockedNode implements NodeInterface
 {
-    private NodeInterface $parentNode;
     private array $children = [];
 
-    public function __construct(NodeInterface $parentNode)
-    {
-        $this->parentNode = $parentNode;
+    public function __construct(
+        private NodeInterface $parentNode,
+    ) {
     }
 
     public function addChild(NodeInterface $node): void

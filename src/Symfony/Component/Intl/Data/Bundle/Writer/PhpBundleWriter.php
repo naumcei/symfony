@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\Intl\Data\Bundle\Writer;
 
+use Symfony\Component\VarExporter\VarExporter;
+
 /**
  * Writes .php resource bundles.
  *
@@ -20,33 +22,25 @@ namespace Symfony\Component\Intl\Data\Bundle\Writer;
  */
 class PhpBundleWriter implements BundleWriterInterface
 {
-    public function write(string $path, string $locale, mixed $data)
+    public function write(string $path, string $locale, mixed $data): void
     {
         $template = <<<'TEMPLATE'
-<?php
+            <?php
 
-return %s;
+            return %s;
 
-TEMPLATE;
+            TEMPLATE;
 
         if ($data instanceof \Traversable) {
             $data = iterator_to_array($data);
         }
 
-        array_walk_recursive($data, function (&$value) {
+        array_walk_recursive($data, static function (&$value) {
             if ($value instanceof \Traversable) {
                 $value = iterator_to_array($value);
             }
         });
 
-        $data = var_export($data, true);
-        $data = preg_replace('/array \(/', '[', $data);
-        $data = preg_replace('/\n {1,10}\[/', '[', $data);
-        $data = preg_replace('/  /', '    ', $data);
-        $data = preg_replace('/\),$/m', '],', $data);
-        $data = preg_replace('/\)$/', ']', $data);
-        $data = sprintf($template, $data);
-
-        file_put_contents($path.'/'.$locale.'.php', $data);
+        file_put_contents($path.'/'.$locale.'.php', \sprintf($template, VarExporter::export($data)));
     }
 }

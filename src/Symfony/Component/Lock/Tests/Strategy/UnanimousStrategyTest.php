@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Lock\Tests\Strategy;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Lock\Strategy\UnanimousStrategy;
 
@@ -19,15 +20,14 @@ use Symfony\Component\Lock\Strategy\UnanimousStrategy;
  */
 class UnanimousStrategyTest extends TestCase
 {
-    /** @var UnanimousStrategy */
-    private $strategy;
+    private UnanimousStrategy $strategy;
 
     protected function setUp(): void
     {
         $this->strategy = new UnanimousStrategy();
     }
 
-    public function provideMetResults()
+    public static function provideMetResults()
     {
         // success, failure, total, isMet
         yield [3, 0, 3, true];
@@ -49,7 +49,7 @@ class UnanimousStrategyTest extends TestCase
         yield [0, 0, 2, false];
     }
 
-    public function provideIndeterminate()
+    public static function provideIndeterminate()
     {
         // success, failure, total, canBeMet
         yield [3, 0, 3, true];
@@ -71,17 +71,13 @@ class UnanimousStrategyTest extends TestCase
         yield [0, 0, 2, true];
     }
 
-    /**
-     * @dataProvider provideMetResults
-     */
+    #[DataProvider('provideMetResults')]
     public function testMet($success, $failure, $total, $isMet)
     {
         $this->assertSame($isMet, $this->strategy->isMet($success, $total));
     }
 
-    /**
-     * @dataProvider provideIndeterminate
-     */
+    #[DataProvider('provideIndeterminate')]
     public function testCanBeMet($success, $failure, $total, $isMet)
     {
         $this->assertSame($isMet, $this->strategy->canBeMet($failure, $total));

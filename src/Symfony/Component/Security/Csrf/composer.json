@@ -16,17 +16,13 @@
         }
     ],
     "require": {
-        "php": ">=8.1",
-        "symfony/security-core": "^5.4|^6.0"
+        "php": ">=8.4",
+        "symfony/security-core": "^7.4|^8.0"
     },
     "require-dev": {
-        "symfony/http-foundation": "^5.4|^6.0"
-    },
-    "conflict": {
-        "symfony/http-foundation": "<5.4"
-    },
-    "suggest": {
-        "symfony/http-foundation": "For using the class SessionTokenStorage."
+        "psr/log": "^1|^2|^3",
+        "symfony/http-foundation": "^7.4|^8.0",
+        "symfony/http-kernel": "^7.4|^8.0"
     },
     "autoload": {
         "psr-4": { "Symfony\\Component\\Security\\Csrf\\": "" },

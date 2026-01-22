@@ -15,13 +15,13 @@ use Symfony\Component\HtmlSanitizer\TextSanitizer\StringSanitizer;
 
 /**
  * @author Titouan Galopin <galopintitouan@gmail.com>
- *
- * @experimental
  */
 final class TextNode implements NodeInterface
 {
-    public function __construct(private NodeInterface $parentNode, private string $text)
-    {
+    public function __construct(
+        private NodeInterface $parentNode,
+        private string $text,
+    ) {
     }
 
     public function addChild(NodeInterface $node): void

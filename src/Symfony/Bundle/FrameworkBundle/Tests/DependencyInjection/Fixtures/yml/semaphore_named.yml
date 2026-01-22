@@ -2,7 +2,6 @@ parameters:
     env(REDIS_DSN): redis://paas.com
 
 framework:
-    http_method_override: false
     semaphore:
         foo: redis://paas.com
         qux: "%env(REDIS_DSN)%"

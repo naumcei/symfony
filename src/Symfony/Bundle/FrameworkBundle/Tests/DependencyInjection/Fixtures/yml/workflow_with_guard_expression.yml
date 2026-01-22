@@ -1,10 +1,9 @@
 framework:
-    http_method_override: false
     workflows:
         article:
             type: workflow
             supports:
-                - Symfony\Bundle\FrameworkBundle\Tests\DependencyInjection\FrameworkExtensionTest
+                - Symfony\Bundle\FrameworkBundle\Tests\DependencyInjection\FrameworkExtensionTestCase
             initial_marking: [draft]
             places:
                 - draft

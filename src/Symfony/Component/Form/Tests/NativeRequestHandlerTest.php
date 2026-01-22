@@ -17,9 +17,9 @@ use Symfony\Component\Form\NativeRequestHandler;
 /**
  * @author Bernhard Schussek <bschussek@gmail.com>
  */
-class NativeRequestHandlerTest extends AbstractRequestHandlerTest
+class NativeRequestHandlerTest extends AbstractRequestHandlerTestCase
 {
-    private static $serverBackup;
+    private static array $serverBackup;
 
     public static function setUpBeforeClass(): void
     {
@@ -41,8 +41,6 @@ class NativeRequestHandlerTest extends AbstractRequestHandlerTest
 
     protected function tearDown(): void
     {
-        parent::tearDown();
-
         $_GET = [];
         $_POST = [];
         $_FILES = [];
@@ -99,6 +97,9 @@ class NativeRequestHandlerTest extends AbstractRequestHandlerTest
             'name' => [
                 'field' => 'upload.txt',
             ],
+            'full_path' => [
+                'field' => 'path/to/file/upload.txt',
+            ],
             'type' => [
                 'field' => 'text/plain',
             ],
@@ -118,6 +119,7 @@ class NativeRequestHandlerTest extends AbstractRequestHandlerTest
         $this->assertTrue($form->isSubmitted());
         $this->assertEquals([
             'name' => 'upload.txt',
+            'full_path' => 'path/to/file/upload.txt',
             'type' => 'text/plain',
             'tmp_name' => 'owfdskjasdfsa',
             'error' => \UPLOAD_ERR_OK,
@@ -168,8 +170,8 @@ class NativeRequestHandlerTest extends AbstractRequestHandlerTest
         $form = $this->createForm('param1', 'POST');
 
         $this->setRequestData('GET', [
-                'param1' => 'DATA',
-            ]);
+            'param1' => 'DATA',
+        ]);
 
         $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] = 'PUT';
 

@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Form\Tests\Extension\Core\EventListener;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Form\Extension\Core\EventListener\FixUrlProtocolListener;
@@ -20,9 +21,7 @@ use Symfony\Component\Form\FormEvent;
 
 class FixUrlProtocolListenerTest extends TestCase
 {
-    /**
-     * @dataProvider provideUrlToFix
-     */
+    #[DataProvider('provideUrlToFix')]
     public function testFixUrl($data)
     {
         $form = new Form(new FormConfigBuilder('name', null, new EventDispatcher()));
@@ -34,7 +33,7 @@ class FixUrlProtocolListenerTest extends TestCase
         $this->assertSame('http://'.$data, $event->getData());
     }
 
-    public function provideUrlToFix()
+    public static function provideUrlToFix()
     {
         return [
             ['www.symfony.com'],
@@ -46,9 +45,7 @@ class FixUrlProtocolListenerTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideUrlToSkip
-     */
+    #[DataProvider('provideUrlToSkip')]
     public function testSkipUrl($url)
     {
         $form = new Form(new FormConfigBuilder('name', null, new EventDispatcher()));
@@ -60,7 +57,7 @@ class FixUrlProtocolListenerTest extends TestCase
         $this->assertSame($url, $event->getData());
     }
 
-    public function provideUrlToSkip()
+    public static function provideUrlToSkip()
     {
         return [
             ['http://www.symfony.com'],

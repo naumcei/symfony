@@ -1,6 +1,17 @@
 CHANGELOG
 =========
 
+7.0
+---
+
+ * Add method `isNullSafe()` to `PropertyPathInterface`
+ * Require explicit argument when calling `PropertyAccessorBuilder::setCacheItemPool()`
+
+6.3
+---
+
+ * Allow escaping `.` and `[` with `\` in `PropertyPath`
+
 6.2
 ---
 

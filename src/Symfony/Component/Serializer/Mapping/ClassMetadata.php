@@ -13,43 +13,22 @@ namespace Symfony\Component\Serializer\Mapping;
 
 /**
  * @author Kévin Dunglas <dunglas@gmail.com>
+ *
+ * @final
  */
 class ClassMetadata implements ClassMetadataInterface
 {
-    /**
-     * @internal This property is public in order to reduce the size of the
-     *           class' serialized representation. Do not access it. Use
-     *           {@link getName()} instead.
-     */
-    public $name;
+    private string $name;
 
     /**
      * @var AttributeMetadataInterface[]
-     *
-     * @internal This property is public in order to reduce the size of the
-     *           class' serialized representation. Do not access it. Use
-     *           {@link getAttributesMetadata()} instead.
      */
-    public $attributesMetadata = [];
+    private array $attributesMetadata = [];
 
-    /**
-     * @var \ReflectionClass
-     */
-    private $reflClass;
+    private ?\ReflectionClass $reflClass = null;
+    private ?ClassDiscriminatorMapping $classDiscriminatorMapping = null;
 
-    /**
-     * @var ClassDiscriminatorMapping|null
-     *
-     * @internal This property is public in order to reduce the size of the
-     *           class' serialized representation. Do not access it. Use
-     *           {@link getClassDiscriminatorMapping()} instead.
-     */
-    public $classDiscriminatorMapping;
-
-    /**
-     * Constructs a metadata for the given class.
-     */
-    public function __construct(string $class, ClassDiscriminatorMapping $classDiscriminatorMapping = null)
+    public function __construct(string $class, ?ClassDiscriminatorMapping $classDiscriminatorMapping = null)
     {
         $this->name = $class;
         $this->classDiscriminatorMapping = $classDiscriminatorMapping;
@@ -60,7 +39,7 @@ class ClassMetadata implements ClassMetadataInterface
         return $this->name;
     }
 
-    public function addAttributeMetadata(AttributeMetadataInterface $attributeMetadata)
+    public function addAttributeMetadata(AttributeMetadataInterface $attributeMetadata): void
     {
         $this->attributesMetadata[$attributeMetadata->getName()] = $attributeMetadata;
     }
@@ -70,7 +49,7 @@ class ClassMetadata implements ClassMetadataInterface
         return $this->attributesMetadata;
     }
 
-    public function merge(ClassMetadataInterface $classMetadata)
+    public function merge(ClassMetadataInterface $classMetadata): void
     {
         foreach ($classMetadata->getAttributesMetadata() as $attributeMetadata) {
             if (isset($this->attributesMetadata[$attributeMetadata->getName()])) {
@@ -83,11 +62,7 @@ class ClassMetadata implements ClassMetadataInterface
 
     public function getReflectionClass(): \ReflectionClass
     {
-        if (!$this->reflClass) {
-            $this->reflClass = new \ReflectionClass($this->getName());
-        }
-
-        return $this->reflClass;
+        return $this->reflClass ??= new \ReflectionClass($this->getName());
     }
 
     public function getClassDiscriminatorMapping(): ?ClassDiscriminatorMapping
@@ -95,25 +70,17 @@ class ClassMetadata implements ClassMetadataInterface
         return $this->classDiscriminatorMapping;
     }
 
-    public function setClassDiscriminatorMapping(ClassDiscriminatorMapping $mapping = null)
+    public function setClassDiscriminatorMapping(?ClassDiscriminatorMapping $mapping): void
     {
-        if (1 > \func_num_args()) {
-            trigger_deprecation('symfony/serializer', '6.2', 'Calling "%s()" without any arguments is deprecated, pass null explicitly instead.', __METHOD__);
-        }
         $this->classDiscriminatorMapping = $mapping;
     }
 
-    /**
-     * Returns the names of the properties that should be serialized.
-     *
-     * @return string[]
-     */
-    public function __sleep(): array
+    public function __serialize(): array
     {
         return [
-            'name',
-            'attributesMetadata',
-            'classDiscriminatorMapping',
+            'name' => $this->name,
+            'attributesMetadata' => $this->attributesMetadata,
+            'classDiscriminatorMapping' => $this->classDiscriminatorMapping,
         ];
     }
 }

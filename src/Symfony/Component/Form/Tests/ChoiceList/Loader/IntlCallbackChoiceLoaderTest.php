@@ -22,44 +22,20 @@ use Symfony\Component\Form\ChoiceList\Loader\IntlCallbackChoiceLoader;
  */
 class IntlCallbackChoiceLoaderTest extends TestCase
 {
-    /**
-     * @var \Symfony\Component\Form\ChoiceList\Loader\IntlCallbackChoiceLoader
-     */
-    private static $loader;
-
-    /**
-     * @var callable
-     */
-    private static $value;
-
-    /**
-     * @var array
-     */
-    private static $choices;
-
-    /**
-     * @var string[]
-     */
-    private static $choiceValues;
-
-    /**
-     * @var \Symfony\Component\Form\ChoiceList\LazyChoiceList
-     */
-    private static $lazyChoiceList;
+    private static IntlCallbackChoiceLoader $loader;
+    private static \Closure $value;
+    private static array $choices;
+    private static array $choiceValues = ['choice_one', 'choice_two'];
+    private static LazyChoiceList $lazyChoiceList;
 
     public static function setUpBeforeClass(): void
     {
-        self::$loader = new IntlCallbackChoiceLoader(function () {
-            return self::$choices;
-        });
-        self::$value = function ($choice) {
-            return $choice->value ?? null;
-        };
+        self::$loader = new IntlCallbackChoiceLoader(static fn () => self::$choices);
+        self::$value = static fn ($choice) => $choice->value ?? null;
         self::$choices = [
             (object) ['value' => 'choice_one'],
             (object) ['value' => 'choice_two'],
         ];
-        self::$choiceValues = ['choice_one', 'choice_two'];
         self::$lazyChoiceList = new LazyChoiceList(self::$loader, self::$value);
     }
 
@@ -71,7 +47,7 @@ class IntlCallbackChoiceLoaderTest extends TestCase
     public function testLoadChoicesOnlyOnce()
     {
         $calls = 0;
-        $loader = new IntlCallbackChoiceLoader(function () use (&$calls) {
+        $loader = new IntlCallbackChoiceLoader(static function () use (&$calls) {
             ++$calls;
 
             return self::$choices;
@@ -104,14 +80,5 @@ class IntlCallbackChoiceLoaderTest extends TestCase
             self::$lazyChoiceList->getValuesForChoices(self::$choices),
             'Choice list should not be reloaded.'
         );
-    }
-
-    public static function tearDownAfterClass(): void
-    {
-        self::$loader = null;
-        self::$value = null;
-        self::$choices = [];
-        self::$choiceValues = [];
-        self::$lazyChoiceList = null;
     }
 }

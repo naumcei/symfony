@@ -32,5 +32,5 @@ interface MarkingStoreInterface
     /**
      * Sets a Marking to a subject.
      */
-    public function setMarking(object $subject, Marking $marking, array $context = []);
+    public function setMarking(object $subject, Marking $marking, array $context = []): void;
 }

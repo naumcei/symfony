@@ -14,7 +14,7 @@ namespace Symfony\Component\Form\Guess;
 use Symfony\Component\Form\Exception\InvalidArgumentException;
 
 /**
- * Base class for guesses made by TypeGuesserInterface implementation.
+ * Base class for guesses made by FormTypeGuesserInterface implementation.
  *
  * Each instance contains a confidence value about the correctness of the guess.
  * Thus an instance with confidence HIGH_CONFIDENCE is more likely to be
@@ -80,8 +80,8 @@ abstract class Guess
      */
     public function __construct(int $confidence)
     {
-        if (self::VERY_HIGH_CONFIDENCE !== $confidence && self::HIGH_CONFIDENCE !== $confidence &&
-            self::MEDIUM_CONFIDENCE !== $confidence && self::LOW_CONFIDENCE !== $confidence) {
+        if (self::VERY_HIGH_CONFIDENCE !== $confidence && self::HIGH_CONFIDENCE !== $confidence
+            && self::MEDIUM_CONFIDENCE !== $confidence && self::LOW_CONFIDENCE !== $confidence) {
             throw new InvalidArgumentException('The confidence should be one of the constants defined in Guess.');
         }
 

@@ -1,5 +1,4 @@
 framework:
-    http_method_override: false
     workflows:
         my_workflow:
             type: state_machine
@@ -9,7 +8,7 @@ framework:
                 type: method
                 property: state
             supports:
-                - Symfony\Bundle\FrameworkBundle\Tests\DependencyInjection\FrameworkExtensionTest
+                - Symfony\Bundle\FrameworkBundle\Tests\DependencyInjection\FrameworkExtensionTestCase
             places:
                 - one
                 - two

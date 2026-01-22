@@ -12,15 +12,21 @@
 namespace Symfony\Component\DependencyInjection\Tests\Loader;
 
 require_once __DIR__.'/../Fixtures/includes/AcmeExtension.php';
+require_once __DIR__.'/../Fixtures/includes/fixture_app_services.php';
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Config\Builder\ConfigBuilderGenerator;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Argument\ServiceLocatorArgument;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
 use Symfony\Component\DependencyInjection\Dumper\YamlDumper;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
+use Symfony\Component\DependencyInjection\Exception\LogicException;
+use Symfony\Component\DependencyInjection\Loader\Configurator\App;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Tests\Fixtures\FooClassWithEnumAttribute;
 use Symfony\Component\DependencyInjection\Tests\Fixtures\FooUnitEnum;
 
@@ -42,6 +48,41 @@ class PhpFileLoaderTest extends TestCase
         $loader->load(__DIR__.'/../Fixtures/php/simple.php');
 
         $this->assertEquals('foo', $container->getParameter('foo'), '->load() loads a PHP file resource');
+
+        $this->assertTrue(class_exists(App::class));
+        $this->assertTrue(\function_exists('Symfony\Component\DependencyInjection\Loader\Configurator\service'));
+    }
+
+    public function testPrependExtensionConfigWithLoadMethod()
+    {
+        $container = new ContainerBuilder();
+        $container->registerExtension(new \AcmeExtension());
+        $container->prependExtensionConfig('acme', ['foo' => 'bar']);
+        $loader = new PhpFileLoader($container, new FileLocator(\dirname(__DIR__).'/Fixtures/config'), 'prod', true);
+        $loader->load('config_builder.php');
+
+        $expected = [
+            ['color' => 'red'],
+            ['color' => 'blue'],
+            ['foo' => 'bar'],
+        ];
+        $this->assertSame($expected, $container->getExtensionConfig('acme'));
+    }
+
+    public function testPrependExtensionConfigWithImportMethod()
+    {
+        $container = new ContainerBuilder();
+        $container->registerExtension(new \AcmeExtension());
+        $container->prependExtensionConfig('acme', ['foo' => 'bar']);
+        $loader = new PhpFileLoader($container, new FileLocator(\dirname(__DIR__).'/Fixtures/config'), 'prod', true);
+        $loader->import('config_builder.php');
+
+        $expected = [
+            ['color' => 'red'],
+            ['color' => 'blue'],
+            ['foo' => 'bar'],
+        ];
+        $this->assertSame($expected, $container->getExtensionConfig('acme'));
     }
 
     public function testConfigServices()
@@ -67,15 +108,13 @@ class PhpFileLoaderTest extends TestCase
         $this->assertStringEqualsFile($fixtures.'/php/services_closure_argument_compiled.php', $dumper->dump());
     }
 
-    /**
-     * @dataProvider provideConfig
-     */
+    #[DataProvider('provideConfig')]
     public function testConfig($file)
     {
         $fixtures = realpath(__DIR__.'/../Fixtures');
         $container = new ContainerBuilder();
         $container->registerExtension(new \AcmeExtension());
-        $loader = new PhpFileLoader($container, new FileLocator(), 'prod', new ConfigBuilderGenerator(sys_get_temp_dir()));
+        $loader = new PhpFileLoader($container, new FileLocator(), 'prod');
         $loader->load($fixtures.'/config/'.$file.'.php');
 
         $container->compile();
@@ -84,7 +123,7 @@ class PhpFileLoaderTest extends TestCase
         $this->assertStringMatchesFormatFile($fixtures.'/config/'.$file.'.expected.yml', $dumper->dump());
     }
 
-    public function provideConfig()
+    public static function provideConfig()
     {
         yield ['basic'];
         yield ['object'];
@@ -100,8 +139,30 @@ class PhpFileLoaderTest extends TestCase
         yield ['remove'];
         yield ['config_builder'];
         yield ['expression_factory'];
+        yield ['static_constructor'];
+        yield ['inline_static_constructor'];
+        yield ['instanceof_static_constructor'];
         yield ['closure'];
+        yield ['from_callable'];
         yield ['env_param'];
+        yield ['array_config'];
+        yield ['object_array_config'];
+        yield ['return_when_env'];
+    }
+
+    public function testResourceTags()
+    {
+        $fixtures = realpath(__DIR__.'/../Fixtures');
+        $loader = new PhpFileLoader($container = new ContainerBuilder(), new FileLocator());
+        $loader->load($fixtures.'/config/resource_tags.php');
+
+        $def = $container->getDefinition('foo');
+        $this->assertTrue($def->hasTag('container.excluded'));
+        $this->assertTrue($def->hasTag('my.tag'));
+        $this->assertTrue($def->hasTag('another.tag'));
+        $this->assertSame([['foo' => 'bar']], $def->getTag('my.tag'));
+        $this->assertSame([[]], $def->getTag('another.tag'));
+        $this->assertFalse($def->isAbstract());
     }
 
     public function testAutoConfigureAndChildDefinition()
@@ -180,24 +241,90 @@ class PhpFileLoaderTest extends TestCase
         $this->assertSame([FooUnitEnum::BAR], $definition->getArguments());
     }
 
-    public function testNestedBundleConfigNotAllowed()
-    {
-        $fixtures = realpath(__DIR__.'/../Fixtures');
-        $container = new ContainerBuilder();
-        $loader = new PhpFileLoader($container, new FileLocator(), 'prod', new ConfigBuilderGenerator(sys_get_temp_dir()));
-
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches('/^'.preg_quote('Could not resolve argument "Symfony\\Config\\AcmeConfig\\NestedConfig $config"', '/').'/');
-
-        $loader->load($fixtures.'/config/nested_bundle_config.php');
-    }
-
     public function testWhenEnv()
     {
+        $this->expectNotToPerformAssertions();
+
         $fixtures = realpath(__DIR__.'/../Fixtures');
         $container = new ContainerBuilder();
-        $loader = new PhpFileLoader($container, new FileLocator(), 'dev', new ConfigBuilderGenerator(sys_get_temp_dir()));
+        $loader = new PhpFileLoader($container, new FileLocator(), 'dev');
 
         $loader->load($fixtures.'/config/when_env.php');
+    }
+
+    public function testNotWhenEnv()
+    {
+        $this->expectNotToPerformAssertions();
+
+        $fixtures = realpath(__DIR__.'/../Fixtures');
+        $container = new ContainerBuilder();
+        $loader = new PhpFileLoader($container, new FileLocator(), 'prod');
+
+        $loader->load($fixtures.'/config/not_when_env.php');
+    }
+
+    public function testUsingBothWhenAndNotWhenEnv()
+    {
+        $fixtures = realpath(__DIR__.'/../Fixtures');
+        $container = new ContainerBuilder();
+        $loader = new PhpFileLoader($container, new FileLocator(), 'prod');
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Using both #[When] and #[WhenNot] attributes on the same target is not allowed.');
+
+        $loader->load($fixtures.'/config/when_not_when_env.php');
+    }
+
+    public function testServiceWithServiceLocatorArgument()
+    {
+        $fixtures = realpath(__DIR__.'/../Fixtures');
+        $loader = new PhpFileLoader($container = new ContainerBuilder(), new FileLocator());
+        $loader->load($fixtures.'/config/services_with_service_locator_argument.php');
+
+        $values = ['foo' => new Reference('foo_service'), 'bar' => new Reference('bar_service')];
+        $this->assertEquals([new ServiceLocatorArgument($values)], $container->getDefinition('locator_dependent_service_indexed')->getArguments());
+
+        $values = [new Reference('foo_service'), new Reference('bar_service')];
+        $this->assertEquals([new ServiceLocatorArgument($values)], $container->getDefinition('locator_dependent_service_not_indexed')->getArguments());
+
+        $values = ['foo' => new Reference('foo_service'), 0 => new Reference('bar_service')];
+        $this->assertEquals([new ServiceLocatorArgument($values)], $container->getDefinition('locator_dependent_service_mixed')->getArguments());
+
+        $values = ['foo' => new Definition(\stdClass::class), 'bar' => new Definition(\stdClass::class)];
+        $this->assertEquals([new ServiceLocatorArgument($values)], $container->getDefinition('locator_dependent_inline_service')->getArguments());
+    }
+
+    public function testArrayEnvConfigurator()
+    {
+        $container = new ContainerBuilder();
+        $container->registerExtension(new \AcmeExtension());
+        $loader = new PhpFileLoader($container, new FileLocator(\dirname(__DIR__).'/Fixtures/config'), 'prod');
+        $loader->load('array_env_configurator.php');
+
+        $this->assertIsString($container->getExtensionConfig('acme')[0]['color']);
+    }
+
+    public function testNamedClosure()
+    {
+        $container = new ContainerBuilder();
+        $loader = new PhpFileLoader($container, new FileLocator(\dirname(__DIR__).'/Fixtures/config'), 'some-env');
+        $loader->load('named_closure.php');
+        $container->compile();
+        $dumper = new PhpDumper($container);
+        $this->assertStringEqualsFile(\dirname(__DIR__).'/Fixtures/php/named_closure_compiled.php', $dumper->dump());
+    }
+
+    public function testInstanceofStateIsRestoredAfterImport()
+    {
+        $container = new ContainerBuilder();
+
+        $loader = new PhpFileLoader($container, new FileLocator(\dirname(__DIR__).'/Fixtures/config'));
+        $loader->load('instanceof_import_parent.php');
+
+        $conditionalsBefore = $container->getDefinition('service_before')->getInstanceofConditionals();
+        $this->assertArrayHasKey(\stdClass::class, $conditionalsBefore, 'Pre-import definition missing instanceof rule.');
+
+        $conditionalsAfter = $container->getDefinition('service_after')->getInstanceofConditionals();
+        $this->assertArrayHasKey(\stdClass::class, $conditionalsAfter, 'Post-import definition missing instanceof rule (State corruption detected).');
     }
 }

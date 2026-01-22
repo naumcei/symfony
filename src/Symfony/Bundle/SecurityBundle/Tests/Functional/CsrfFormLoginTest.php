@@ -11,14 +11,23 @@
 
 namespace Symfony\Bundle\SecurityBundle\Tests\Functional;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
+
 class CsrfFormLoginTest extends AbstractWebTestCase
 {
-    /**
-     * @dataProvider provideClientOptions
-     */
+    #[DataProvider('provideClientOptions')]
     public function testFormLoginAndLogoutWithCsrfTokens($options)
     {
         $client = $this->createClient($options);
+
+        $this->callInRequestContext($client, static function () {
+            static::getContainer()->get('security.csrf.token_storage')->setToken('foo', 'bar');
+        });
 
         $form = $client->request('GET', '/login')->selectButton('login')->form();
         $form['user_login[username]'] = 'johannes';
@@ -40,16 +49,24 @@ class CsrfFormLoginTest extends AbstractWebTestCase
         $client->click($logoutLinks[0]);
 
         $this->assertRedirect($client->getResponse(), '/');
+
+        $this->callInRequestContext($client, function () {
+            $this->assertFalse(static::getContainer()->get('security.csrf.token_storage')->hasToken('foo'));
+        });
     }
 
-    /**
-     * @dataProvider provideClientOptions
-     */
+    #[DataProvider('provideClientOptions')]
     public function testFormLoginWithInvalidCsrfToken($options)
     {
         $client = $this->createClient($options);
 
+        $this->callInRequestContext($client, static function () {
+            static::getContainer()->get('security.csrf.token_storage')->setToken('foo', 'bar');
+        });
+
         $form = $client->request('GET', '/login')->selectButton('login')->form();
+        $form['user_login[username]'] = 'johannes';
+        $form['user_login[password]'] = 'test';
         $form['user_login[_token]'] = '';
         $client->submit($form);
 
@@ -57,11 +74,13 @@ class CsrfFormLoginTest extends AbstractWebTestCase
 
         $text = $client->followRedirect()->text(null, true);
         $this->assertStringContainsString('Invalid CSRF token.', $text);
+
+        $this->callInRequestContext($client, function () {
+            $this->assertTrue(static::getContainer()->get('security.csrf.token_storage')->hasToken('foo'));
+        });
     }
 
-    /**
-     * @dataProvider provideClientOptions
-     */
+    #[DataProvider('provideClientOptions')]
     public function testFormLoginWithCustomTargetPath($options)
     {
         $client = $this->createClient($options);
@@ -79,9 +98,7 @@ class CsrfFormLoginTest extends AbstractWebTestCase
         $this->assertStringContainsString('You\'re browsing to path "/foo".', $text);
     }
 
-    /**
-     * @dataProvider provideClientOptions
-     */
+    #[DataProvider('provideClientOptions')]
     public function testFormLoginRedirectsToProtectedResourceAfterLogin($options)
     {
         $client = $this->createClient($options);
@@ -100,9 +117,27 @@ class CsrfFormLoginTest extends AbstractWebTestCase
         $this->assertStringContainsString('You\'re browsing to path "/protected-resource".', $text);
     }
 
-    public function provideClientOptions()
+    public static function provideClientOptions(): iterable
     {
         yield [['test_case' => 'CsrfFormLogin', 'root_config' => 'config.yml']];
         yield [['test_case' => 'CsrfFormLogin', 'root_config' => 'routes_as_path.yml']];
+    }
+
+    private function callInRequestContext(KernelBrowser $client, callable $callable): void
+    {
+        /** @var EventDispatcherInterface $eventDispatcher */
+        $eventDispatcher = static::getContainer()->get(EventDispatcherInterface::class);
+        $wrappedCallable = static function (RequestEvent $event) use (&$callable) {
+            $callable();
+            $event->setResponse(new Response(''));
+            $event->stopPropagation();
+        };
+
+        $eventDispatcher->addListener(KernelEvents::REQUEST, $wrappedCallable);
+        try {
+            $client->request('GET', '/not-existent');
+        } finally {
+            $eventDispatcher->removeListener(KernelEvents::REQUEST, $wrappedCallable);
+        }
     }
 }

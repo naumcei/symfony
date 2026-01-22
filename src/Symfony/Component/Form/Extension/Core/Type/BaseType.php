@@ -13,6 +13,7 @@ namespace Symfony\Component\Form\Extension\Core\Type;
 
 use Symfony\Component\Form\AbstractRendererEngine;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Exception\LogicException;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
@@ -28,13 +29,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 abstract class BaseType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->setDisabled($options['disabled']);
         $builder->setAutoInitialize($options['auto_initialize']);
     }
 
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $name = $form->getName();
         $blockName = $options['block_name'] ?: $form->getName();
@@ -45,9 +46,9 @@ abstract class BaseType extends AbstractType
 
         if ($view->parent) {
             if ('' !== ($parentFullName = $view->parent->vars['full_name'])) {
-                $id = sprintf('%s_%s', $view->parent->vars['id'], $name);
-                $fullName = sprintf('%s[%s]', $parentFullName, $name);
-                $uniqueBlockPrefix = sprintf('%s_%s', $view->parent->vars['unique_block_prefix'], $blockName);
+                $id = \sprintf('%s_%s', $view->parent->vars['id'], $name);
+                $fullName = \sprintf('%s[%s]', $parentFullName, $name);
+                $uniqueBlockPrefix = \sprintf('%s_%s', $view->parent->vars['unique_block_prefix'], $blockName);
             } else {
                 $id = $name;
                 $fullName = $name;
@@ -62,8 +63,16 @@ abstract class BaseType extends AbstractType
             if (!$labelFormat) {
                 $labelFormat = $view->parent->vars['label_format'];
             }
+
+            $rootFormAttrOption = $form->getRoot()->getConfig()->getOption('form_attr');
+            if ($options['form_attr'] || $rootFormAttrOption) {
+                $options['attr']['form'] = \is_string($rootFormAttrOption) ? $rootFormAttrOption : $form->getRoot()->getName();
+                if (empty($options['attr']['form'])) {
+                    throw new LogicException('"form_attr" option must be a string identifier on root form when it has no id.');
+                }
+            }
         } else {
-            $id = $name;
+            $id = \is_string($options['form_attr']) ? $options['form_attr'] : $name;
             $fullName = $name;
             $uniqueBlockPrefix = '_'.$blockName;
 
@@ -110,7 +119,7 @@ abstract class BaseType extends AbstractType
         ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'block_name' => null,
@@ -126,6 +135,7 @@ abstract class BaseType extends AbstractType
             'translation_domain' => null,
             'auto_initialize' => true,
             'priority' => 0,
+            'form_attr' => false,
         ]);
 
         $resolver->setAllowedTypes('block_prefix', ['null', 'string']);
@@ -133,6 +143,7 @@ abstract class BaseType extends AbstractType
         $resolver->setAllowedTypes('row_attr', 'array');
         $resolver->setAllowedTypes('label_html', 'bool');
         $resolver->setAllowedTypes('priority', 'int');
+        $resolver->setAllowedTypes('form_attr', ['bool', 'string']);
 
         $resolver->setInfo('priority', 'The form rendering priority (higher priorities will be rendered first)');
     }

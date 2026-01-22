@@ -11,9 +11,9 @@
 
 namespace Symfony\Component\Security\Http\Tests\Authenticator\AccessToken;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Core\User\InMemoryUserProvider;
 use Symfony\Component\Security\Http\AccessToken\AccessTokenHandlerInterface;
@@ -38,9 +38,7 @@ class ChainedAccessTokenExtractorsTest extends TestCase
         $this->accessTokenHandler = new InMemoryAccessTokenHandler();
     }
 
-    /**
-     * @dataProvider provideSupportData
-     */
+    #[DataProvider('provideSupportData')]
     public function testSupport($request)
     {
         $this->setUpAuthenticator();
@@ -48,7 +46,7 @@ class ChainedAccessTokenExtractorsTest extends TestCase
         $this->assertNull($this->authenticator->supports($request));
     }
 
-    public function provideSupportData(): iterable
+    public static function provideSupportData(): iterable
     {
         yield [new Request([], [], [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer VALID_ACCESS_TOKEN'])];
         yield [new Request([], [], [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer INVALID_ACCESS_TOKEN'])];
@@ -64,20 +62,18 @@ class ChainedAccessTokenExtractorsTest extends TestCase
         $this->assertInstanceOf(SelfValidatingPassport::class, $passport);
     }
 
-    /**
-     * @dataProvider provideInvalidAuthenticateData
-     */
-    public function testAuthenticateInvalid($request, $errorMessage, $exceptionType = BadRequestHttpException::class)
+    #[DataProvider('provideInvalidAuthenticateData')]
+    public function testAuthenticateInvalid(Request $request, string $errorMessage, string $exceptionType)
     {
+        $this->setUpAuthenticator();
+
         $this->expectException($exceptionType);
         $this->expectExceptionMessage($errorMessage);
-
-        $this->setUpAuthenticator();
 
         $this->authenticator->authenticate($request);
     }
 
-    public function provideInvalidAuthenticateData(): iterable
+    public static function provideInvalidAuthenticateData(): iterable
     {
         $request = new Request();
         yield [$request, 'Invalid credentials.', BadCredentialsException::class];

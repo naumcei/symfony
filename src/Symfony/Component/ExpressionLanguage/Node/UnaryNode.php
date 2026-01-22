@@ -25,6 +25,7 @@ class UnaryNode extends Node
         'not' => '!',
         '+' => '+',
         '-' => '-',
+        '~' => '~',
     ];
 
     public function __construct(string $operator, Node $node)
@@ -35,7 +36,7 @@ class UnaryNode extends Node
         );
     }
 
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $compiler
             ->raw('(')
@@ -45,7 +46,7 @@ class UnaryNode extends Node
         ;
     }
 
-    public function evaluate(array $functions, array $values)
+    public function evaluate(array $functions, array $values): mixed
     {
         $value = $this->nodes['node']->evaluate($functions, $values);
 
@@ -53,6 +54,7 @@ class UnaryNode extends Node
             'not',
             '!' => !$value,
             '-' => -$value,
+            '~' => ~$value,
             default => $value,
         };
     }

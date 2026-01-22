@@ -12,19 +12,24 @@
 namespace Symfony\Component\Notifier\Bridge\KazInfoTeh\Tests;
 
 use Symfony\Component\Notifier\Bridge\KazInfoTeh\KazInfoTehTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
+use Symfony\Component\Notifier\Test\MissingRequiredOptionTestTrait;
 
 /**
  * @author Egor Taranov <dev@taranovegor.com>
  */
-final class KazInfoTehTransportFactoryTest extends TransportFactoryTestCase
+final class KazInfoTehTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+    use MissingRequiredOptionTestTrait;
+
     public function createFactory(): KazInfoTehTransportFactory
     {
         return new KazInfoTehTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'kaz-info-teh://kazinfoteh.org:9507?sender=symfony',
@@ -37,24 +42,24 @@ final class KazInfoTehTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'kaz-info-teh://username:password@default?sender=Symfony'];
         yield [false, 'somethingElse://username:password@default?sender=Symfony'];
     }
 
-    public function missingRequiredOptionProvider(): iterable
+    public static function missingRequiredOptionProvider(): iterable
     {
         yield 'missing option: sender' => ['kaz-info-teh://username:password@default'];
     }
 
-    public function incompleteDsnProvider(): iterable
+    public static function incompleteDsnProvider(): iterable
     {
         yield 'missing username' => ['kaz-info-teh://default?sender=0611223344'];
         yield 'missing password' => ['kaz-info-teh://username@default?sender=0611223344'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://username:password@default?sender=acme'];
         yield ['somethingElse://username:password@default'];

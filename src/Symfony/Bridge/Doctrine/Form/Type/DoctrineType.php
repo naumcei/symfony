@@ -32,11 +32,6 @@ use Symfony\Contracts\Service\ResetInterface;
 abstract class DoctrineType extends AbstractType implements ResetInterface
 {
     /**
-     * @var ManagerRegistry
-     */
-    protected $registry;
-
-    /**
      * @var IdReader[]
      */
     private array $idReaders = [];
@@ -92,12 +87,12 @@ abstract class DoctrineType extends AbstractType implements ResetInterface
         return null;
     }
 
-    public function __construct(ManagerRegistry $registry)
-    {
-        $this->registry = $registry;
+    public function __construct(
+        protected ManagerRegistry $registry,
+    ) {
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         if ($options['multiple'] && interface_exists(Collection::class)) {
             $builder
@@ -107,7 +102,7 @@ abstract class DoctrineType extends AbstractType implements ResetInterface
         }
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $choiceLoader = function (Options $options) {
             // Unless the choices are given explicitly, load them on demand
@@ -175,7 +170,7 @@ abstract class DoctrineType extends AbstractType implements ResetInterface
             $em = $this->registry->getManagerForClass($options['class']);
 
             if (null === $em) {
-                throw new RuntimeException(sprintf('Class "%s" seems not to be a managed Doctrine entity. Did you forget to map it?', $options['class']));
+                throw new RuntimeException(\sprintf('Class "%s" seems not to be a managed Doctrine entity. Did you forget to map it?', $options['class']));
             }
 
             return $em;
@@ -183,7 +178,7 @@ abstract class DoctrineType extends AbstractType implements ResetInterface
 
         // Invoke the query builder closure so that we can cache choice lists
         // for equal query builders
-        $queryBuilderNormalizer = function (Options $options, $queryBuilder) {
+        $queryBuilderNormalizer = static function (Options $options, $queryBuilder) {
             if (\is_callable($queryBuilder)) {
                 $queryBuilder = $queryBuilder($options['em']->getRepository($options['class']));
             }
@@ -193,15 +188,13 @@ abstract class DoctrineType extends AbstractType implements ResetInterface
 
         // Set the "id_reader" option via the normalizer. This option is not
         // supposed to be set by the user.
-        $idReaderNormalizer = function (Options $options) {
-            // The ID reader is a utility that is needed to read the object IDs
-            // when generating the field values. The callback generating the
-            // field values has no access to the object manager or the class
-            // of the field, so we store that information in the reader.
-            // The reader is cached so that two choice lists for the same class
-            // (and hence with the same reader) can successfully be cached.
-            return $this->getCachedIdReader($options['em'], $options['class']);
-        };
+        // The ID reader is a utility that is needed to read the object IDs
+        // when generating the field values. The callback generating the
+        // field values has no access to the object manager or the class
+        // of the field, so we store that information in the reader.
+        // The reader is cached so that two choice lists for the same class
+        // (and hence with the same reader) can successfully be cached.
+        $idReaderNormalizer = fn (Options $options) => $this->getCachedIdReader($options['em'], $options['class']);
 
         $resolver->setDefaults([
             'em' => null,
@@ -234,7 +227,7 @@ abstract class DoctrineType extends AbstractType implements ResetInterface
         return ChoiceType::class;
     }
 
-    public function reset()
+    public function reset(): void
     {
         $this->idReaders = [];
         $this->entityLoaders = [];

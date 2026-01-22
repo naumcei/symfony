@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\HttpFoundation\Tests\Session\Attribute;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Session\Attribute\AttributeBag;
 
@@ -21,12 +22,9 @@ use Symfony\Component\HttpFoundation\Session\Attribute\AttributeBag;
  */
 class AttributeBagTest extends TestCase
 {
-    private $array = [];
+    private array $array = [];
 
-    /**
-     * @var AttributeBag
-     */
-    private $bag;
+    private ?AttributeBag $bag = null;
 
     protected function setUp(): void
     {
@@ -79,17 +77,13 @@ class AttributeBagTest extends TestCase
         $this->assertEquals('foo', $this->bag->getName());
     }
 
-    /**
-     * @dataProvider attributesProvider
-     */
+    #[DataProvider('attributesProvider')]
     public function testHas($key, $value, $exists)
     {
         $this->assertEquals($exists, $this->bag->has($key));
     }
 
-    /**
-     * @dataProvider attributesProvider
-     */
+    #[DataProvider('attributesProvider')]
     public function testGet($key, $value, $expected)
     {
         $this->assertEquals($value, $this->bag->get($key));
@@ -101,9 +95,7 @@ class AttributeBagTest extends TestCase
         $this->assertEquals('default', $this->bag->get('user2.login', 'default'));
     }
 
-    /**
-     * @dataProvider attributesProvider
-     */
+    #[DataProvider('attributesProvider')]
     public function testSet($key, $value, $expected)
     {
         $this->bag->set($key, $value);
@@ -153,7 +145,7 @@ class AttributeBagTest extends TestCase
         $this->assertEquals([], $this->bag->all());
     }
 
-    public function attributesProvider()
+    public static function attributesProvider()
     {
         return [
             ['hello', 'world', true],

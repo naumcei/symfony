@@ -12,16 +12,19 @@
 namespace Symfony\Component\Notifier\Bridge\Yunpian\Tests;
 
 use Symfony\Component\Notifier\Bridge\Yunpian\YunpianTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
 
-final class YunpianTransportFactoryTest extends TransportFactoryTestCase
+final class YunpianTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+
     public function createFactory(): YunpianTransportFactory
     {
         return new YunpianTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'yunpian://host.test',
@@ -29,14 +32,19 @@ final class YunpianTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'yunpian://api_key@default'];
         yield [false, 'somethingElse://api_key@default'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://api_key@default'];
+    }
+
+    public static function incompleteDsnProvider(): iterable
+    {
+        yield ['yunpian://default'];
     }
 }

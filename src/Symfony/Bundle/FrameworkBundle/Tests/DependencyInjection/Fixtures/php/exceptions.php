@@ -6,7 +6,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 
 $container->loadFromExtension('framework', [
-    'http_method_override' => false,
     'exceptions' => [
         BadRequestHttpException::class => [
             'log_level' => 'info',

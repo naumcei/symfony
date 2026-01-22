@@ -11,28 +11,22 @@
 
 namespace Symfony\Component\DependencyInjection\Tests\Config;
 
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Config\ResourceCheckerInterface;
 use Symfony\Component\DependencyInjection\Config\ContainerParametersResource;
 use Symfony\Component\DependencyInjection\Config\ContainerParametersResourceChecker;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Container;
 
 class ContainerParametersResourceCheckerTest extends TestCase
 {
-    /** @var ContainerParametersResource */
-    private $resource;
-
-    /** @var ResourceCheckerInterface */
-    private $resourceChecker;
-
-    /** @var ContainerInterface */
-    private $container;
+    private ContainerParametersResource $resource;
+    private ContainerParametersResourceChecker $resourceChecker;
+    private Container $container;
 
     protected function setUp(): void
     {
         $this->resource = new ContainerParametersResource(['locales' => ['fr', 'en'], 'default_locale' => 'fr']);
-        $this->container = $this->createMock(ContainerInterface::class);
+        $this->container = new Container();
         $this->resourceChecker = new ContainerParametersResourceChecker($this->container);
     }
 
@@ -41,38 +35,26 @@ class ContainerParametersResourceCheckerTest extends TestCase
         $this->assertTrue($this->resourceChecker->supports($this->resource));
     }
 
-    /**
-     * @dataProvider isFreshProvider
-     */
+    #[DataProvider('isFreshProvider')]
     public function testIsFresh(callable $mockContainer, $expected)
     {
-        $mockContainer($this->container);
+        $mockContainer($this->container, $this);
 
         $this->assertSame($expected, $this->resourceChecker->isFresh($this->resource, time()));
     }
 
-    public function isFreshProvider()
+    public static function isFreshProvider()
     {
-        yield 'not fresh on missing parameter' => [function (MockObject $container) {
-            $container->method('hasParameter')->with('locales')->willReturn(false);
+        yield 'not fresh on missing parameter' => [static function (Container $container) {
         }, false];
 
-        yield 'not fresh on different value' => [function (MockObject $container) {
-            $container->method('getParameter')->with('locales')->willReturn(['nl', 'es']);
+        yield 'not fresh on different value' => [static function (Container $container) {
+            $container->setParameter('locales', ['nl', 'es']);
         }, false];
 
-        yield 'fresh on every identical parameters' => [function (MockObject $container) {
-            $container->expects($this->exactly(2))->method('hasParameter')->willReturn(true);
-            $container->expects($this->exactly(2))->method('getParameter')
-                ->withConsecutive(
-                    [$this->equalTo('locales')],
-                    [$this->equalTo('default_locale')]
-                )
-                ->willReturnMap([
-                    ['locales', ['fr', 'en']],
-                    ['default_locale', 'fr'],
-                ])
-            ;
+        yield 'fresh on every identical parameters' => [static function (Container $container) {
+            $container->setParameter('locales', ['fr', 'en']);
+            $container->setParameter('default_locale', 'fr');
         }, true];
     }
 }

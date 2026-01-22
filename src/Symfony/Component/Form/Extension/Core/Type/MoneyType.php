@@ -14,6 +14,7 @@ namespace Symfony\Component\Form\Extension\Core\Type;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Exception\LogicException;
 use Symfony\Component\Form\Extension\Core\DataTransformer\MoneyToLocalizedStringTransformer;
+use Symfony\Component\Form\Extension\Core\DataTransformer\StringToFloatTransformer;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
@@ -22,9 +23,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MoneyType extends AbstractType
 {
-    protected static $patterns = [];
+    protected static array $patterns = [];
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         // Values used in HTML5 number inputs should be formatted as in "1234.5", ie. 'en' format without grouping,
         // according to https://www.w3.org/TR/html51/sec-forms.html#date-time-and-number-formats
@@ -34,21 +35,32 @@ class MoneyType extends AbstractType
                 $options['grouping'],
                 $options['rounding_mode'],
                 $options['divisor'],
-                $options['html5'] ? 'en' : null
+                $options['html5'] ? 'en' : null,
+                $options['input'],
             ))
         ;
+
+        if ('string' === $options['input']) {
+            $builder->addModelTransformer(new StringToFloatTransformer($options['scale']));
+        }
     }
 
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $view->vars['money_pattern'] = self::getPattern($options['currency']);
 
         if ($options['html5']) {
             $view->vars['type'] = 'number';
+
+            if (!isset($view->vars['attr']['step'])) {
+                $view->vars['attr']['step'] = 'any';
+            }
+        } else {
+            $view->vars['attr']['inputmode'] = 0 === $options['scale'] ? 'numeric' : 'decimal';
         }
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'scale' => 2,
@@ -59,6 +71,7 @@ class MoneyType extends AbstractType
             'compound' => false,
             'html5' => false,
             'invalid_message' => 'Please enter a valid money amount.',
+            'input' => 'float',
         ]);
 
         $resolver->setAllowedValues('rounding_mode', [
@@ -75,7 +88,9 @@ class MoneyType extends AbstractType
 
         $resolver->setAllowedTypes('html5', 'bool');
 
-        $resolver->setNormalizer('grouping', function (Options $options, $value) {
+        $resolver->setAllowedValues('input', ['float', 'integer', 'string']);
+
+        $resolver->setNormalizer('grouping', static function (Options $options, $value) {
             if ($value && $options['html5']) {
                 throw new LogicException('Cannot use the "grouping" option when the "html5" option is enabled.');
             }
@@ -95,7 +110,7 @@ class MoneyType extends AbstractType
      * The pattern contains the placeholder "{{ widget }}" where the HTML tag should
      * be inserted
      */
-    protected static function getPattern(?string $currency)
+    protected static function getPattern(?string $currency): string
     {
         if (!$currency) {
             return '{{ widget }}';

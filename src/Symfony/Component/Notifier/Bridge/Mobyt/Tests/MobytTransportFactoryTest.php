@@ -12,19 +12,22 @@
 namespace Symfony\Component\Notifier\Bridge\Mobyt\Tests;
 
 use Symfony\Component\Notifier\Bridge\Mobyt\MobytTransportFactory;
-use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
+use Symfony\Component\Notifier\Test\IncompleteDsnTestTrait;
 
 /**
  * @author Oskar Stark <oskarstark@googlemail.com>
  */
-final class MobytTransportFactoryTest extends TransportFactoryTestCase
+final class MobytTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
+    use IncompleteDsnTestTrait;
+
     public function createFactory(): MobytTransportFactory
     {
         return new MobytTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'mobyt://host.test?from=FROM&type_quality=LL',
@@ -37,19 +40,19 @@ final class MobytTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'mobyt://accountSid:authToken@host.test?from=FROM'];
         yield [false, 'somethingElse://accountSid:authToken@host.test?from=FROM'];
     }
 
-    public function incompleteDsnProvider(): iterable
+    public static function incompleteDsnProvider(): iterable
     {
         yield 'missing token' => ['mobyt://host.test?from=FROM'];
         yield 'missing option: from' => ['mobyt://accountSid:authToken@host'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://accountSid:authToken@host.test?from=FROM'];
         yield ['somethingElse://accountSid:authToken@host.test']; // missing "from" option

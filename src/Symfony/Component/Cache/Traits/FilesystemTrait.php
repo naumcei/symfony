@@ -38,7 +38,7 @@ trait FilesystemTrait
 
             if (($expiresAt = (int) fgets($h)) && $time >= $expiresAt) {
                 fclose($h);
-                $pruned = @unlink($file) && !file_exists($file) && $pruned;
+                $pruned = (@unlink($file) || !file_exists($file)) && $pruned;
             } else {
                 fclose($h);
             }
@@ -92,7 +92,7 @@ trait FilesystemTrait
         }
 
         if ($failed && !is_writable($this->directory)) {
-            throw new CacheException(sprintf('Cache directory is not writable (%s).', $this->directory));
+            throw new CacheException(\sprintf('Cache directory is not writable (%s).', $this->directory));
         }
 
         return $failed;

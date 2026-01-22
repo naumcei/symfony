@@ -11,34 +11,65 @@
 
 namespace Symfony\Component\Notifier\Bridge\AllMySms\Tests;
 
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
+use Symfony\Component\Notifier\Bridge\AllMySms\AllMySmsOptions;
 use Symfony\Component\Notifier\Bridge\AllMySms\AllMySmsTransport;
 use Symfony\Component\Notifier\Message\ChatMessage;
-use Symfony\Component\Notifier\Message\MessageInterface;
 use Symfony\Component\Notifier\Message\SmsMessage;
 use Symfony\Component\Notifier\Test\TransportTestCase;
+use Symfony\Component\Notifier\Tests\Transport\DummyMessage;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class AllMySmsTransportTest extends TransportTestCase
 {
-    public function createTransport(HttpClientInterface $client = null, string $from = null): AllMySmsTransport
+    public static function createTransport(?HttpClientInterface $client = null, ?string $from = null): AllMySmsTransport
     {
-        return new AllMySmsTransport('login', 'apiKey', $from, $client ?? $this->createMock(HttpClientInterface::class));
+        return new AllMySmsTransport('login', 'apiKey', $from, $client ?? new MockHttpClient());
     }
 
-    public function toStringProvider(): iterable
+    public static function toStringProvider(): iterable
     {
-        yield ['allmysms://api.allmysms.com', $this->createTransport()];
-        yield ['allmysms://api.allmysms.com?from=TEST', $this->createTransport(null, 'TEST')];
+        yield ['allmysms://api.allmysms.com', self::createTransport()];
+        yield ['allmysms://api.allmysms.com?from=TEST', self::createTransport(null, 'TEST')];
     }
 
-    public function supportedMessagesProvider(): iterable
+    public static function supportedMessagesProvider(): iterable
     {
         yield [new SmsMessage('0611223344', 'Hello!')];
+        yield [new SmsMessage('0611223344', 'Hello!', 'from', new AllMySmsOptions(['from' => 'foo']))];
     }
 
-    public function unsupportedMessagesProvider(): iterable
+    public static function unsupportedMessagesProvider(): iterable
     {
         yield [new ChatMessage('Hello!')];
-        yield [$this->createMock(MessageInterface::class)];
+        yield [new DummyMessage()];
+    }
+
+    public function testSentMessageInfo()
+    {
+        $smsMessage = new SmsMessage('0611223344', 'lorem ipsum');
+
+        $data = json_encode([
+            'code' => 100,
+            'description' => 'Your messages have been sent',
+            'smsId' => 'de4d766d-4faf-11e9-a8ef-0025907cf72e',
+            'invalidNumbers' => '',
+            'nbContacts' => 1,
+            'nbSms' => 1,
+            'balance' => 2.81,
+            'cost' => 0.19,
+        ]);
+
+        $responses = [
+            new MockResponse($data, ['http_code' => 201]),
+        ];
+
+        $transport = self::createTransport(new MockHttpClient($responses));
+        $sentMessage = $transport->send($smsMessage);
+
+        $this->assertSame(1, $sentMessage->getInfo('nbSms'));
+        $this->assertSame(2.81, $sentMessage->getInfo('balance'));
+        $this->assertSame(0.19, $sentMessage->getInfo('cost'));
     }
 }

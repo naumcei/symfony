@@ -45,17 +45,11 @@ abstract class AbstractFailedMessagesCommand extends Command
 {
     protected const DEFAULT_TRANSPORT_OPTION = 'choose';
 
-    protected $failureTransports;
-    protected ?PhpSerializer $phpSerializer;
-
-    private ?string $globalFailureReceiverName;
-
-    public function __construct(?string $globalFailureReceiverName, ServiceProviderInterface $failureTransports, PhpSerializer $phpSerializer = null)
-    {
-        $this->failureTransports = $failureTransports;
-        $this->globalFailureReceiverName = $globalFailureReceiverName;
-        $this->phpSerializer = $phpSerializer;
-
+    public function __construct(
+        private ?string $globalFailureReceiverName,
+        protected ServiceProviderInterface $failureTransports,
+        protected ?PhpSerializer $phpSerializer = null,
+    ) {
         parent::__construct();
     }
 
@@ -72,8 +66,10 @@ abstract class AbstractFailedMessagesCommand extends Command
         return $stamp?->getId();
     }
 
-    protected function displaySingleMessage(Envelope $envelope, SymfonyStyle $io)
+    protected function displaySingleMessage(Envelope $envelope, SymfonyStyle $io, ?SymfonyStyle $errorIo = null): void
     {
+        $errorIo ??= $io->getErrorStyle();
+
         $io->title('Failed Message Details');
 
         /** @var SentToFailureTransportStamp|null $sentToFailureTransportStamp */
@@ -86,7 +82,7 @@ abstract class AbstractFailedMessagesCommand extends Command
         $lastMessageDecodingFailedStamp = $envelope->last(MessageDecodingFailedStamp::class);
 
         $rows = [
-            ['Class', \get_class($envelope->getMessage())],
+            ['Class', $envelope->getMessage()::class],
         ];
 
         if (null !== $id = $this->getMessageId($envelope)) {
@@ -94,7 +90,7 @@ abstract class AbstractFailedMessagesCommand extends Command
         }
 
         if (null === $sentToFailureTransportStamp) {
-            $io->warning('Message does not appear to have been sent to this transport after failing');
+            $errorIo->warning('Message does not appear to have been sent to this transport after failing');
         } else {
             $failedAt = '';
             $errorMessage = '';
@@ -126,14 +122,14 @@ abstract class AbstractFailedMessagesCommand extends Command
         $redeliveryStamps = $envelope->all(RedeliveryStamp::class);
         $io->writeln(' Message history:');
         foreach ($redeliveryStamps as $redeliveryStamp) {
-            $io->writeln(sprintf('  * Message failed at <info>%s</info> and was redelivered', $redeliveryStamp->getRedeliveredAt()->format('Y-m-d H:i:s')));
+            $io->writeln(\sprintf('  * Message failed at <info>%s</info> and was redelivered', $redeliveryStamp->getRedeliveredAt()->format('Y-m-d H:i:s')));
         }
         $io->newLine();
 
         if ($io->isVeryVerbose()) {
             $io->title('Message:');
             if (null !== $lastMessageDecodingFailedStamp) {
-                $io->error('The message could not be decoded. See below an APPROXIMATIVE representation of the class.');
+                $errorIo->error('The message could not be decoded. See below an APPROXIMATIVE representation of the class.');
             }
             $dump = new Dumper($io, null, $this->createCloner());
             $io->writeln($dump($envelope->getMessage()));
@@ -142,31 +138,31 @@ abstract class AbstractFailedMessagesCommand extends Command
             $io->writeln(null === $flattenException ? '(no data)' : $dump($flattenException));
         } else {
             if (null !== $lastMessageDecodingFailedStamp) {
-                $io->error('The message could not be decoded.');
+                $errorIo->error('The message could not be decoded.');
             }
             $io->writeln(' Re-run command with <info>-vv</info> to see more message & error details.');
         }
     }
 
-    protected function printPendingMessagesMessage(ReceiverInterface $receiver, SymfonyStyle $io)
+    protected function printPendingMessagesMessage(ReceiverInterface $receiver, SymfonyStyle $io): void
     {
         if ($receiver instanceof MessageCountAwareInterface) {
             if (1 === $receiver->getMessageCount()) {
-                $io->writeln('There is <comment>1</comment> message pending in the failure transport.');
+                $io->writeln('There is <info>1</info> message pending in the failure transport.');
             } else {
-                $io->writeln(sprintf('There are <comment>%d</comment> messages pending in the failure transport.', $receiver->getMessageCount()));
+                $io->writeln(\sprintf('There are <info>%d</info> messages pending in the failure transport.', $receiver->getMessageCount()));
             }
         }
     }
 
-    protected function getReceiver(string $name = null): ReceiverInterface
+    protected function getReceiver(?string $name = null): ReceiverInterface
     {
         if (null === $name ??= $this->globalFailureReceiverName) {
-            throw new InvalidArgumentException(sprintf('No default failure transport is defined. Available transports are: "%s".', implode('", "', array_keys($this->failureTransports->getProvidedServices()))));
+            throw new InvalidArgumentException(\sprintf('No default failure transport is defined. Available transports are: "%s".', implode('", "', array_keys($this->failureTransports->getProvidedServices()))));
         }
 
         if (!$this->failureTransports->has($name)) {
-            throw new InvalidArgumentException(sprintf('The "%s" failure transport was not found. Available transports are: "%s".', $name, implode('", "', array_keys($this->failureTransports->getProvidedServices()))));
+            throw new InvalidArgumentException(\sprintf('The "%s" failure transport was not found. Available transports are: "%s".', $name, implode('", "', array_keys($this->failureTransports->getProvidedServices()))));
         }
 
         return $this->failureTransports->get($name);
@@ -179,7 +175,7 @@ abstract class AbstractFailedMessagesCommand extends Command
         }
 
         $cloner = new VarCloner();
-        $cloner->addCasters([FlattenException::class => function (FlattenException $flattenException, array $a, Stub $stub): array {
+        $cloner->addCasters([FlattenException::class => static function (FlattenException $flattenException, array $a, Stub $stub): array {
             $stub->class = $flattenException->getClass();
 
             return [
@@ -188,6 +184,7 @@ abstract class AbstractFailedMessagesCommand extends Command
                 Caster::PREFIX_VIRTUAL.'file' => $flattenException->getFile(),
                 Caster::PREFIX_VIRTUAL.'line' => $flattenException->getLine(),
                 Caster::PREFIX_VIRTUAL.'trace' => new TraceStub($flattenException->getTrace()),
+                Caster::PREFIX_VIRTUAL.'previous' => $flattenException->getPrevious(),
             ];
         }]);
 
@@ -200,15 +197,15 @@ abstract class AbstractFailedMessagesCommand extends Command
         $failureTransportsCount = \count($failureTransports);
         if ($failureTransportsCount > 1) {
             $io->writeln([
-                sprintf('> Loading messages from the <comment>global</comment> failure transport <comment>%s</comment>.', $failureTransportName),
-                '> To use a different failure transport, pass <comment>--transport=</comment>.',
-                sprintf('> Available failure transports are: <comment>%s</comment>', implode(', ', $failureTransports)),
+                \sprintf('> Loading messages from the <info>global</info> failure transport <info>%s</info>.', $failureTransportName),
+                '> To use a different failure transport, pass <info>--transport=</info>.',
+                \sprintf('> Available failure transports are: <info>%s</info>', implode(', ', $failureTransports)),
                 "\n",
             ]);
         }
     }
 
-    protected function interactiveChooseFailureTransport(SymfonyStyle $io)
+    protected function interactiveChooseFailureTransport(SymfonyStyle $io): string
     {
         $failedTransports = array_keys($this->failureTransports->getProvidedServices());
         $question = new ChoiceQuestion('Select failed transport:', $failedTransports, 0);
@@ -239,8 +236,6 @@ abstract class AbstractFailedMessagesCommand extends Command
                 $ids[] = $this->getMessageId($envelope);
             }
             $suggestions->suggestValues($ids);
-
-            return;
         }
     }
 }

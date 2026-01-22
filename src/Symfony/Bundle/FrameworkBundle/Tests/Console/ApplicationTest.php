@@ -22,8 +22,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\ApplicationTester;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -34,7 +35,7 @@ class ApplicationTest extends TestCase
 {
     public function testBundleInterfaceImplementation()
     {
-        $bundle = $this->createMock(BundleInterface::class);
+        $bundle = $this->createStub(BundleInterface::class);
 
         $kernel = $this->getKernel([$bundle], true);
 
@@ -118,7 +119,7 @@ class ApplicationTest extends TestCase
 
         $application = new Application($kernel);
         $newCommand = new Command('example');
-        $application->add($newCommand);
+        $application->addCommand($newCommand);
 
         $this->assertSame($newCommand, $application->get('example'));
     }
@@ -130,11 +131,15 @@ class ApplicationTest extends TestCase
         $container->register(ThrowingCommand::class, ThrowingCommand::class);
         $container->setParameter('console.command.ids', [ThrowingCommand::class => ThrowingCommand::class]);
 
-        $kernel = $this->createMock(KernelInterface::class);
+        $kernel = $this->createStub(KernelInterface::class);
         $kernel
             ->method('getBundles')
             ->willReturn([$this->createBundleMock(
-                [(new Command('fine'))->setCode(function (InputInterface $input, OutputInterface $output) { $output->write('fine'); })]
+                [(new Command('fine'))->setCode(static function (InputInterface $input, OutputInterface $output): int {
+                    $output->write('fine');
+
+                    return 0;
+                })]
             )]);
         $kernel
             ->method('getContainer')
@@ -158,11 +163,15 @@ class ApplicationTest extends TestCase
         $container = new ContainerBuilder();
         $container->register('event_dispatcher', EventDispatcher::class);
 
-        $kernel = $this->createMock(KernelInterface::class);
+        $kernel = $this->createStub(KernelInterface::class);
         $kernel
             ->method('getBundles')
             ->willReturn([$this->createBundleMock(
-                [(new Command(null))->setCode(function (InputInterface $input, OutputInterface $output) { $output->write('fine'); })]
+                [(new Command(null))->setCode(static function (InputInterface $input, OutputInterface $output): int {
+                    $output->write('fine');
+
+                    return 0;
+                })]
             )]);
         $kernel
             ->method('getContainer')
@@ -192,7 +201,11 @@ class ApplicationTest extends TestCase
         $kernel
             ->method('getBundles')
             ->willReturn([$this->createBundleMock(
-                [(new Command('fine'))->setCode(function (InputInterface $input, OutputInterface $output) { $output->write('fine'); })]
+                [(new Command('fine'))->setCode(static function (InputInterface $input, OutputInterface $output): int {
+                    $output->write('fine');
+
+                    return 0;
+                })]
             )]);
         $kernel
             ->method('getContainer')
@@ -240,7 +253,10 @@ class ApplicationTest extends TestCase
 
     private function getKernel(array $bundles, $useDispatcher = false)
     {
-        $container = $this->createMock(ContainerInterface::class);
+        $container = new Container(new ParameterBag([
+            'console.command.ids' => [],
+            'console.lazy_command.ids' => [],
+        ]));
 
         if ($useDispatcher) {
             $dispatcher = $this->createMock(EventDispatcherInterface::class);
@@ -248,25 +264,9 @@ class ApplicationTest extends TestCase
                 ->expects($this->atLeastOnce())
                 ->method('dispatch')
             ;
-            $container
-                ->expects($this->atLeastOnce())
-                ->method('get')
-                ->with($this->equalTo('event_dispatcher'))
-                ->willReturn($dispatcher);
-        }
 
-        $container
-            ->expects($this->exactly(2))
-            ->method('hasParameter')
-            ->withConsecutive(['console.command.ids'], ['console.lazy_command.ids'])
-            ->willReturnOnConsecutiveCalls(true, true)
-        ;
-        $container
-            ->expects($this->exactly(2))
-            ->method('getParameter')
-            ->withConsecutive(['console.lazy_command.ids'], ['console.command.ids'])
-            ->willReturnOnConsecutiveCalls([], [])
-        ;
+            $container->set('event_dispatcher', $dispatcher);
+        }
 
         $kernel = $this->createMock(KernelInterface::class);
         $kernel->expects($this->once())->method('boot');
@@ -290,7 +290,7 @@ class ApplicationTest extends TestCase
         $bundle
             ->expects($this->once())
             ->method('registerCommands')
-            ->willReturnCallback(function (Application $application) use ($commands) {
+            ->willReturnCallback(static function (Application $application) use ($commands) {
                 $application->addCommands($commands);
             })
         ;

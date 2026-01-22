@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Config\Tests\Loader;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Exception\FileLoaderImportCircularReferenceException;
 use Symfony\Component\Config\FileLocator;
@@ -22,18 +23,18 @@ class FileLoaderTest extends TestCase
 {
     public function testImportWithFileLocatorDelegation()
     {
-        $locatorMock = $this->createMock(FileLocatorInterface::class);
+        $locatorMockForAdditionalLoader = $this->createStub(FileLocatorInterface::class);
+        $locatorMockForAdditionalLoader
+            ->method('locate')
+            ->willReturn(
+                ['path/to/file1'],
+                ['path/to/file1', 'path/to/file2'],
+                ['path/to/file1', 'path/to/file2'],
+                ['path/to/file1'],
+                ['path/to/file1', 'path/to/file2']
+            );
 
-        $locatorMockForAdditionalLoader = $this->createMock(FileLocatorInterface::class);
-        $locatorMockForAdditionalLoader->expects($this->any())->method('locate')->will($this->onConsecutiveCalls(
-            ['path/to/file1'],                    // Default
-            ['path/to/file1', 'path/to/file2'],   // First is imported
-            ['path/to/file1', 'path/to/file2'],   // Second is imported
-            ['path/to/file1'],                    // Exception
-            ['path/to/file1', 'path/to/file2']    // Exception
-        ));
-
-        $fileLoader = new TestFileLoader($locatorMock);
+        $fileLoader = new TestFileLoader(new FileLocator());
         $fileLoader->setSupports(false);
         $fileLoader->setCurrentDir('.');
 
@@ -90,16 +91,14 @@ class FileLoaderTest extends TestCase
 
     public function testImportWithGlobLikeResourceWhichContainsMultipleLines()
     {
-        $locatorMock = $this->createMock(FileLocatorInterface::class);
-        $loader = new TestFileLoader($locatorMock);
+        $loader = new TestFileLoader(new FileLocator());
 
         $this->assertSame("foo\nfoobar[foo]", $loader->import("foo\nfoobar[foo]"));
     }
 
     public function testImportWithGlobLikeResourceWhichContainsSlashesAndMultipleLines()
     {
-        $locatorMock = $this->createMock(FileLocatorInterface::class);
-        $loader = new TestFileLoader($locatorMock);
+        $loader = new TestFileLoader(new FileLocator());
 
         $this->assertSame("foo\nfoo/bar[foo]", $loader->import("foo\nfoo/bar[foo]"));
     }
@@ -128,9 +127,7 @@ class FileLoaderTest extends TestCase
         $this->assertNotContains('ExcludeFile.txt', $loadedFiles);
     }
 
-    /**
-     * @dataProvider excludeTrailingSlashConsistencyProvider
-     */
+    #[DataProvider('excludeTrailingSlashConsistencyProvider')]
     public function testExcludeTrailingSlashConsistency(string $exclude)
     {
         $loader = new TestFileLoader(new FileLocator(__DIR__.'/../Fixtures'));
@@ -139,7 +136,7 @@ class FileLoaderTest extends TestCase
         $this->assertNotContains('baz.txt', $loadedFiles);
     }
 
-    public function excludeTrailingSlashConsistencyProvider(): iterable
+    public static function excludeTrailingSlashConsistencyProvider(): iterable
     {
         yield [__DIR__.'/../Fixtures/Exclude/ExcludeToo/'];
         yield [__DIR__.'/../Fixtures/Exclude/ExcludeToo'];
@@ -153,14 +150,14 @@ class FileLoaderTest extends TestCase
 
 class TestFileLoader extends FileLoader
 {
-    private $supports = true;
+    private bool $supports = true;
 
-    public function load(mixed $resource, string $type = null): mixed
+    public function load(mixed $resource, ?string $type = null): mixed
     {
         return $resource;
     }
 
-    public function supports(mixed $resource, string $type = null): bool
+    public function supports(mixed $resource, ?string $type = null): bool
     {
         return $this->supports;
     }

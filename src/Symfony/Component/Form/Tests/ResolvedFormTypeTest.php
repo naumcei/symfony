@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Form\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Form\AbstractType;
@@ -19,11 +20,8 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormBuilder;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormFactory;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormRegistry;
-use Symfony\Component\Form\FormTypeExtensionInterface;
-use Symfony\Component\Form\FormTypeInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\Form\ResolvedFormType;
 use Symfony\Component\Form\ResolvedFormTypeFactory;
@@ -36,42 +34,14 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class ResolvedFormTypeTest extends TestCase
 {
-    private $calls;
-
-    /**
-     * @var FormTypeInterface
-     */
-    private $parentType;
-
-    /**
-     * @var FormTypeInterface
-     */
-    private $type;
-
-    /**
-     * @var FormTypeExtensionInterface
-     */
-    private $extension1;
-
-    /**
-     * @var FormTypeExtensionInterface
-     */
-    private $extension2;
-
-    /**
-     * @var ResolvedFormType
-     */
-    private $parentResolvedType;
-
-    /**
-     * @var ResolvedFormType
-     */
-    private $resolvedType;
-
-    /**
-     * @var FormFactoryInterface
-     */
-    private $formFactory;
+    private array $calls;
+    private UsageTrackingParentFormType $parentType;
+    private UsageTrackingFormType $type;
+    private UsageTrackingFormTypeExtension $extension1;
+    private UsageTrackingFormTypeExtension $extension2;
+    private ResolvedFormType $parentResolvedType;
+    private ResolvedFormType $resolvedType;
+    private FormFactory $formFactory;
 
     protected function setUp(): void
     {
@@ -131,7 +101,7 @@ class ResolvedFormTypeTest extends TestCase
     public function testFailsCreateBuilderOnInvalidFormOptionsResolution()
     {
         $this->expectException(MissingOptionsException::class);
-        $this->expectExceptionMessage(sprintf('An error has occurred resolving the options of the form "%s": The required option "foo" is missing.', UsageTrackingFormType::class));
+        $this->expectExceptionMessage(\sprintf('An error has occurred resolving the options of the form "%s": The required option "foo" is missing.', UsageTrackingFormType::class));
 
         $this->resolvedType->createBuilder($this->formFactory, 'name');
     }
@@ -182,9 +152,7 @@ class ResolvedFormTypeTest extends TestCase
         $this->assertSame('configurable_form_prefix', $resolvedType->getBlockPrefix());
     }
 
-    /**
-     * @dataProvider provideTypeClassBlockPrefixTuples
-     */
+    #[DataProvider('provideTypeClassBlockPrefixTuples')]
     public function testBlockPrefixDefaultsToFQCNIfNoName($typeClass, $blockPrefix)
     {
         $resolvedType = new ResolvedFormType(new $typeClass());
@@ -192,7 +160,7 @@ class ResolvedFormTypeTest extends TestCase
         $this->assertSame($blockPrefix, $resolvedType->getBlockPrefix());
     }
 
-    public function provideTypeClassBlockPrefixTuples()
+    public static function provideTypeClassBlockPrefixTuples(): array
     {
         return [
             [Fixtures\FooType::class, 'foo'],
@@ -246,7 +214,7 @@ class UsageTrackingFormTypeExtension extends AbstractTypeExtension
 {
     use UsageTrackingTrait;
 
-    private $defaultOptions;
+    private array $defaultOptions;
 
     public function __construct(array &$calls, array $defaultOptions)
     {
@@ -267,7 +235,7 @@ class UsageTrackingFormTypeExtension extends AbstractTypeExtension
 
 trait UsageTrackingTrait
 {
-    private $calls;
+    private array $calls;
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {

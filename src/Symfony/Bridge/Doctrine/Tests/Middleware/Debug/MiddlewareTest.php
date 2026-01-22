@@ -11,22 +11,23 @@
 
 namespace Symfony\Bridge\Doctrine\Tests\Middleware\Debug;
 
-use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\ParameterType;
+use Doctrine\DBAL\Result;
+use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Doctrine\DBAL\Statement;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\ORMSetup;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\Middleware\Debug\DebugDataHolder;
 use Symfony\Bridge\Doctrine\Middleware\Debug\Middleware;
 use Symfony\Bridge\PhpUnit\ClockMock;
 use Symfony\Component\Stopwatch\Stopwatch;
 
-/**
- * @requires extension pdo_sqlite
- */
+#[RequiresPhpExtension('pdo_sqlite')]
 class MiddlewareTest extends TestCase
 {
     private DebugDataHolder $debugDataHolder;
@@ -35,12 +36,6 @@ class MiddlewareTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
-
-        if (!interface_exists(MiddlewareInterface::class)) {
-            $this->markTestSkipped(sprintf('%s needed to run this test', MiddlewareInterface::class));
-        }
-
         ClockMock::withClockMock(false);
     }
 
@@ -48,26 +43,28 @@ class MiddlewareTest extends TestCase
     {
         $this->stopwatch = $withStopwatch ? new Stopwatch() : null;
 
-        $configuration = new Configuration();
+        $config = ORMSetup::createConfiguration(true);
+        $config->setSchemaManagerFactory(new DefaultSchemaManagerFactory());
+        $config->enableNativeLazyObjects(true);
         $this->debugDataHolder = new DebugDataHolder();
-        $configuration->setMiddlewares([new Middleware($this->debugDataHolder, $this->stopwatch)]);
+        $config->setMiddlewares([new Middleware($this->debugDataHolder, $this->stopwatch)]);
 
         $this->conn = DriverManager::getConnection([
             'driver' => 'pdo_sqlite',
             'memory' => true,
-        ], $configuration);
+        ], $config);
 
         $this->conn->executeQuery(<<<EOT
-CREATE TABLE products (
-	id INTEGER PRIMARY KEY,
-	name TEXT NOT NULL,
-	price REAL NOT NULL,
-	stock INTEGER NOT NULL,
-	picture BLOB NULL,
-	tags TEXT NULL,
-	created_at TEXT NULL
-);
-EOT);
+            CREATE TABLE products (
+            	id INTEGER PRIMARY KEY,
+            	name TEXT NOT NULL,
+            	price REAL NOT NULL,
+            	stock INTEGER NOT NULL,
+            	picture BLOB NULL,
+            	tags TEXT NULL,
+            	created_at TEXT NULL
+            );
+            EOT);
     }
 
     private function getResourceFromString(string $str)
@@ -78,7 +75,7 @@ EOT);
         return $res;
     }
 
-    public function provideExecuteMethod(): array
+    public static function provideExecuteMethod(): array
     {
         return [
             'executeStatement' => [
@@ -90,9 +87,7 @@ EOT);
         ];
     }
 
-    /**
-     * @dataProvider provideExecuteMethod
-     */
+    #[DataProvider('provideExecuteMethod')]
     public function testWithoutBinding(callable $executeMethod)
     {
         $this->init();
@@ -107,17 +102,15 @@ EOT);
         $this->assertGreaterThan(0, $debug[1]['executionMS']);
     }
 
-    /**
-     * @dataProvider provideExecuteMethod
-     */
+    #[DataProvider('provideExecuteMethod')]
     public function testWithValueBound(callable $executeMethod)
     {
         $this->init();
 
         $sql = <<<EOT
-INSERT INTO products(name, price, stock, picture, tags, created_at)
-VALUES (?, ?, ?, ?, ?, ?)
-EOT;
+            INSERT INTO products(name, price, stock, picture, tags, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            EOT;
 
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(1, 'product1');
@@ -125,7 +118,7 @@ EOT;
         $stmt->bindValue(3, 5, ParameterType::INTEGER);
         $stmt->bindValue(4, $res = $this->getResourceFromString('mydata'), ParameterType::BINARY);
         $stmt->bindValue(5, ['foo', 'bar'], Types::SIMPLE_ARRAY);
-        $stmt->bindValue(6, new \DateTime('2022-06-12 11:00:00'), Types::DATETIME_MUTABLE);
+        $stmt->bindValue(6, new \DateTimeImmutable('2022-06-12 11:00:00'), Types::DATETIME_IMMUTABLE);
 
         $executeMethod($stmt);
 
@@ -137,38 +130,36 @@ EOT;
         $this->assertGreaterThan(0, $debug[1]['executionMS']);
     }
 
-    /**
-     * @dataProvider provideExecuteMethod
-     */
+    #[DataProvider('provideExecuteMethod')]
     public function testWithParamBound(callable $executeMethod)
     {
         $this->init();
 
-        $product = 'product1';
-        $price = 12.5;
-        $stock = 5;
+        $sql = <<<EOT
+            INSERT INTO products(name, price, stock, picture, tags)
+            VALUES (?, ?, ?, ?, ?)
+            EOT;
 
-        $stmt = $this->conn->prepare('INSERT INTO products(name, price, stock) VALUES (?, ?, ?)');
-        $stmt->bindParam(1, $product);
-        $stmt->bindParam(2, $price);
-        $stmt->bindParam(3, $stock, ParameterType::INTEGER);
+        $expectedRes = $res = $this->getResourceFromString('mydata');
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(1, 'product1');
+        $stmt->bindValue(2, '12.5');
+        $stmt->bindValue(3, 5, ParameterType::INTEGER);
+        $stmt->bindValue(4, $res, ParameterType::BINARY);
 
         $executeMethod($stmt);
 
         // Debug data should not be affected by these changes
-        $product = 'product2';
-        $price = 13.5;
-        $stock = 4;
-
         $debug = $this->debugDataHolder->getData()['default'] ?? [];
         $this->assertCount(2, $debug);
-        $this->assertSame('INSERT INTO products(name, price, stock) VALUES (?, ?, ?)', $debug[1]['sql']);
-        $this->assertSame(['product1', '12.5', 5], $debug[1]['params']);
-        $this->assertSame([ParameterType::STRING, ParameterType::STRING, ParameterType::INTEGER], $debug[1]['types']);
+        $this->assertSame($sql, $debug[1]['sql']);
+        $this->assertSame(['product1', '12.5', 5, $expectedRes], $debug[1]['params']);
+        $this->assertSame([ParameterType::STRING, ParameterType::STRING, ParameterType::INTEGER, ParameterType::BINARY], $debug[1]['types']);
         $this->assertGreaterThan(0, $debug[1]['executionMS']);
     }
 
-    public function provideEndTransactionMethod(): array
+    public static function provideEndTransactionMethod(): array
     {
         return [
             'commit' => [static fn (Connection $conn) => $conn->commit(), '"COMMIT"'],
@@ -176,9 +167,7 @@ EOT;
         ];
     }
 
-    /**
-     * @dataProvider provideEndTransactionMethod
-     */
+    #[DataProvider('provideEndTransactionMethod')]
     public function testTransaction(callable $endTransactionMethod, string $expectedEndTransactionDebug)
     {
         $this->init();
@@ -193,38 +182,44 @@ EOT;
         $endTransactionMethod($this->conn);
 
         $debug = $this->debugDataHolder->getData()['default'] ?? [];
-        $this->assertCount(7, $debug);
+        $this->assertCount(9, $debug);
         $this->assertSame('"START TRANSACTION"', $debug[1]['sql']);
         $this->assertGreaterThan(0, $debug[1]['executionMS']);
-        $this->assertSame('INSERT INTO products(name, price, stock) VALUES ("product1", 12.5, 5)', $debug[2]['sql']);
+        $this->assertSame('SAVEPOINT DOCTRINE_2', $debug[2]['sql']);
         $this->assertGreaterThan(0, $debug[2]['executionMS']);
-        $this->assertSame($expectedEndTransactionDebug, $debug[3]['sql']);
+        $this->assertSame('INSERT INTO products(name, price, stock) VALUES ("product1", 12.5, 5)', $debug[3]['sql']);
         $this->assertGreaterThan(0, $debug[3]['executionMS']);
-        $this->assertSame('"START TRANSACTION"', $debug[4]['sql']);
+        $this->assertSame(('"ROLLBACK"' === $expectedEndTransactionDebug ? 'ROLLBACK TO' : 'RELEASE').' SAVEPOINT DOCTRINE_2', $debug[4]['sql']);
         $this->assertGreaterThan(0, $debug[4]['executionMS']);
-        $this->assertSame('INSERT INTO products(name, price, stock) VALUES ("product2", 15.5, 12)', $debug[5]['sql']);
+        $this->assertSame($expectedEndTransactionDebug, $debug[5]['sql']);
         $this->assertGreaterThan(0, $debug[5]['executionMS']);
-        $this->assertSame($expectedEndTransactionDebug, $debug[6]['sql']);
+        $this->assertSame('"START TRANSACTION"', $debug[6]['sql']);
         $this->assertGreaterThan(0, $debug[6]['executionMS']);
+        $this->assertSame('INSERT INTO products(name, price, stock) VALUES ("product2", 15.5, 12)', $debug[7]['sql']);
+        $this->assertGreaterThan(0, $debug[7]['executionMS']);
+        $this->assertSame($expectedEndTransactionDebug, $debug[8]['sql']);
+        $this->assertGreaterThan(0, $debug[8]['executionMS']);
     }
 
-    public function provideExecuteAndEndTransactionMethods(): array
+    public static function provideExecuteAndEndTransactionMethods(): array
     {
         return [
             'commit and exec' => [
-                static fn (Connection $conn, string $sql) => $conn->executeStatement($sql),
-                static fn (Connection $conn) => $conn->commit(),
+                static fn (Connection $conn, string $sql): int|string => $conn->executeStatement($sql),
+                static fn (Connection $conn): ?bool => $conn->commit(),
             ],
             'rollback and query' => [
-                static fn (Connection $conn, string $sql) => $conn->executeQuery($sql),
-                static fn (Connection $conn) => $conn->rollBack(),
+                static fn (Connection $conn, string $sql): Result => $conn->executeQuery($sql),
+                static fn (Connection $conn): ?bool => $conn->rollBack(),
+            ],
+            'prepared statement' => [
+                static fn (Connection $conn, string $sql): Result => $conn->prepare($sql)->executeQuery(),
+                static fn (Connection $conn): ?bool => $conn->commit(),
             ],
         ];
     }
 
-    /**
-     * @dataProvider provideExecuteAndEndTransactionMethods
-     */
+    #[DataProvider('provideExecuteAndEndTransactionMethods')]
     public function testGlobalDoctrineDuration(callable $sqlMethod, callable $endTransactionMethod)
     {
         $this->init();
@@ -248,9 +243,7 @@ EOT;
         $this->assertCount(4, $this->stopwatch->getEvent('doctrine')->getPeriods());
     }
 
-    /**
-     * @dataProvider provideExecuteAndEndTransactionMethods
-     */
+    #[DataProvider('provideExecuteAndEndTransactionMethods')]
     public function testWithoutStopwatch(callable $sqlMethod, callable $endTransactionMethod)
     {
         $this->init(false);
@@ -258,5 +251,7 @@ EOT;
         $this->conn->beginTransaction();
         $sqlMethod($this->conn, 'SELECT * FROM products');
         $endTransactionMethod($this->conn);
+
+        $this->addToAssertionCount(1);
     }
 }

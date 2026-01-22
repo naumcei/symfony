@@ -16,24 +16,25 @@ use Symfony\Component\Form\ChoiceList\ArrayChoiceList;
 use Symfony\Component\Form\ChoiceList\Factory\Cache\ChoiceLoader;
 use Symfony\Component\Form\ChoiceList\Loader\CallbackChoiceLoader;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Tests\ChoiceList\ChoiceListAssertionTrait;
 use Symfony\Component\Form\Tests\Fixtures\ArrayChoiceLoader;
 
 class ChoiceLoaderTest extends TestCase
 {
+    use ChoiceListAssertionTrait;
+
     public function testSameFormTypeUseCachedLoader()
     {
         $choices = ['f' => 'foo', 'b' => 'bar', 'z' => 'baz'];
         $choiceList = new ArrayChoiceList($choices);
 
         $type = new FormType();
-        $decorated = new CallbackChoiceLoader(static function () use ($choices) {
-            return $choices;
-        });
+        $decorated = new CallbackChoiceLoader(static fn () => $choices);
         $loader1 = new ChoiceLoader($type, $decorated);
         $loader2 = new ChoiceLoader($type, new ArrayChoiceLoader());
 
-        $this->assertEquals($choiceList, $loader1->loadChoiceList());
-        $this->assertEquals($choiceList, $loader2->loadChoiceList());
+        $this->assertEqualsArrayChoiceList($choiceList, $loader1->loadChoiceList());
+        $this->assertEqualsArrayChoiceList($choiceList, $loader2->loadChoiceList());
 
         $this->assertSame($choices, $loader1->loadChoicesForValues($choices));
         $this->assertSame($choices, $loader2->loadChoicesForValues($choices));

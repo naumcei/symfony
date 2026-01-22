@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Serializer\Tests\Encoder;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -18,8 +19,7 @@ use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 
 class JsonDecodeTest extends TestCase
 {
-    /** @var \Symfony\Component\Serializer\Encoder\JsonDecode */
-    private $decode;
+    private JsonDecode $decode;
 
     protected function setUp(): void
     {
@@ -32,9 +32,7 @@ class JsonDecodeTest extends TestCase
         $this->assertFalse($this->decode->supportsDecoding('foobar'));
     }
 
-    /**
-     * @dataProvider decodeProvider
-     */
+    #[DataProvider('decodeProvider')]
     public function testDecode($toDecode, $expected, $context)
     {
         $this->assertEquals(
@@ -43,33 +41,32 @@ class JsonDecodeTest extends TestCase
         );
     }
 
-    public function decodeProvider()
+    public static function decodeProvider()
     {
         $stdClass = new \stdClass();
         $stdClass->foo = 'bar';
 
-        $assoc = ['foo' => 'bar'];
-
         return [
             ['{"foo": "bar"}', $stdClass, []],
-            ['{"foo": "bar"}', $assoc, ['json_decode_associative' => true]],
+            ['{"foo": "bar"}', ['foo' => 'bar'], ['json_decode_associative' => true]],
         ];
     }
 
-    /**
-     * @dataProvider decodeProviderException
-     */
-    public function testDecodeWithException($value)
+    #[DataProvider('decodeProviderException')]
+    public function testDecodeWithException(string $value, string $expectedExceptionMessage, array $context)
     {
         $this->expectException(UnexpectedValueException::class);
-        $this->decode->decode($value, JsonEncoder::FORMAT);
+        $this->expectExceptionMessage($expectedExceptionMessage);
+        $this->decode->decode($value, JsonEncoder::FORMAT, $context);
     }
 
-    public function decodeProviderException()
+    public static function decodeProviderException()
     {
         return [
-            ["{'foo': 'bar'}"],
-            ['kaboom!'],
+            ["{'foo': 'bar'}", 'Syntax error', []],
+            ["{'foo': 'bar'}", 'single quotes instead of double quotes', ['json_decode_detailed_errors' => true]],
+            ['kaboom!', 'Syntax error', ['json_decode_detailed_errors' => false]],
+            ['kaboom!', "Expected one of: 'STRING', 'NUMBER', 'NULL',", ['json_decode_detailed_errors' => true]],
         ];
     }
 }

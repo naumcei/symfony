@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Console\Tests\Command;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\HelpCommand;
@@ -70,24 +71,22 @@ class HelpCommandTest extends TestCase
         $this->assertStringContainsString('<command', $commandTester->getDisplay(), '->execute() returns an XML help text if --format=xml is passed');
     }
 
-    /**
-     * @dataProvider provideCompletionSuggestions
-     */
+    #[DataProvider('provideCompletionSuggestions')]
     public function testComplete(array $input, array $expectedSuggestions)
     {
         require_once realpath(__DIR__.'/../Fixtures/FooCommand.php');
         $application = new Application();
-        $application->add(new \FooCommand());
+        $application->addCommand(new \FooCommand());
         $tester = new CommandCompletionTester($application->get('help'));
         $suggestions = $tester->complete($input, 2);
         $this->assertSame($expectedSuggestions, $suggestions);
     }
 
-    public function provideCompletionSuggestions()
+    public static function provideCompletionSuggestions()
     {
         yield 'option --format' => [
             ['--format', ''],
-            ['txt', 'xml', 'json', 'md'],
+            ['txt', 'xml', 'json', 'md', 'rst'],
         ];
 
         yield 'nothing' => [

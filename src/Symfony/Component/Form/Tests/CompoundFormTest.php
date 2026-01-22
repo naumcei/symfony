@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Form\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Form\Exception\AlreadySubmittedException;
@@ -26,7 +27,6 @@ use Symfony\Component\Form\FormErrorIterator;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormFactory;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormRegistry;
 use Symfony\Component\Form\Forms;
@@ -42,15 +42,8 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class CompoundFormTest extends TestCase
 {
-    /**
-     * @var FormFactoryInterface
-     */
-    private $factory;
-
-    /**
-     * @var FormInterface
-     */
-    private $form;
+    private FormFactory $factory;
+    private FormInterface $form;
 
     protected function setUp(): void
     {
@@ -414,7 +407,7 @@ class CompoundFormTest extends TestCase
         $child = $this->getBuilder('child')
             ->setCompound(true)
             ->setDataMapper(new DataMapper())
-            ->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) use ($form, $childToBeAdded) {
+            ->addEventListener(FormEvents::PRE_SET_DATA, static function (FormEvent $event) use ($form, $childToBeAdded) {
                 $form->remove('removed');
                 $form->add($childToBeAdded);
             })
@@ -484,7 +477,7 @@ class CompoundFormTest extends TestCase
         $childToBeRemoved = $this->createForm('removed');
         $childToBeAdded = $this->createForm('added');
         $child = $this->getBuilder('child')
-            ->addEventListener(FormEvents::PRE_SUBMIT, function () use ($form, $childToBeAdded) {
+            ->addEventListener(FormEvents::PRE_SUBMIT, static function () use ($form, $childToBeAdded) {
                 $form->remove('removed');
                 $form->add($childToBeAdded);
             })
@@ -583,7 +576,7 @@ class CompoundFormTest extends TestCase
         $this->assertSame('Bernhard', $object['name']);
     }
 
-    public function requestMethodProvider()
+    public static function requestMethodProvider(): array
     {
         return [
             ['POST'],
@@ -593,9 +586,7 @@ class CompoundFormTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider requestMethodProvider
-     */
+    #[DataProvider('requestMethodProvider')]
     public function testSubmitPostOrPutRequest($method)
     {
         $path = tempnam(sys_get_temp_dir(), 'sf');
@@ -641,9 +632,7 @@ class CompoundFormTest extends TestCase
         unlink($path);
     }
 
-    /**
-     * @dataProvider requestMethodProvider
-     */
+    #[DataProvider('requestMethodProvider')]
     public function testSubmitPostOrPutRequestWithEmptyRootFormName($method)
     {
         $path = tempnam(sys_get_temp_dir(), 'sf');
@@ -689,9 +678,7 @@ class CompoundFormTest extends TestCase
         unlink($path);
     }
 
-    /**
-     * @dataProvider requestMethodProvider
-     */
+    #[DataProvider('requestMethodProvider')]
     public function testSubmitPostOrPutRequestWithSingleChildForm($method)
     {
         $path = tempnam(sys_get_temp_dir(), 'sf');
@@ -726,9 +713,7 @@ class CompoundFormTest extends TestCase
         unlink($path);
     }
 
-    /**
-     * @dataProvider requestMethodProvider
-     */
+    #[DataProvider('requestMethodProvider')]
     public function testSubmitPostOrPutRequestWithSingleChildFormUploadedFile($method)
     {
         $path = tempnam(sys_get_temp_dir(), 'sf');
@@ -928,8 +913,8 @@ class CompoundFormTest extends TestCase
     public function testCreateViewWithChildren()
     {
         $type = $this->createMock(ResolvedFormTypeInterface::class);
-        $type1 = $this->createMock(ResolvedFormTypeInterface::class);
-        $type2 = $this->createMock(ResolvedFormTypeInterface::class);
+        $type1 = $this->createStub(ResolvedFormTypeInterface::class);
+        $type2 = $this->createStub(ResolvedFormTypeInterface::class);
         $options = ['a' => 'Foo', 'b' => 'Bar'];
         $field1 = $this->getBuilder('foo')
             ->setType($type1)
@@ -955,10 +940,8 @@ class CompoundFormTest extends TestCase
         $this->form->add($field1);
         $this->form->add($field2);
 
-        $assertChildViewsEqual = function (array $childViews) {
-            return function (FormView $view) use ($childViews) {
-                $this->assertSame($childViews, $view->children);
-            };
+        $assertChildViewsEqual = fn (array $childViews) => function (FormView $view) use ($childViews) {
+            $this->assertSame($childViews, $view->children);
         };
 
         // First create the view
@@ -1127,7 +1110,7 @@ class CompoundFormTest extends TestCase
         return $builder->getForm();
     }
 
-    private function getBuilder(string $name = 'name', string $dataClass = null, array $options = []): FormBuilder
+    private function getBuilder(string $name = 'name', ?string $dataClass = null, array $options = []): FormBuilder
     {
         return new FormBuilder($name, $dataClass, new EventDispatcher(), $this->factory, $options);
     }

@@ -15,27 +15,29 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @author Jérémy Derussé <jeremy@derusse.com>
+ *
+ * @implements TransportFactoryInterface<AmazonSqsTransport>
  */
 class AmazonSqsTransportFactory implements TransportFactoryInterface
 {
-    private ?LoggerInterface $logger;
-
-    public function __construct(LoggerInterface $logger = null)
-    {
-        $this->logger = $logger;
+    public function __construct(
+        private ?LoggerInterface $logger = null,
+        private ?HttpClientInterface $httpClient = null,
+    ) {
     }
 
-    public function createTransport(string $dsn, array $options, SerializerInterface $serializer): TransportInterface
+    public function createTransport(#[\SensitiveParameter] string $dsn, array $options, SerializerInterface $serializer): TransportInterface
     {
         unset($options['transport_name']);
 
-        return new AmazonSqsTransport(Connection::fromDsn($dsn, $options, null, $this->logger), $serializer);
+        return new AmazonSqsTransport(Connection::fromDsn($dsn, $options, $this->httpClient, $this->logger), $serializer, null, null, !($options['delete_on_rejection'] ?? false));
     }
 
-    public function supports(string $dsn, array $options): bool
+    public function supports(#[\SensitiveParameter] string $dsn, array $options): bool
     {
         return str_starts_with($dsn, 'sqs://') || preg_match('#^https://sqs\.[\w\-]+\.amazonaws\.com/.+#', $dsn);
     }

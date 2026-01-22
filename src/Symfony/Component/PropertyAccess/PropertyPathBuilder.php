@@ -18,10 +18,10 @@ use Symfony\Component\PropertyAccess\Exception\OutOfBoundsException;
  */
 class PropertyPathBuilder
 {
-    private $elements = [];
-    private $isIndex = [];
+    private array $elements = [];
+    private array $isIndex = [];
 
-    public function __construct(PropertyPathInterface|string $path = null)
+    public function __construct(PropertyPathInterface|string|null $path = null)
     {
         if (null !== $path) {
             $this->append($path);
@@ -34,7 +34,7 @@ class PropertyPathBuilder
      * @param int $offset The offset where the appended piece starts in $path
      * @param int $length The length of the appended piece; if 0, the full path is appended
      */
-    public function append(PropertyPathInterface|string $path, int $offset = 0, int $length = 0)
+    public function append(PropertyPathInterface|string $path, int $offset = 0, int $length = 0): void
     {
         if (\is_string($path)) {
             $path = new PropertyPath($path);
@@ -55,7 +55,7 @@ class PropertyPathBuilder
     /**
      * Appends an index element to the current path.
      */
-    public function appendIndex(string $name)
+    public function appendIndex(string $name): void
     {
         $this->elements[] = $name;
         $this->isIndex[] = true;
@@ -64,7 +64,7 @@ class PropertyPathBuilder
     /**
      * Appends a property element to the current path.
      */
-    public function appendProperty(string $name)
+    public function appendProperty(string $name): void
     {
         $this->elements[] = $name;
         $this->isIndex[] = false;
@@ -75,10 +75,10 @@ class PropertyPathBuilder
      *
      * @throws OutOfBoundsException if offset is invalid
      */
-    public function remove(int $offset, int $length = 1)
+    public function remove(int $offset, int $length = 1): void
     {
         if (!isset($this->elements[$offset])) {
-            throw new OutOfBoundsException(sprintf('The offset "%s" is not within the property path.', $offset));
+            throw new OutOfBoundsException(\sprintf('The offset "%s" is not within the property path.', $offset));
         }
 
         $this->resize($offset, $length, 0);
@@ -92,7 +92,7 @@ class PropertyPathBuilder
      *
      * @throws OutOfBoundsException If the offset is invalid
      */
-    public function replace(int $offset, int $length, PropertyPathInterface|string $path, int $pathOffset = 0, int $pathLength = 0)
+    public function replace(int $offset, int $length, PropertyPathInterface|string $path, int $pathOffset = 0, int $pathLength = 0): void
     {
         if (\is_string($path)) {
             $path = new PropertyPath($path);
@@ -122,10 +122,10 @@ class PropertyPathBuilder
      *
      * @throws OutOfBoundsException If the offset is invalid
      */
-    public function replaceByIndex(int $offset, string $name = null)
+    public function replaceByIndex(int $offset, ?string $name = null): void
     {
         if (!isset($this->elements[$offset])) {
-            throw new OutOfBoundsException(sprintf('The offset "%s" is not within the property path.', $offset));
+            throw new OutOfBoundsException(\sprintf('The offset "%s" is not within the property path.', $offset));
         }
 
         if (null !== $name) {
@@ -140,10 +140,10 @@ class PropertyPathBuilder
      *
      * @throws OutOfBoundsException If the offset is invalid
      */
-    public function replaceByProperty(int $offset, string $name = null)
+    public function replaceByProperty(int $offset, ?string $name = null): void
     {
         if (!isset($this->elements[$offset])) {
-            throw new OutOfBoundsException(sprintf('The offset "%s" is not within the property path.', $offset));
+            throw new OutOfBoundsException(\sprintf('The offset "%s" is not within the property path.', $offset));
         }
 
         if (null !== $name) {
@@ -196,7 +196,7 @@ class PropertyPathBuilder
      * removed at $offset and another chunk of length $insertionLength
      * can be inserted.
      */
-    private function resize(int $offset, int $cutLength, int $insertionLength)
+    private function resize(int $offset, int $cutLength, int $insertionLength): void
     {
         // Nothing else to do in this case
         if ($insertionLength === $cutLength) {

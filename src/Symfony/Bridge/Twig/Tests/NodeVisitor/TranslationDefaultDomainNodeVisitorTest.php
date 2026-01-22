@@ -11,23 +11,24 @@
 
 namespace Symfony\Bridge\Twig\Tests\NodeVisitor;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Twig\NodeVisitor\TranslationDefaultDomainNodeVisitor;
 use Symfony\Bridge\Twig\NodeVisitor\TranslationNodeVisitor;
 use Twig\Environment;
-use Twig\Loader\LoaderInterface;
+use Twig\Loader\ArrayLoader;
 use Twig\Node\Expression\ArrayExpression;
 use Twig\Node\Node;
 
 class TranslationDefaultDomainNodeVisitorTest extends TestCase
 {
-    private static $message = 'message';
-    private static $domain = 'domain';
+    private static string $message = 'message';
+    private static string $domain = 'domain';
 
-    /** @dataProvider getDefaultDomainAssignmentTestData */
+    #[DataProvider('getDefaultDomainAssignmentTestData')]
     public function testDefaultDomainAssignment(Node $node)
     {
-        $env = new Environment($this->createMock(LoaderInterface::class), ['cache' => false, 'autoescape' => false, 'optimizations' => 0]);
+        $env = new Environment(new ArrayLoader(), ['cache' => false, 'autoescape' => false, 'optimizations' => 0]);
         $visitor = new TranslationDefaultDomainNodeVisitor();
 
         // visit trans_default_domain tag
@@ -50,10 +51,10 @@ class TranslationDefaultDomainNodeVisitorTest extends TestCase
         $this->assertEquals([[self::$message, self::$domain]], $visitor->getMessages());
     }
 
-    /** @dataProvider getDefaultDomainAssignmentTestData */
+    #[DataProvider('getDefaultDomainAssignmentTestData')]
     public function testNewModuleWithoutDefaultDomainTag(Node $node)
     {
-        $env = new Environment($this->createMock(LoaderInterface::class), ['cache' => false, 'autoescape' => false, 'optimizations' => 0]);
+        $env = new Environment(new ArrayLoader(), ['cache' => false, 'autoescape' => false, 'optimizations' => 0]);
         $visitor = new TranslationDefaultDomainNodeVisitor();
 
         // visit trans_default_domain tag
@@ -76,7 +77,7 @@ class TranslationDefaultDomainNodeVisitorTest extends TestCase
         $this->assertEquals([[self::$message, null]], $visitor->getMessages());
     }
 
-    public function getDefaultDomainAssignmentTestData()
+    public static function getDefaultDomainAssignmentTestData()
     {
         return [
             [TwigNodeProvider::getTransFilter(self::$message)],

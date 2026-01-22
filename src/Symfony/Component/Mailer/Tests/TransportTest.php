@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Mailer\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\Exception\InvalidArgumentException;
@@ -24,9 +25,7 @@ use Symfony\Component\Mime\RawMessage;
 
 class TransportTest extends TestCase
 {
-    /**
-     * @dataProvider fromStringProvider
-     */
+    #[DataProvider('fromStringProvider')]
     public function testFromString(string $dsn, TransportInterface $transport)
     {
         $transportFactory = new Transport([new DummyTransportFactory()]);
@@ -34,7 +33,7 @@ class TransportTest extends TestCase
         $this->assertEquals($transport, $transportFactory->fromString($dsn));
     }
 
-    public function fromStringProvider(): iterable
+    public static function fromStringProvider(): iterable
     {
         $transportA = new DummyTransport('a');
         $transportB = new DummyTransport('b');
@@ -58,17 +57,20 @@ class TransportTest extends TestCase
             'roundrobin(dummy://a failover(dummy://b dummy://a) dummy://b)',
             new RoundRobinTransport([$transportA, new FailoverTransport([$transportB, $transportA]), $transportB]),
         ];
+
+        yield 'round robin transport with retry period' => [
+            'roundrobin(dummy://a dummy://b)?retry_period=15',
+            new RoundRobinTransport([$transportA, $transportB], 15),
+        ];
     }
 
-    /**
-     * @dataProvider fromDsnProvider
-     */
+    #[DataProvider('fromDsnProvider')]
     public function testFromDsn(string $dsn, TransportInterface $transport)
     {
         $this->assertEquals($transport, Transport::fromDsn($dsn));
     }
 
-    public function fromDsnProvider(): iterable
+    public static function fromDsnProvider(): iterable
     {
         yield 'multiple transports' => [
             'failover(smtp://a smtp://b)',
@@ -76,9 +78,7 @@ class TransportTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider fromWrongStringProvider
-     */
+    #[DataProvider('fromWrongStringProvider')]
     public function testFromWrongString(string $dsn, string $error)
     {
         $transportFactory = new Transport([new DummyTransportFactory()]);
@@ -88,28 +88,28 @@ class TransportTest extends TestCase
         $transportFactory->fromString($dsn);
     }
 
-    public function fromWrongStringProvider(): iterable
+    public static function fromWrongStringProvider(): iterable
     {
-        yield 'garbage at the end' => ['dummy://a some garbage here', 'The DSN has some garbage at the end: " some garbage here".'];
+        yield 'garbage at the end' => ['dummy://a some garbage here', 'The mailer DSN has some garbage at the end.'];
 
-        yield 'not a valid DSN' => ['something not a dsn', 'The "something" mailer DSN must contain a scheme.'];
+        yield 'not a valid DSN' => ['something not a dsn', 'The mailer DSN must contain a scheme.'];
 
-        yield 'failover not closed' => ['failover(dummy://a', 'The "(dummy://a" mailer DSN must contain a scheme.'];
+        yield 'failover not closed' => ['failover(dummy://a', 'The mailer DSN must contain a scheme.'];
 
         yield 'not a valid keyword' => ['foobar(dummy://a)', 'The "foobar" keyword is not valid (valid ones are "failover", "roundrobin")'];
     }
 }
 
-class DummyTransport implements Transport\TransportInterface
+class DummyTransport implements TransportInterface
 {
-    private $host;
+    private string $host;
 
     public function __construct(string $host)
     {
         $this->host = $host;
     }
 
-    public function send(RawMessage $message, Envelope $envelope = null): ?SentMessage
+    public function send(RawMessage $message, ?Envelope $envelope = null): ?SentMessage
     {
         throw new \BadMethodCallException('This method newer should be called.');
     }

@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Console\Tests\CI;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\CI\GithubActionReporter;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -31,10 +32,8 @@ class GithubActionReporterTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider annotationsFormatProvider
-     */
-    public function testAnnotationsFormat(string $type, string $message, string $file = null, int $line = null, int $col = null, string $expected)
+    #[DataProvider('annotationsFormatProvider')]
+    public function testAnnotationsFormat(string $type, string $message, ?string $file, ?int $line, ?int $col, string $expected)
     {
         $reporter = new GithubActionReporter($buffer = new BufferedOutput());
 
@@ -43,7 +42,7 @@ class GithubActionReporterTest extends TestCase
         self::assertSame($expected.\PHP_EOL, $buffer->fetch());
     }
 
-    public function annotationsFormatProvider(): iterable
+    public static function annotationsFormatProvider(): iterable
     {
         yield 'warning' => ['warning', 'A warning', null, null, null, '::warning::A warning'];
         yield 'error' => ['error', 'An error', null, null, null, '::error::An error'];
